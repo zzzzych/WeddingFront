@@ -1,3 +1,4 @@
+// App.tsx 파일 전체 내용 수정
 // React Router를 사용한 청첩장 앱의 메인 라우팅 설정
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -6,8 +7,9 @@ import './App.css';
 // 실제 페이지 컴포넌트들
 import InvitationPage from './pages/InvitationPage';
 import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard'; // ✅ 실제 AdminDashboard 컴포넌트 import 추가
 
-// 임시 컴포넌트들 (아직 실제 페이지를 만들지 않은 것들)
+// 홈페이지 컴포넌트
 const HomePage = () => (
   <div style={{ padding: '20px', textAlign: 'center' }}>
     <h1>청첩장 앱에 오신 것을 환영합니다!</h1>
@@ -36,7 +38,7 @@ const HomePage = () => (
         <li>✅ 참석 응답 폼 (결혼식 초대 그룹만)</li>
         <li>✅ 오시는 길 정보 (결혼식 초대 그룹만)</li>
         <li>✅ 관리자 로그인 페이지</li>
-        <li>✅ 관리자 대시보드</li>
+        <li>✅ 관리자 대시보드 ✨ 수정 완료!</li>
         <li>✅ 그룹 생성 기능</li>
         <li>🔄 포토 갤러리 (개발 예정)</li>
       </ul>
@@ -44,15 +46,8 @@ const HomePage = () => (
   </div>
 );
 
-const AdminDashboard = () => (
-  <div style={{ padding: '20px', textAlign: 'center' }}>
-    <h1>관리자 대시보드</h1>
-    <p>관리자 대시보드 페이지입니다.</p>
-    <p style={{ color: '#6c757d', fontSize: '14px' }}>
-      다음 단계에서 구현 예정입니다.
-    </p>
-  </div>
-);
+// ❌ 기존 임시 AdminDashboard 컴포넌트 제거
+// const AdminDashboard = () => ( ... ) 이 부분을 완전히 삭제
 
 function App() {
   return (
@@ -65,10 +60,10 @@ function App() {
           {/* 청첩장 페이지 - 고유 코드별로 다른 청첩장 표시 */}
           <Route path="/invitation/:uniqueCode" element={<InvitationPage />} />
           
-          {/* 관리자 로그인 페이지 (실제 컴포넌트로 교체) */}
+          {/* 관리자 로그인 페이지 */}
           <Route path="/admin" element={<AdminLogin />} />
           
-          {/* 관리자 대시보드 */}
+          {/* ✅ 관리자 대시보드 - 실제 AdminDashboard 컴포넌트 사용 */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           
           {/* 잘못된 경로 접근 시 홈페이지로 리다이렉트 */}
