@@ -139,3 +139,48 @@ export const updateGroup = async (groupId: string, updateData: UpdateGroupReques
 
   return response.json();
 };
+
+// 그룹 삭제 함수 (관리자용)
+export const deleteGroup = async (
+  groupId: string, 
+  forceDelete: boolean = false
+): Promise<void> => {
+  try {
+    // 강제 삭제 옵션이 있으면 쿼리 파라미터 추가
+    const queryParams = forceDelete ? '?force=true' : '';
+    
+    const response = await fetch(
+      `${API_BASE_URL}/admin/groups/${groupId}${queryParams}`, 
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          // 필요시 인증 헤더 추가
+          // 'Authorization': `Bearer ${getAuthToken()}`
+        },
+      }
+    );
+
+    // 204 No Content는 성공을 의미
+    if (response.status === 204) {
+      console.log('✅ 그룹 삭제 성공');
+      return;
+    }
+
+    // 409 Conflict - 응답이 있는 그룹
+    if (response.status === 409) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || '응답이 있는 그룹은 강제 삭제가 필요합니다.');
+    }
+
+    // 기타 에러
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || '그룹 삭제에 실패했습니다.');
+    }
+
+  } catch (error: any) {
+    console.error('❌ 그룹 삭제 실패:', error);
+    throw error;
+  }
+};

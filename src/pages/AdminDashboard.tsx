@@ -2,7 +2,13 @@
 // 완성된 관리자 대시보드 (그룹별 기능 설정 시스템 통합)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllRsvps, getAllGroups, updateGroup, createGroup } from "../services/invitationService";
+import {
+  getAllRsvps,
+  getAllGroups,
+  updateGroup,
+  createGroup,
+  deleteGroup,
+} from "../services/invitationService";
 import { RsvpResponse, InvitationGroup, GroupType } from "../types";
 import CreateGroupModal from "../components/CreateGroupModal";
 import GreetingEditor from "../components/GreetingEditor";
@@ -28,7 +34,15 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [adminUser, setAdminUser] = useState<any>(null);
-
+  // 삭제 관련 상태 추가
+  const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
+  const [deleteConfirmGroup, setDeleteConfirmGroup] =
+    useState<InvitationGroup | null>(null);
+  // 그룹 이름 편집 상태 추가
+  const [editingGroupName, setEditingGroupName] = useState<string | null>(null);
+  const [isUpdatingGroupName, setIsUpdatingGroupName] =
+    useState<boolean>(false);
+  const [tempGroupName, setTempGroupName] = useState<string>("");
   // 그룹 인사말 편집 상태
   const [editingGroupGreeting, setEditingGroupGreeting] = useState<
     string | null
@@ -110,15 +124,15 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
- // 로그아웃 처리
-const handleLogout = () => {
-  // 실제 로그인에서 사용하는 올바른 키로 수정
-  localStorage.removeItem('adminToken');  // ✅ JWT 토큰 제거
-  localStorage.removeItem('adminUser');   // ✅ 사용자 정보 제거
-  
-  console.log('🔐 로그아웃 완료 - 토큰 및 사용자 정보 삭제');
-  navigate('/admin');
-};
+  // 로그아웃 처리
+  const handleLogout = () => {
+    // 실제 로그인에서 사용하는 올바른 키로 수정
+    localStorage.removeItem("adminToken"); // ✅ JWT 토큰 제거
+    localStorage.removeItem("adminUser"); // ✅ 사용자 정보 제거
+
+    console.log("🔐 로그아웃 완료 - 토큰 및 사용자 정보 삭제");
+    navigate("/admin");
+  };
   // 새 그룹 생성 성공 처리
   const handleGroupCreated = (newGroup: InvitationGroup) => {
     setGroups((prev) => [...prev, newGroup]);
@@ -148,39 +162,39 @@ const handleLogout = () => {
   };
 
   // 그룹별 인사말 저장
-const handleGroupGreetingSave = async (
-  groupId: string,
-  newGreeting: string
-) => {
-  try {
-    setIsUpdatingGreeting(true);
+  const handleGroupGreetingSave = async (
+    groupId: string,
+    newGreeting: string
+  ) => {
+    try {
+      setIsUpdatingGreeting(true);
 
-    // ✅ 실제 API 호출로 변경
-    await updateGroup(groupId, {
-      greetingMessage: newGreeting
-    });
+      // ✅ 실제 API 호출로 변경
+      await updateGroup(groupId, {
+        greetingMessage: newGreeting,
+      });
 
-    // 로컬 상태 업데이트
-    const updatedGroups = groups.map((group) =>
-      group.id === groupId
-        ? { ...group, greetingMessage: newGreeting }
-        : group
-    );
-    setGroups(updatedGroups);
+      // 로컬 상태 업데이트
+      const updatedGroups = groups.map((group) =>
+        group.id === groupId
+          ? { ...group, greetingMessage: newGreeting }
+          : group
+      );
+      setGroups(updatedGroups);
 
-    // 성공 메시지 표시
-    setSuccessMessage("인사말이 성공적으로 수정되었습니다!");
-    setTimeout(() => setSuccessMessage(null), 3000);
+      // 성공 메시지 표시
+      setSuccessMessage("인사말이 성공적으로 수정되었습니다!");
+      setTimeout(() => setSuccessMessage(null), 3000);
 
-    // 편집 모드 종료
-    setEditingGroupGreeting(null);
-  } catch (error: any) {
-    console.error("인사말 수정 실패:", error);
-    setError(error.message || "인사말 수정에 실패했습니다.");
-  } finally {
-    setIsUpdatingGreeting(false);
-  }
-};
+      // 편집 모드 종료
+      setEditingGroupGreeting(null);
+    } catch (error: any) {
+      console.error("인사말 수정 실패:", error);
+      setError(error.message || "인사말 수정에 실패했습니다.");
+    } finally {
+      setIsUpdatingGreeting(false);
+    }
+  };
 
   // 그룹별 인사말 편집 취소
   const handleGroupGreetingCancel = () => {
@@ -223,9 +237,107 @@ const handleGroupGreetingSave = async (
     }
   };
 
+  // 그룹 삭제 확인 다이얼로그 열기
+  const handleDeleteGroup = (group: InvitationGroup) => {
+    setDeleteConfirmGroup(group);
+  };
+
+  // 그룹 삭제 실행
+  const handleConfirmDelete = async (forceDelete: boolean = false) => {
+    if (!deleteConfirmGroup) return;
+
+    try {
+      setDeletingGroupId(deleteConfirmGroup.id!);
+
+      // ✅ 실제 API 호출
+      await deleteGroup(deleteConfirmGroup.id!, forceDelete);
+
+      // 로컬 상태에서 삭제된 그룹 제거
+      setGroups((prev) =>
+        prev.filter((group) => group.id !== deleteConfirmGroup.id)
+      );
+
+      // 성공 메시지 표시
+      setSuccessMessage(
+        `"${deleteConfirmGroup.groupName}" 그룹이 성공적으로 삭제되었습니다!`
+      );
+      setTimeout(() => setSuccessMessage(null), 3000);
+
+      // 상태 초기화
+      setDeleteConfirmGroup(null);
+    } catch (error: any) {
+      console.error("그룹 삭제 실패:", error);
+
+      // 409 에러 (응답이 있는 그룹)인 경우 강제 삭제 옵션 제공
+      if (error.message.includes("응답이 있는")) {
+        // 에러 메시지는 표시하지 않고, 사용자가 강제 삭제를 선택할 수 있도록 함
+        return;
+      }
+
+      setError(error.message || "그룹 삭제에 실패했습니다.");
+    } finally {
+      setDeletingGroupId(null);
+    }
+  };
+
+  // 삭제 확인 다이얼로그 닫기
+  const handleCancelDelete = () => {
+    setDeleteConfirmGroup(null);
+  };
+
   // 그룹 기능 설정 편집 취소
   const handleGroupFeaturesCancel = () => {
     setEditingGroupFeatures(null);
+  };
+
+  // 그룹 이름 편집 시작
+  const handleGroupNameEdit = (group: InvitationGroup) => {
+    setEditingGroupName(group.id!);
+    setTempGroupName(group.groupName);
+  };
+
+  // 그룹 이름 저장
+  const handleGroupNameSave = async (groupId: string) => {
+    if (!tempGroupName.trim()) {
+      setError("그룹 이름을 입력해주세요.");
+      return;
+    }
+
+    try {
+      setIsUpdatingGroupName(true);
+
+      // ✅ 실제 API 호출
+      await updateGroup(groupId, {
+        groupName: tempGroupName.trim(),
+      });
+
+      // 로컬 상태 업데이트
+      const updatedGroups = groups.map((group) =>
+        group.id === groupId
+          ? { ...group, groupName: tempGroupName.trim() }
+          : group
+      );
+      setGroups(updatedGroups);
+
+      // 성공 메시지 표시
+      setSuccessMessage("그룹 이름이 성공적으로 수정되었습니다!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+
+      // 편집 모드 종료
+      setEditingGroupName(null);
+      setTempGroupName("");
+    } catch (error: any) {
+      console.error("그룹 이름 수정 실패:", error);
+      setError(error.message || "그룹 이름 수정에 실패했습니다.");
+    } finally {
+      setIsUpdatingGroupName(false);
+    }
+  };
+
+  // 그룹 이름 편집 취소
+  const handleGroupNameCancel = () => {
+    setEditingGroupName(null);
+    setTempGroupName("");
   };
 
   // 통계 계산
@@ -480,18 +592,107 @@ const handleGroupGreetingSave = async (
                 }}
               >
                 <div style={{ flex: 1 }}>
-                  <h3
-                    style={{
-                      margin: "0 0 8px 0",
-                      color: "#2c3e50",
-                      fontSize: "18px",
-                    }}
-                  >
-                    {group.groupType === GroupType.WEDDING_GUEST && "🎊"}
-                    {group.groupType === GroupType.PARENTS_GUEST && "👨‍👩‍👧‍👦"}
-                    {group.groupType === GroupType.COMPANY_GUEST && "🏢"}{" "}
-                    {group.groupName}
-                  </h3>
+                  {/* 그룹 이름 편집 기능 */}
+                  {editingGroupName === group.id ? (
+                    <div style={{ marginBottom: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontSize: "18px" }}>
+                          {group.groupType === GroupType.WEDDING_GUEST && "🎊"}
+                          {group.groupType === GroupType.PARENTS_GUEST && "👨‍👩‍👧‍👦"}
+                          {group.groupType === GroupType.COMPANY_GUEST && "🏢"}
+                        </span>
+                        <input
+                          type="text"
+                          value={tempGroupName}
+                          onChange={(e) => setTempGroupName(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleGroupNameSave(group.id!);
+                            }
+                            if (e.key === 'Escape') {
+                              handleGroupNameCancel();
+                            }
+                          }}
+                          disabled={isUpdatingGroupName}
+                          style={{
+                            flex: 1,
+                            padding: "6px 8px",
+                            border: "2px solid #007bff",
+                            borderRadius: "4px",
+                            fontSize: "16px",
+                            outline: "none"
+                          }}
+                          placeholder="그룹 이름을 입력하세요"
+                          autoFocus
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                        <button
+                          onClick={() => handleGroupNameSave(group.id!)}
+                          disabled={isUpdatingGroupName || !tempGroupName.trim()}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#28a745",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            cursor: isUpdatingGroupName || !tempGroupName.trim() ? "not-allowed" : "pointer",
+                            opacity: isUpdatingGroupName || !tempGroupName.trim() ? 0.6 : 1
+                          }}
+                        >
+                          {isUpdatingGroupName ? "저장 중..." : "✓ 저장"}
+                        </button>
+                        <button
+                          onClick={handleGroupNameCancel}
+                          disabled={isUpdatingGroupName}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#6c757d",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            cursor: isUpdatingGroupName ? "not-allowed" : "pointer",
+                            opacity: isUpdatingGroupName ? 0.6 : 1
+                          }}
+                        >
+                          ✕ 취소
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <h3
+                        style={{
+                          margin: 0,
+                          color: "#2c3e50",
+                          fontSize: "18px",
+                        }}
+                      >
+                        {group.groupType === GroupType.WEDDING_GUEST && "🎊"}
+                        {group.groupType === GroupType.PARENTS_GUEST && "👨‍👩‍👧‍👦"}
+                        {group.groupType === GroupType.COMPANY_GUEST && "🏢"}{" "}
+                        {group.groupName}
+                      </h3>
+                      <button
+                        onClick={() => handleGroupNameEdit(group)}
+                        style={{
+                          backgroundColor: "transparent",
+                          border: "1px solid #17a2b8",
+                          color: "#17a2b8",
+                          padding: "6px 12px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                          marginRight: "8px",
+                        }}
+                      >
+                        ✏️ 이름수정
+                      </button>
+                    </div>
+                  )}
 
                   {/* 활성화된 기능 표시 */}
                   <div
@@ -537,6 +738,26 @@ const handleGroupGreetingSave = async (
                     }}
                   >
                     ⚙️ 기능설정
+                  </button>
+                )}
+
+                {/* 삭제 버튼 추가 */}
+                {!deletingGroupId && (
+                  <button
+                    onClick={() => handleDeleteGroup(group)}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid #dc3545",
+                      color: "#dc3545",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      marginLeft: "8px",
+                    }}
+                  >
+                    🗑️ 삭제
                   </button>
                 )}
               </div>
@@ -836,6 +1057,127 @@ const handleGroupGreetingSave = async (
         onClose={() => setIsCreateGroupModalOpen(false)}
         onSuccess={handleGroupCreated}
       />
+      {/* 삭제 확인 다이얼로그 */}
+      {deleteConfirmGroup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "30px",
+              borderRadius: "12px",
+              maxWidth: "500px",
+              width: "90%",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            <h3 style={{ margin: "0 0 20px 0", color: "#dc3545" }}>
+              🗑️ 그룹 삭제 확인
+            </h3>
+
+            <p style={{ marginBottom: "20px", lineHeight: "1.5" }}>
+              <strong>"{deleteConfirmGroup.groupName}"</strong> 그룹을 정말
+              삭제하시겠습니까?
+            </p>
+
+            <div
+              style={{
+                padding: "15px",
+                backgroundColor: "#fff3cd",
+                border: "1px solid #ffeaa7",
+                borderRadius: "6px",
+                marginBottom: "20px",
+              }}
+            >
+              <p style={{ margin: 0, fontSize: "14px", color: "#856404" }}>
+                ⚠️ <strong>주의:</strong> 삭제된 그룹은 복구할 수 없습니다.
+                <br />
+                응답이 있는 그룹의 경우 추가 확인이 필요할 수 있습니다.
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={handleCancelDelete}
+                disabled={deletingGroupId === deleteConfirmGroup.id}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor:
+                    deletingGroupId === deleteConfirmGroup.id
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity: deletingGroupId === deleteConfirmGroup.id ? 0.6 : 1,
+                }}
+              >
+                취소
+              </button>
+
+              <button
+                onClick={() => handleConfirmDelete(false)}
+                disabled={deletingGroupId === deleteConfirmGroup.id}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#dc3545",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor:
+                    deletingGroupId === deleteConfirmGroup.id
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity: deletingGroupId === deleteConfirmGroup.id ? 0.6 : 1,
+                }}
+              >
+                {deletingGroupId === deleteConfirmGroup.id
+                  ? "삭제 중..."
+                  : "삭제"}
+              </button>
+
+              <button
+                onClick={() => handleConfirmDelete(true)}
+                disabled={deletingGroupId === deleteConfirmGroup.id}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#e74c3c",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor:
+                    deletingGroupId === deleteConfirmGroup.id
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity: deletingGroupId === deleteConfirmGroup.id ? 0.6 : 1,
+                  fontSize: "12px",
+                }}
+              >
+                강제 삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
