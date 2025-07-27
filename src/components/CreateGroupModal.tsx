@@ -1,5 +1,5 @@
 // src/components/CreateGroupModal.tsx
-// 개선된 그룹 생성 모달 (기능 설정 및 UI 개선)
+// 개선된 그룹 생성 모달 (UI 레이아웃 개선 및 기능 설정 완성)
 import React, { useState } from 'react';
 import { createGroup } from '../services/invitationService';
 import { CreateGroupRequest, GroupType, InvitationGroup } from '../types';
@@ -85,6 +85,46 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     [GroupType.COMPANY_GUEST]: '함께 일하며 소중한 인연을 맺어온 동료 여러분을 저희 결혼식에 초대합니다. 새로운 시작을 함께 축복해주세요.'
   };
 
+  // 기능 목록 정의 (아이콘과 함께)
+  const featureList = [
+    {
+      key: 'showRsvpForm',
+      icon: '📝',
+      label: '참석 응답 폼',
+      description: '하객이 참석 여부와 인원을 응답할 수 있습니다'
+    },
+    {
+      key: 'showAccountInfo',
+      icon: '💳',
+      label: '계좌 정보',
+      description: '마음 전할 곳 계좌 정보를 표시합니다'
+    },
+    {
+      key: 'showShareButton',
+      icon: '📤',
+      label: '공유 버튼',
+      description: '청첩장을 다른 사람들과 공유할 수 있습니다'
+    },
+    {
+      key: 'showVenueInfo',
+      icon: '📍',
+      label: '오시는 길',
+      description: '웨딩홀 위치와 교통 정보를 표시합니다'
+    },
+    {
+      key: 'showPhotoGallery',
+      icon: '📸',
+      label: '포토 갤러리',
+      description: '신랑신부의 사진들을 갤러리로 표시합니다'
+    },
+    {
+      key: 'showCeremonyProgram',
+      icon: '📋',
+      label: '본식 순서',
+      description: '결혼식 당일 순서를 안내합니다 (7일 전 공개)'
+    }
+  ];
+
   // 입력값 변경 처리
   const handleInputChange = (field: keyof CreateGroupRequest, value: string | GroupType) => {
     setFormData(prev => {
@@ -96,7 +136,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         updated.greetingMessage = defaultGreetingTemplates[value as GroupType];
         updated.features = defaultFeaturesByType[value as GroupType];
       } else {
-        updated[field] = value;
+        // 타입 안전성을 위한 분기 처리
+        if (field === 'groupType') {
+          updated[field] = value as GroupType;
+        } else {
+          updated[field] = value as string;
+        }
       }
       
       return updated;
@@ -178,125 +223,125 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     } catch (error: any) {
       console.error('그룹 생성 실패:', error);
       setErrors({ 
-        general: error.message || '그룹 생성에 실패했습니다. 다시 시도해주세요.' 
+        general: error.message || '그룹 생성에 실패했습니다. 다시 시도해주세요.'
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // 모달 닫기
+  // 모달 닫기 처리
   const handleClose = () => {
-    if (isSubmitting) return;
-    
-    setFormData({
-      groupName: '',
-      groupType: GroupType.WEDDING_GUEST,
-      greetingMessage: defaultGreetingTemplates[GroupType.WEDDING_GUEST],
-      features: defaultFeaturesByType[GroupType.WEDDING_GUEST]
-    });
-    setErrors({});
-    onClose();
+    if (!isSubmitting) {
+      // 폼 초기화
+      setFormData({
+        groupName: '',
+        groupType: GroupType.WEDDING_GUEST,
+        greetingMessage: defaultGreetingTemplates[GroupType.WEDDING_GUEST],
+        features: defaultFeaturesByType[GroupType.WEDDING_GUEST]
+      });
+      setErrors({});
+      onClose();
+    }
   };
 
+  // 모달이 열려있지 않으면 렌더링하지 않음
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px'
-      }}
-      onClick={handleClose}
-    >
+    <>
+      {/* 모달 배경 오버레이 */}
       <div
         style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          width: '100%',
-          maxWidth: '700px',  // 크기 확대
-          maxHeight: '95vh',
-          overflow: 'auto',
-          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* 헤더 */}
-        <div style={{
-          padding: '20px 25px',
-          borderBottom: '1px solid #dee2e6',
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
-          backgroundColor: 'white',
-          zIndex: 1
-        }}>
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          paddingTop: '50px',
+          paddingBottom: '50px',
+          zIndex: 1000,
+          overflowY: 'auto'
+        }}
+        onClick={handleClose}
+      >
+        {/* 모달 컨테이너 - 크기 개선 */}
+        <div
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            width: '90%',
+            maxWidth: '600px', // 최대 너비 증가
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+            position: 'relative'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* 모달 헤더 */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            marginBottom: '25px',
+            paddingBottom: '15px',
+            borderBottom: '2px solid #007bff'
           }}>
             <h2 style={{
-              fontSize: '20px',
-              color: '#2c3e50',
               margin: 0,
+              color: '#007bff',
+              fontSize: '24px',
               fontWeight: 'bold'
             }}>
-              새 초대 그룹 생성
+              ✨ 새 그룹 생성
             </h2>
-            
             <button
               onClick={handleClose}
               disabled={isSubmitting}
               style={{
                 background: 'none',
                 border: 'none',
-                fontSize: '20px',
-                color: '#6c757d',
+                fontSize: '24px',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                padding: '5px',
-                borderRadius: '4px'
+                color: '#6c757d',
+                padding: '5px'
               }}
             >
               ✕
             </button>
           </div>
-        </div>
 
-        {/* 바디 */}
-        <div style={{ padding: '25px' }}>
-          {/* 에러 메시지 */}
+          {/* 일반 에러 메시지 */}
           {errors.general && (
             <div style={{
               backgroundColor: '#f8d7da',
               color: '#721c24',
-              border: '1px solid #f5c6cb',
-              borderRadius: '6px',
               padding: '12px',
+              borderRadius: '6px',
               marginBottom: '20px',
+              border: '1px solid #f5c6cb',
               fontSize: '14px'
             }}>
               ⚠️ {errors.general}
             </div>
           )}
 
+          {/* 폼 시작 */}
           <form onSubmit={handleSubmit}>
-            {/* 그룹 이름 입력 */}
+            {/* 그룹 이름 입력 - 크기 개선 */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '6px',
+                marginBottom: '8px',
                 fontWeight: 'bold',
                 color: '#495057',
-                fontSize: '14px'
+                fontSize: '15px'
               }}>
                 그룹 이름 *
               </label>
@@ -304,17 +349,21 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 type="text"
                 value={formData.groupName}
                 onChange={(e) => handleInputChange('groupName', e.target.value)}
-                placeholder="예: 신랑 대학 동기"
+                placeholder="예: 신랑 대학동기, 신부 회사동료"
+                disabled={isSubmitting}
                 style={{
-                  width: '100%',
-                  padding: '10px 12px',
+                  width: '100%', // 100%로 설정
+                  padding: '12px',
                   border: errors.groupName ? '2px solid #dc3545' : '1px solid #ced4da',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  boxSizing: 'border-box'  // 크기 고정
+                  boxSizing: 'border-box', // 패딩 포함한 전체 크기 계산
+                  fontFamily: 'inherit'
                 }}
-                disabled={isSubmitting}
               />
+              <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>
+                {formData.groupName.length}/30자
+              </div>
               {errors.groupName && (
                 <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>
                   {errors.groupName}
@@ -329,79 +378,70 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 marginBottom: '8px',
                 fontWeight: 'bold',
                 color: '#495057',
-                fontSize: '14px'
+                fontSize: '15px'
               }}>
                 그룹 타입 *
               </label>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {Object.values(GroupType).map((type) => (
-                  <label
-                    key={type}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px',
-                      border: formData.groupType === type ? '2px solid #007bff' : '1px solid #dee2e6',
-                      borderRadius: '6px',
-                      backgroundColor: formData.groupType === type ? '#f8f9ff' : 'white',
-                      cursor: isSubmitting ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="groupType"
-                      value={type}
-                      checked={formData.groupType === type}
-                      onChange={(e) => handleInputChange('groupType', e.target.value as GroupType)}
-                      disabled={isSubmitting}
-                    />
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                      {type === GroupType.WEDDING_GUEST && '🎊 결혼식 초대 그룹'}
-                      {type === GroupType.PARENTS_GUEST && '👨‍👩‍👧‍👦 부모님 그룹'}
-                      {type === GroupType.COMPANY_GUEST && '🏢 회사 그룹'}
-                    </span>
-                  </label>
-                ))}
+              <select
+                value={formData.groupType}
+                onChange={(e) => handleInputChange('groupType', e.target.value as GroupType)}
+                disabled={isSubmitting}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #ced4da',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  backgroundColor: 'white',
+                  boxSizing: 'border-box',
+                  fontFamily: 'inherit'
+                }}
+              >
+                <option value={GroupType.WEDDING_GUEST}>🎊 결혼식 초대 그룹</option>
+                <option value={GroupType.PARENTS_GUEST}>👨‍👩‍👧‍👦 부모님 그룹</option>
+                <option value={GroupType.COMPANY_GUEST}>🏢 회사 그룹</option>
+              </select>
+              <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>
+                💡 타입에 따라 기본 기능과 인사말이 자동 설정됩니다
               </div>
             </div>
 
-            {/* 기능 설정 */}
+            {/* 기능 설정 - 그리드 레이아웃 개선 */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '8px',
+                marginBottom: '10px',
                 fontWeight: 'bold',
                 color: '#495057',
-                fontSize: '14px'
+                fontSize: '15px'
               }}>
-                활성화할 기능 선택
+                그룹 기능 설정
               </label>
-              
               <div style={{
                 backgroundColor: '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderRadius: '6px',
-                padding: '15px'
+                padding: '15px',
+                borderRadius: '8px',
+                border: '1px solid #dee2e6'
               }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  {[
-                    { key: 'showRsvpForm', label: '📝 참석 응답 폼' },
-                    { key: 'showAccountInfo', label: '💳 계좌 정보' },
-                    { key: 'showShareButton', label: '📤 공유 버튼' },
-                    { key: 'showVenueInfo', label: '📍 오시는 길' },
-                    { key: 'showPhotoGallery', label: '📸 포토 갤러리' },
-                    { key: 'showCeremonyProgram', label: '📋 본식 순서' }
-                  ].map(({ key, label }) => (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', // 반응형 그리드
+                  gap: '12px'
+                }}>
+                  {featureList.map(({ key, icon, label, description }) => (
                     <label
                       key={key}
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        padding: '10px',
+                        backgroundColor: 'white',
+                        borderRadius: '6px',
+                        border: '1px solid #e9ecef',
+                        cursor: isSubmitting ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
-                        cursor: 'pointer'
+                        lineHeight: '1.4'
                       }}
                     >
                       <input
@@ -409,22 +449,33 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                         checked={formData.features[key as keyof GroupFeatureSettings]}
                         onChange={(e) => handleFeatureChange(key as keyof GroupFeatureSettings, e.target.checked)}
                         disabled={isSubmitting}
+                        style={{
+                          marginTop: '2px',
+                          cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                        }}
                       />
-                      {label}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: '#495057' }}>
+                          {icon} {label}
+                        </div>
+                        <div style={{ color: '#6c757d', fontSize: '11px', marginTop: '2px' }}>
+                          {description}
+                        </div>
+                      </div>
                     </label>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* 인사말 입력 */}
+            {/* 인사말 입력 - 크기 개선 */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '6px',
+                marginBottom: '8px',
                 fontWeight: 'bold',
                 color: '#495057',
-                fontSize: '14px'
+                fontSize: '15px'
               }}>
                 그룹 인사말 *
               </label>
@@ -435,12 +486,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 disabled={isSubmitting}
                 style={{
                   width: '100%',
-                  height: '80px',
-                  padding: '10px',
+                  height: '100px', // 높이 증가
+                  padding: '12px',
                   border: errors.greetingMessage ? '2px solid #dc3545' : '1px solid #ced4da',
                   borderRadius: '6px',
-                  fontSize: '13px',
-                  lineHeight: '1.4',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
                   fontFamily: 'inherit',
                   resize: 'vertical',
                   boxSizing: 'border-box'
@@ -450,12 +501,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginTop: '4px'
+                marginTop: '6px'
               }}>
-                <div style={{ fontSize: '11px', color: '#6c757d' }}>
+                <div style={{ fontSize: '12px', color: '#6c757d' }}>
                   💡 그룹 타입 변경 시 기본 템플릿 적용
                 </div>
-                <div style={{ fontSize: '11px', color: '#6c757d' }}>
+                <div style={{ fontSize: '12px', color: '#6c757d' }}>
                   {formData.greetingMessage.length}/300자
                 </div>
               </div>
@@ -469,9 +520,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             {/* 버튼 그룹 */}
             <div style={{
               display: 'flex',
-              gap: '10px',
+              gap: '12px',
               justifyContent: 'flex-end',
-              paddingTop: '15px',
+              paddingTop: '20px',
               borderTop: '1px solid #dee2e6'
             }}>
               <button
@@ -482,35 +533,49 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                   backgroundColor: '#6c757d',
                   color: 'white',
                   border: 'none',
-                  padding: '10px 20px',
+                  padding: '12px 24px',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                  fontWeight: 'bold',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.6 : 1
                 }}
               >
                 취소
               </button>
-              
               <button
                 type="submit"
                 disabled={isSubmitting}
                 style={{
-                  backgroundColor: isSubmitting ? '#28a745' : '#007bff',
+                  backgroundColor: isSubmitting ? '#6c757d' : '#007bff',
                   color: 'white',
                   border: 'none',
-                  padding: '10px 20px',
+                  padding: '12px 24px',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                  fontWeight: 'bold',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                {isSubmitting ? '⏳ 생성 중...' : '✅ 그룹 생성'}
+                {isSubmitting ? (
+                  <>
+                    <span>⏳</span> 생성 중...
+                  </>
+                ) : (
+                  <>
+                    <span>✨</span> 그룹 생성
+                  </>
+                )}
               </button>
             </div>
           </form>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
