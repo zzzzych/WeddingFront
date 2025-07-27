@@ -63,4 +63,4 @@ export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
     console.error('참석 응답 조회 실패:', error);
     throw error;
   }
-};
+}

@@ -1,5 +1,5 @@
 // API 기본 설정 및 공통 함수들
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8080';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8080/api';
 
 // API 요청 옵션 타입 정의
 interface ApiRequestOptions extends RequestInit {
