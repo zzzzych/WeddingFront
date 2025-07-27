@@ -136,3 +136,10 @@ export interface UpdateGroupRequest {
 export interface UpdateGroupGreetingRequest {
   greetingMessage: string;
 }
+
+// 관리자 로그인 응답 타입 (서버와 일치해야 함)
+export interface LoginResponse {
+  token: string;
+  expiresAt: string;  // Date를 JSON으로 직렬화하면 string이 됨
+  username: string;
+}

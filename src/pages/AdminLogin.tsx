@@ -28,11 +28,11 @@ const AdminLogin: React.FC = () => {
   }, [navigate]);
 
   // 입력값 변경 처리
-const handleInputChange = (field: keyof AdminCredentials, value: string) => {
-  setCredentials((prev: AdminCredentials) => ({
-    ...prev,
-    [field]: value
-  }));
+  const handleInputChange = (field: keyof AdminCredentials, value: string) => {
+    setCredentials((prev: AdminCredentials) => ({
+      ...prev,
+      [field]: value
+    }));
     
     // 에러 메시지 제거
     if (error) {
@@ -65,8 +65,7 @@ const handleInputChange = (field: keyof AdminCredentials, value: string) => {
     return true;
   };
 
-  // 로그인 처리
-  /*
+  // 로그인 처리 - 실제 API 호출
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -79,16 +78,29 @@ const handleInputChange = (field: keyof AdminCredentials, value: string) => {
       setIsLoading(true);
       setError(null);
 
-      // API 호출
+      // 실제 API 호출
       const response = await adminLogin({
         username: credentials.username.trim(),
         password: credentials.password
       });
 
-      // 토큰 저장 (실제 구현에서는 더 안전한 방법 사용)
+      // 토큰 및 사용자 정보 저장
       if (response.token) {
+        // JWT 토큰을 로컬 스토리지에 저장
         localStorage.setItem('adminToken', response.token);
-        localStorage.setItem('adminUser', JSON.stringify(response.user));
+        
+        // 사용자 정보 저장 (토큰 만료 시간 포함)
+        const userInfo = {
+          username: response.username,
+          expiresAt: response.expiresAt
+        };
+        localStorage.setItem('adminUser', JSON.stringify(userInfo));
+        
+        console.log('로그인 성공:', { 
+          username: response.username, 
+          tokenLength: response.token.length,
+          expiresAt: response.expiresAt 
+        });
         
         // 대시보드로 이동
         navigate('/admin/dashboard');
@@ -104,8 +116,8 @@ const handleInputChange = (field: keyof AdminCredentials, value: string) => {
         setError('아이디 또는 비밀번호가 올바르지 않습니다.');
       } else if (error.message?.includes('404')) {
         setError('존재하지 않는 계정입니다.');
-      } else if (error.message?.includes('Network')) {
-        setError('네트워크 연결을 확인해주세요.');
+      } else if (error.message?.includes('Network') || error.message?.includes('fetch')) {
+        setError('서버 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.');
       } else {
         setError(error.message || '로그인에 실패했습니다. 다시 시도해주세요.');
       }
@@ -113,78 +125,6 @@ const handleInputChange = (field: keyof AdminCredentials, value: string) => {
       setIsLoading(false);
     }
   };
-  */
-
-  // 기존 handleLogin 함수를 다음과 같이 수정해주세요:
-
-// 로그인 처리
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  // 유효성 검사
-  if (!validateForm()) {
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-    setError(null);
-
-    // ===== 임시 테스트 모드 =====
-    // 백엔드가 연결되기 전까지 사용할 테스트 계정
-    if (credentials.username === 'admin' && credentials.password === 'test123') {
-      // 테스트 토큰과 사용자 정보 생성
-      const testToken = 'test-admin-token-' + Date.now();
-      const testUser = {
-        id: 1,
-        username: 'admin',
-        name: '테스트 관리자'
-      };
-
-      // 로컬 스토리지에 저장
-      localStorage.setItem('adminToken', testToken);
-      localStorage.setItem('adminUser', JSON.stringify(testUser));
-      
-      // 대시보드로 이동
-      navigate('/admin/dashboard');
-      return;
-    }
-    // ===== 테스트 모드 끝 =====
-
-    // 실제 API 호출 (백엔드 연결 시)
-    const response = await adminLogin({
-      username: credentials.username.trim(),
-      password: credentials.password
-    });
-
-    // 토큰 저장
-    if (response.token) {
-      localStorage.setItem('adminToken', response.token);
-      localStorage.setItem('adminUser', JSON.stringify(response.user));
-      
-      // 대시보드로 이동
-      navigate('/admin/dashboard');
-    } else {
-      setError('로그인 응답에 토큰이 없습니다.');
-    }
-
-  } catch (error: any) {
-    console.error('로그인 실패:', error);
-    
-    // 에러 메시지 설정
-    if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
-    } else if (error.message?.includes('404')) {
-      setError('존재하지 않는 계정입니다.');
-    } else if (error.message?.includes('Network')) {
-      setError('네트워크 연결을 확인해주세요.');
-    } else {
-      setError(error.message || '로그인에 실패했습니다. 다시 시도해주세요.');
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
 
   // Enter 키 처리
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -267,23 +207,16 @@ const handleLogin = async (e: React.FormEvent) => {
               style={{
                 width: '100%',
                 padding: '14px 16px',
-                border: error && !credentials.username.trim() ? '2px solid #dc3545' : '1px solid #ced4da',
-                borderRadius: '8px',
+                border: error && !credentials.username.trim() ? 
+                  '2px solid #dc3545' : '1px solid #ced4da',
+                borderRadius: '6px',
                 fontSize: '16px',
+                outline: 'none',
                 boxSizing: 'border-box',
-                transition: 'border-color 0.2s',
-                outline: 'none'
+                transition: 'border-color 0.2s'
               }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#007bff';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 255, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#ced4da';
-                e.target.style.boxShadow = 'none';
-              }}
-              disabled={isLoading}
-              autoComplete="username"
+              onFocus={(e) => e.target.style.borderColor = '#007bff'}
+              onBlur={(e) => e.target.style.borderColor = '#ced4da'}
             />
           </div>
 
@@ -308,26 +241,17 @@ const handleLogin = async (e: React.FormEvent) => {
                 style={{
                   width: '100%',
                   padding: '14px 50px 14px 16px',
-                  border: error && !credentials.password ? '2px solid #dc3545' : '1px solid #ced4da',
-                  borderRadius: '8px',
+                  border: error && !credentials.password ? 
+                    '2px solid #dc3545' : '1px solid #ced4da',
+                  borderRadius: '6px',
                   fontSize: '16px',
+                  outline: 'none',
                   boxSizing: 'border-box',
-                  transition: 'border-color 0.2s',
-                  outline: 'none'
+                  transition: 'border-color 0.2s'
                 }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#007bff';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 255, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#ced4da';
-                  e.target.style.boxShadow = 'none';
-                }}
-                disabled={isLoading}
-                autoComplete="current-password"
+                onFocus={(e) => e.target.style.borderColor = '#007bff'}
+                onBlur={(e) => e.target.style.borderColor = '#ced4da'}
               />
-              
-              {/* 비밀번호 표시/숨기기 버튼 */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -338,12 +262,11 @@ const handleLogin = async (e: React.FormEvent) => {
                   transform: 'translateY(-50%)',
                   background: 'none',
                   border: 'none',
-                  color: '#6c757d',
                   cursor: 'pointer',
-                  fontSize: '14px',
+                  fontSize: '18px',
+                  color: '#6c757d',
                   padding: '4px'
                 }}
-                disabled={isLoading}
               >
                 {showPassword ? '🙈' : '👁️'}
               </button>
@@ -395,54 +318,50 @@ const handleLogin = async (e: React.FormEvent) => {
           </button>
         </form>
 
-
-       
-
-
         {/* 하단 안내 */}
         <div style={{
-        textAlign: 'center',
-        marginTop: '25px',
-        padding: '15px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '6px'
+          textAlign: 'center',
+          marginTop: '25px',
+          padding: '15px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '6px'
         }}>
-        <p style={{
+          <p style={{
             fontSize: '13px',
             color: '#6c757d',
             margin: '0 0 10px 0',
             lineHeight: '1.4'
-        }}>
+          }}>
             🔒 관리자만 접근 가능합니다<br />
             계정 정보는 시스템 관리자에게 문의하세요
-        </p>
-        
-        {/* 테스트 계정 안내 */}
-        <div style={{
-            backgroundColor: '#d1ecf1',
-            border: '1px solid #bee5eb',
+          </p>
+          
+          {/* 실제 계정 안내 */}
+          <div style={{
+            backgroundColor: '#d4edda',
+            border: '1px solid #c3e6cb',
             borderRadius: '4px',
             padding: '10px',
             marginTop: '10px'
-        }}>
+          }}>
             <p style={{
-            fontSize: '12px',
-            color: '#0c5460',
-            margin: 0,
-            fontWeight: 'bold'
+              fontSize: '12px',
+              color: '#155724',
+              margin: 0,
+              fontWeight: 'bold'
             }}>
-            🧪 테스트용 계정
+              🔐 실제 관리자 계정으로 로그인
             </p>
             <p style={{
-            fontSize: '12px',
-            color: '#0c5460',
-            margin: '5px 0 0 0'
+              fontSize: '12px',
+              color: '#155724',
+              margin: '5px 0 0 0'
             }}>
-            ID: <code>admin</code> / PW: <code>test123</code>
+              기본 계정: <code>admin</code> / <code>wedding2025!</code>
             </p>
+          </div>
         </div>
-        </div>
-    </div>
+      </div>
 
       {/* CSS 애니메이션 */}
       <style>{`

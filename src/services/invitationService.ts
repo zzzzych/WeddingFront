@@ -6,6 +6,7 @@ import {
   RsvpRequest, 
   RsvpResponse,
   AdminCredentials,
+  LoginResponse,
   CreateGroupRequest,
   InvitationGroup
 } from '../types';
@@ -29,7 +30,7 @@ export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Pro
 };
 
 // 관리자 로그인
-export const adminLogin = async (credentials: AdminCredentials): Promise<{ token: string; user: any }> => {
+export const adminLogin = async (credentials: AdminCredentials): Promise<LoginResponse> => {
   try {
     // POST /api/admin/login
     const response = await apiPost('/api/admin/login', credentials);
