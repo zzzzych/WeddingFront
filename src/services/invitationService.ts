@@ -53,14 +53,68 @@ export const createGroup = async (groupData: CreateGroupRequest): Promise<Invita
   }
 };
 
-// 모든 참석 응답 조회 (관리자용)
+// ✅ 이 함수만 남겨두세요 (중복 제거)
 export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
   try {
-    // GET /api/admin/rsvps
-    const response = await apiGet('/api/admin/rsvps');
-    return response;
+    const response = await fetch('http://127.0.0.1:8080/api/admin/rsvps', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('🔍 RSVP API 응답:', data);
+    
+    if (data.responses && Array.isArray(data.responses)) {
+      return data.responses;
+    }
+    
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    console.warn('예상하지 못한 RSVP 응답 형식:', data);
+    return [];
   } catch (error) {
     console.error('참석 응답 조회 실패:', error);
     throw error;
   }
-}
+};
+
+// ✅ 이 함수도 있어야 합니다
+export const getAllGroups = async (): Promise<InvitationGroup[]> => {
+  try {
+    const response = await fetch('http://127.0.0.1:8080/api/admin/groups', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('🔍 Groups API 응답:', data);
+    
+    if (data.groups && Array.isArray(data.groups)) {
+      return data.groups;
+    }
+    
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    console.warn('예상하지 못한 응답 형식:', data);
+    return [];
+  } catch (error) {
+    console.error('그룹 조회 실패:', error);
+    throw error;
+  }
+};

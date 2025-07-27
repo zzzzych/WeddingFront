@@ -2,11 +2,11 @@
 // 완성된 관리자 대시보드 (그룹별 기능 설정 시스템 통합)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllRsvps } from "../services/invitationService";
+import { getAllRsvps, getAllGroups } from "../services/invitationService";
 import { RsvpResponse, InvitationGroup, GroupType } from "../types";
 import CreateGroupModal from "../components/CreateGroupModal";
 import GreetingEditor from "../components/GreetingEditor";
-import GroupFeatureSettings from '../components/GroupFeatureSettings';
+import GroupFeatureSettings from "../components/GroupFeatureSettings";
 
 // 그룹 기능 설정 인터페이스
 interface GroupFeatures {
@@ -28,45 +28,52 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [adminUser, setAdminUser] = useState<any>(null);
-  
+
   // 그룹 인사말 편집 상태
-  const [editingGroupGreeting, setEditingGroupGreeting] = useState<string | null>(null);
+  const [editingGroupGreeting, setEditingGroupGreeting] = useState<
+    string | null
+  >(null);
   const [isUpdatingGreeting, setIsUpdatingGreeting] = useState<boolean>(false);
-  
+
   // 그룹 기능 설정 편집 상태
-  const [editingGroupFeatures, setEditingGroupFeatures] = useState<string | null>(null);
+  const [editingGroupFeatures, setEditingGroupFeatures] = useState<
+    string | null
+  >(null);
   const [isUpdatingFeatures, setIsUpdatingFeatures] = useState<boolean>(false);
-  
+
   // 그룹별 기능 설정 데이터 (임시 데이터)
-  const [groupFeatures, setGroupFeatures] = useState<{ [groupId: string]: GroupFeatures }>({
-    '1': {
+  const [groupFeatures, setGroupFeatures] = useState<{
+    [groupId: string]: GroupFeatures;
+  }>({
+    "1": {
       showRsvpForm: true,
       showAccountInfo: false,
       showShareButton: false,
       showVenueInfo: true,
       showPhotoGallery: true,
-      showCeremonyProgram: true
+      showCeremonyProgram: true,
     },
-    '2': {
+    "2": {
       showRsvpForm: true,
       showAccountInfo: false,
       showShareButton: false,
       showVenueInfo: true,
       showPhotoGallery: true,
-      showCeremonyProgram: true
+      showCeremonyProgram: true,
     },
-    '3': {
+    "3": {
       showRsvpForm: false,
       showAccountInfo: true,
       showShareButton: true,
       showVenueInfo: false,
       showPhotoGallery: true,
-      showCeremonyProgram: false
-    }
+      showCeremonyProgram: false,
+    },
   });
 
   // 모달 상태
-  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState<boolean>(false);
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] =
+    useState<boolean>(false);
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
@@ -77,97 +84,45 @@ const AdminDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // ===== 임시 데이터 (백엔드 연결 시 실제 API 호출) =====
-      // const [rsvpData, groupData] = await Promise.all([
-      //   getAllRsvps(),
-      //   getAllGroups()
-      // ]);
 
-      // 임시 RSVP 데이터 (createdAt을 string으로 수정)
-      const mockRsvps: RsvpResponse[] = [
-        {
-          id: '1',
-          responderName: '김철수',
-          isAttending: true,
-          adultCount: 2,
-          childrenCount: 1,
-          groupId: '1',
-          createdAt: '2024-01-15'
-        },
-        {
-          id: '2',
-          responderName: '이영희',
-          isAttending: true,
-          adultCount: 1,
-          childrenCount: 0,
-          groupId: '1',
-          createdAt: '2024-01-16'
-        },
-        {
-          id: '3',
-          responderName: '박민수',
-          isAttending: false,
-          adultCount: 0,
-          childrenCount: 0,
-          groupId: '2',
-          createdAt: '2024-01-17'
-        }
-      ];
+      // ===== 실제 API 호출로 변경 =====
+      const [rsvpData, groupData] = await Promise.all([
+        getAllRsvps(),
+        getAllGroups(),
+      ]);
 
-      // 임시 그룹 데이터
-      const mockGroups: InvitationGroup[] = [
-        {
-          id: '1',
-          groupName: '신랑 대학동기',
-          groupType: GroupType.WEDDING_GUEST,
-          uniqueCode: 'wedding123',
-          greetingMessage: '소중한 분들을 저희 결혼식에 초대합니다. 여러분의 축복 속에서 더욱 의미있는 하루가 되길 바랍니다.'
-        },
-        {
-          id: '2',
-          groupName: '신부 회사동료',
-          groupType: GroupType.WEDDING_GUEST,
-          uniqueCode: 'company456',
-          greetingMessage: '함께 일하며 소중한 인연을 맺어온 동료 여러분을 저희 결혼식에 초대합니다.'
-        },
-        {
-          id: '3',
-          groupName: '양가 부모님',
-          groupType: GroupType.PARENTS_GUEST,
-          uniqueCode: 'parent789',
-          greetingMessage: '오늘까지 키워주시고 사랑해주신 부모님께 깊은 감사를 드리며, 저희의 새로운 출발을 함께 기뻐해주시길 바랍니다.'
-        }
-      ];
+      console.log("📊 불러온 RSVP 데이터:", rsvpData);
+      console.log("👥 불러온 그룹 데이터:", groupData);
 
-      setRsvps(mockRsvps);
-      setGroups(mockGroups);
+      setRsvps(rsvpData);
+      setGroups(groupData);
 
       // 관리자 정보 (localStorage에서 가져옴)
-      const storedUser = localStorage.getItem('adminUser');
+      const storedUser = localStorage.getItem("adminUser");
       if (storedUser) {
         setAdminUser(JSON.parse(storedUser));
       }
-
     } catch (error: any) {
-      console.error('대시보드 데이터 로드 실패:', error);
-      setError('데이터를 불러오는데 실패했습니다.');
+      console.error("대시보드 데이터 로드 실패:", error);
+      setError("데이터를 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 로그아웃 처리
-  const handleLogout = () => {
-    localStorage.removeItem('isAdminLoggedIn');
-    localStorage.removeItem('adminUser');
-    navigate('/admin');
-  };
-
+ // 로그아웃 처리
+const handleLogout = () => {
+  // 실제 로그인에서 사용하는 올바른 키로 수정
+  localStorage.removeItem('adminToken');  // ✅ JWT 토큰 제거
+  localStorage.removeItem('adminUser');   // ✅ 사용자 정보 제거
+  
+  console.log('🔐 로그아웃 완료 - 토큰 및 사용자 정보 삭제');
+  navigate('/admin');
+};
   // 새 그룹 생성 성공 처리
   const handleGroupCreated = (newGroup: InvitationGroup) => {
-    setGroups(prev => [...prev, newGroup]);
-    
+    setGroups((prev) => [...prev, newGroup]);
+
     // 새 그룹에 대한 기본 기능 설정 추가
     const defaultFeatures: GroupFeatures = {
       showRsvpForm: newGroup.groupType === GroupType.WEDDING_GUEST,
@@ -175,15 +130,15 @@ const AdminDashboard: React.FC = () => {
       showShareButton: newGroup.groupType === GroupType.PARENTS_GUEST,
       showVenueInfo: newGroup.groupType === GroupType.WEDDING_GUEST,
       showPhotoGallery: true,
-      showCeremonyProgram: newGroup.groupType === GroupType.WEDDING_GUEST
+      showCeremonyProgram: newGroup.groupType === GroupType.WEDDING_GUEST,
     };
-    
-    setGroupFeatures(prev => ({
+
+    setGroupFeatures((prev) => ({
       ...prev,
-      [newGroup.id!]: defaultFeatures
+      [newGroup.id!]: defaultFeatures,
     }));
 
-    setSuccessMessage('새 그룹이 성공적으로 생성되었습니다!');
+    setSuccessMessage("새 그룹이 성공적으로 생성되었습니다!");
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
@@ -193,7 +148,10 @@ const AdminDashboard: React.FC = () => {
   };
 
   // 그룹별 인사말 저장
-  const handleGroupGreetingSave = async (groupId: string, newGreeting: string) => {
+  const handleGroupGreetingSave = async (
+    groupId: string,
+    newGreeting: string
+  ) => {
     try {
       setIsUpdatingGreeting(true);
 
@@ -214,7 +172,6 @@ const AdminDashboard: React.FC = () => {
 
       // 편집 모드 종료
       setEditingGroupGreeting(null);
-      
     } catch (error: any) {
       console.error("인사말 수정 실패:", error);
       setError(error.message || "인사말 수정에 실패했습니다.");
@@ -234,29 +191,31 @@ const AdminDashboard: React.FC = () => {
   };
 
   // 그룹 기능 설정 저장
-  const handleGroupFeaturesSave = async (groupId: string, features: GroupFeatures) => {
+  const handleGroupFeaturesSave = async (
+    groupId: string,
+    features: GroupFeatures
+  ) => {
     try {
       setIsUpdatingFeatures(true);
-      
+
       // ===== 임시 처리 (백엔드 연결 시 실제 API 호출) =====
       // const response = await updateGroupFeatures(groupId, features);
-      
+
       // 임시로 로컬 상태 업데이트
-      setGroupFeatures(prev => ({
+      setGroupFeatures((prev) => ({
         ...prev,
-        [groupId]: features
+        [groupId]: features,
       }));
-      
+
       // 성공 메시지
-      setSuccessMessage('그룹 기능 설정이 성공적으로 업데이트되었습니다!');
+      setSuccessMessage("그룹 기능 설정이 성공적으로 업데이트되었습니다!");
       setTimeout(() => setSuccessMessage(null), 3000);
-      
+
       // 편집 모드 종료
       setEditingGroupFeatures(null);
-      
     } catch (error: any) {
-      console.error('그룹 기능 설정 실패:', error);
-      setError(error.message || '그룹 기능 설정에 실패했습니다.');
+      console.error("그룹 기능 설정 실패:", error);
+      setError(error.message || "그룹 기능 설정에 실패했습니다.");
     } finally {
       setIsUpdatingFeatures(false);
     }
@@ -269,66 +228,72 @@ const AdminDashboard: React.FC = () => {
 
   // 통계 계산
   const totalResponses = rsvps.length;
-  const attendingCount = rsvps.filter(rsvp => rsvp.isAttending).length;
+  const attendingCount = rsvps.filter((rsvp) => rsvp.isAttending).length;
   const totalAttendees = rsvps
-    .filter(rsvp => rsvp.isAttending)
+    .filter((rsvp) => rsvp.isAttending)
     .reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childrenCount, 0);
 
   // 로딩 중 표시
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px'
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+        }}
+      >
         ⏳ 데이터를 불러오는 중...
       </div>
     );
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#f8f9fa',
-      padding: '20px'
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#f8f9fa",
+        padding: "20px",
+      }}
+    >
       {/* 헤더 */}
-      <div style={{
-        backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '12px',
-        marginBottom: '20px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "20px",
+          borderRadius: "12px",
+          marginBottom: "20px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <div>
-          <h1 style={{ margin: 0, color: '#2c3e50', fontSize: '28px' }}>
+          <h1 style={{ margin: 0, color: "#2c3e50", fontSize: "28px" }}>
             📊 관리자 대시보드
           </h1>
-          <p style={{ margin: '5px 0 0 0', color: '#6c757d' }}>
-            {adminUser?.username || '관리자'}님 환영합니다!
+          <p style={{ margin: "5px 0 0 0", color: "#6c757d" }}>
+            {adminUser?.username || "관리자"}님 환영합니다!
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: "flex", gap: "10px" }}>
           <button
             onClick={() => setIsCreateGroupModalOpen(true)}
             style={{
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
             }}
           >
             ✨ 새 그룹 생성
@@ -336,13 +301,13 @@ const AdminDashboard: React.FC = () => {
           <button
             onClick={handleLogout}
             style={{
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              cursor: 'pointer'
+              backgroundColor: "#dc3545",
+              color: "white",
+              border: "none",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              cursor: "pointer",
             }}
           >
             🚪 로그아웃
@@ -352,183 +317,221 @@ const AdminDashboard: React.FC = () => {
 
       {/* 성공/에러 메시지 */}
       {successMessage && (
-        <div style={{
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          padding: '12px 20px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: '1px solid #c3e6cb'
-        }}>
+        <div
+          style={{
+            backgroundColor: "#d4edda",
+            color: "#155724",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            border: "1px solid #c3e6cb",
+          }}
+        >
           ✅ {successMessage}
         </div>
       )}
 
       {error && (
-        <div style={{
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          padding: '12px 20px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: '1px solid #f5c6cb'
-        }}>
+        <div
+          style={{
+            backgroundColor: "#f8d7da",
+            color: "#721c24",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            border: "1px solid #f5c6cb",
+          }}
+        >
           ⚠️ {error}
         </div>
       )}
 
       {/* 통계 카드 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '30px'
-      }}>
-        <div style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>👥</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2c3e50' }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "32px", marginBottom: "8px" }}>👥</div>
+          <div
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#2c3e50" }}
+          >
             {groups.length}
           </div>
-          <div style={{ color: '#6c757d', fontSize: '14px' }}>총 그룹 수</div>
+          <div style={{ color: "#6c757d", fontSize: "14px" }}>총 그룹 수</div>
         </div>
 
-        <div style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📝</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2c3e50' }}>
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "32px", marginBottom: "8px" }}>📝</div>
+          <div
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#2c3e50" }}
+          >
             {totalResponses}
           </div>
-          <div style={{ color: '#6c757d', fontSize: '14px' }}>총 응답 수</div>
+          <div style={{ color: "#6c757d", fontSize: "14px" }}>총 응답 수</div>
         </div>
 
-        <div style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "32px", marginBottom: "8px" }}>✅</div>
+          <div
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#28a745" }}
+          >
             {attendingCount}
           </div>
-          <div style={{ color: '#6c757d', fontSize: '14px' }}>참석 응답</div>
+          <div style={{ color: "#6c757d", fontSize: "14px" }}>참석 응답</div>
         </div>
 
-        <div style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎉</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "32px", marginBottom: "8px" }}>🎉</div>
+          <div
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#007bff" }}
+          >
             {totalAttendees}
           </div>
-          <div style={{ color: '#6c757d', fontSize: '14px' }}>총 참석 인원</div>
+          <div style={{ color: "#6c757d", fontSize: "14px" }}>총 참석 인원</div>
         </div>
       </div>
 
       {/* 그룹 관리 섹션 */}
-      <div style={{
-        backgroundColor: 'white',
-        padding: '25px',
-        borderRadius: '12px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        marginBottom: '30px'
-      }}>
-        <h2 style={{
-          margin: '0 0 20px 0',
-          color: '#2c3e50',
-          fontSize: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "25px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          marginBottom: "30px",
+        }}
+      >
+        <h2
+          style={{
+            margin: "0 0 20px 0",
+            color: "#2c3e50",
+            fontSize: "22px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
           👥 그룹 관리
         </h2>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-          gap: '20px'
-        }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+            gap: "20px",
+          }}
+        >
           {groups.map((group) => (
-            <div key={group.id} style={{
-              border: '2px solid #e9ecef',
-              borderRadius: '12px',
-              padding: '20px',
-              backgroundColor: '#f8f9fa'
-            }}>
+            <div
+              key={group.id}
+              style={{
+                border: "2px solid #e9ecef",
+                borderRadius: "12px",
+                padding: "20px",
+                backgroundColor: "#f8f9fa",
+              }}
+            >
               {/* 그룹 기본 정보 */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                marginBottom: '15px'
-              }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  marginBottom: "15px",
+                }}
+              >
                 <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    margin: '0 0 8px 0',
-                    color: '#2c3e50',
-                    fontSize: '18px'
-                  }}>
-                    {group.groupType === GroupType.WEDDING_GUEST && '🎊'} 
-                    {group.groupType === GroupType.PARENTS_GUEST && '👨‍👩‍👧‍👦'} 
-                    {group.groupType === GroupType.COMPANY_GUEST && '🏢'} 
-                    {' '}{group.groupName}
+                  <h3
+                    style={{
+                      margin: "0 0 8px 0",
+                      color: "#2c3e50",
+                      fontSize: "18px",
+                    }}
+                  >
+                    {group.groupType === GroupType.WEDDING_GUEST && "🎊"}
+                    {group.groupType === GroupType.PARENTS_GUEST && "👨‍👩‍👧‍👦"}
+                    {group.groupType === GroupType.COMPANY_GUEST && "🏢"}{" "}
+                    {group.groupName}
                   </h3>
-                  
+
                   {/* 활성화된 기능 표시 */}
-                  <div style={{
-                    fontSize: '12px',
-                    color: '#1976d2',
-                    lineHeight: '1.4',
-                    marginBottom: '10px'
-                  }}>
-                    <strong>활성화된 기능:</strong><br />
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#1976d2",
+                      lineHeight: "1.4",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    <strong>활성화된 기능:</strong>
+                    <br />
                     {Object.entries(groupFeatures[group.id!] || {})
                       .filter(([_, enabled]) => enabled)
                       .map(([key, _]) => {
                         const featureNames: { [key: string]: string } = {
-                          showRsvpForm: '📝 참석응답',
-                          showAccountInfo: '💳 계좌정보',
-                          showShareButton: '📤 공유',
-                          showVenueInfo: '📍 오시는길',
-                          showPhotoGallery: '📸 갤러리',
-                          showCeremonyProgram: '📋 본식순서'
+                          showRsvpForm: "📝 참석응답",
+                          showAccountInfo: "💳 계좌정보",
+                          showShareButton: "📤 공유",
+                          showVenueInfo: "📍 오시는길",
+                          showPhotoGallery: "📸 갤러리",
+                          showCeremonyProgram: "📋 본식순서",
                         };
                         return featureNames[key];
                       })
-                      .join(' • ') || '활성화된 기능이 없습니다'}
+                      .join(" • ") || "활성화된 기능이 없습니다"}
                   </div>
                 </div>
-                
+
                 {/* 기능 설정 버튼 */}
                 {editingGroupFeatures !== group.id && (
                   <button
                     onClick={() => handleGroupFeaturesEdit(group.id!)}
                     style={{
-                      backgroundColor: 'transparent',
-                      border: '1px solid #1565c0',
-                      color: '#1565c0',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
+                      backgroundColor: "transparent",
+                      border: "1px solid #1565c0",
+                      color: "#1565c0",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
                     }}
                   >
                     ⚙️ 기능설정
@@ -537,50 +540,59 @@ const AdminDashboard: React.FC = () => {
               </div>
 
               {/* 고유 URL 정보 */}
-              <div style={{
-                fontSize: '12px',
-                color: '#6c757d',
-                marginBottom: '15px',
-                padding: '8px',
-                backgroundColor: 'white',
-                borderRadius: '6px',
-                border: '1px solid #dee2e6'
-              }}>
-                <strong>고유 URL:</strong><br />
-                <span style={{ fontFamily: 'monospace', fontSize: '11px' }}>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#6c757d",
+                  marginBottom: "15px",
+                  padding: "8px",
+                  backgroundColor: "white",
+                  borderRadius: "6px",
+                  border: "1px solid #dee2e6",
+                }}
+              >
+                <strong>고유 URL:</strong>
+                <br />
+                <span style={{ fontFamily: "monospace", fontSize: "11px" }}>
                   /invitation/{group.uniqueCode}
                 </span>
               </div>
 
               {/* 인사말 표시/편집 */}
-              <div style={{ marginBottom: '15px' }}>
-                <div style={{
-                  fontSize: '13px',
-                  fontWeight: 'bold',
-                  color: '#495057',
-                  marginBottom: '8px'
-                }}>
+              <div style={{ marginBottom: "15px" }}>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: "bold",
+                    color: "#495057",
+                    marginBottom: "8px",
+                  }}
+                >
                   💬 그룹 인사말:
                 </div>
-                
+
                 {editingGroupGreeting === group.id ? (
                   <GreetingEditor
                     currentGreeting={group.greetingMessage}
-                    onSave={(newGreeting: string) => handleGroupGreetingSave(group.id!, newGreeting)}
+                    onSave={(newGreeting: string) =>
+                      handleGroupGreetingSave(group.id!, newGreeting)
+                    }
                     onCancel={handleGroupGreetingCancel}
                     isLoading={isUpdatingGreeting}
                   />
                 ) : (
-                  <div style={{
-                    fontSize: '12px',
-                    color: '#495057',
-                    lineHeight: '1.4',
-                    padding: '10px',
-                    backgroundColor: 'white',
-                    borderRadius: '6px',
-                    border: '1px solid #dee2e6',
-                    marginBottom: '10px'
-                  }}>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#495057",
+                      lineHeight: "1.4",
+                      padding: "10px",
+                      backgroundColor: "white",
+                      borderRadius: "6px",
+                      border: "1px solid #dee2e6",
+                      marginBottom: "10px",
+                    }}
+                  >
                     {group.greetingMessage}
                   </div>
                 )}
@@ -590,14 +602,16 @@ const AdminDashboard: React.FC = () => {
               {editingGroupFeatures === group.id && (
                 <GroupFeatureSettings
                   group={group}
-                  currentFeatures={groupFeatures[group.id!] || {
-                    showRsvpForm: false,
-                    showAccountInfo: false,
-                    showShareButton: false,
-                    showVenueInfo: false,
-                    showPhotoGallery: false,
-                    showCeremonyProgram: false
-                  }}
+                  currentFeatures={
+                    groupFeatures[group.id!] || {
+                      showRsvpForm: false,
+                      showAccountInfo: false,
+                      showShareButton: false,
+                      showVenueInfo: false,
+                      showPhotoGallery: false,
+                      showCeremonyProgram: false,
+                    }
+                  }
                   onSave={handleGroupFeaturesSave}
                   onCancel={handleGroupFeaturesCancel}
                   isLoading={isUpdatingFeatures}
@@ -606,44 +620,48 @@ const AdminDashboard: React.FC = () => {
 
               {/* 버튼 그룹 (기능 설정 편집 중이 아닐 때만 표시) */}
               {editingGroupFeatures !== group.id && (
-                <div style={{
-                  display: 'flex',
-                  gap: '8px'
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                  }}
+                >
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/invitation/${group.uniqueCode}`);
-                      setSuccessMessage('링크가 클립보드에 복사되었습니다!');
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/invitation/${group.uniqueCode}`
+                      );
+                      setSuccessMessage("링크가 클립보드에 복사되었습니다!");
                       setTimeout(() => setSuccessMessage(null), 2000);
                     }}
                     style={{
                       flex: 1,
-                      backgroundColor: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
+                      backgroundColor: "#28a745",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
                     }}
                   >
                     📋 링크 복사
                   </button>
-                  
+
                   {editingGroupGreeting !== group.id && (
                     <button
                       onClick={() => handleGroupGreetingEdit(group.id!)}
                       style={{
                         flex: 1,
-                        backgroundColor: '#ffc107',
-                        color: '#212529',
-                        border: 'none',
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
+                        backgroundColor: "#ffc107",
+                        color: "#212529",
+                        border: "none",
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        fontWeight: "bold",
                       }}
                     >
                       ✏️ 인사말 수정
@@ -657,81 +675,139 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* RSVP 응답 목록 */}
-      <div style={{
-        backgroundColor: 'white',
-        padding: '25px',
-        borderRadius: '12px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        <h2 style={{
-          margin: '0 0 20px 0',
-          color: '#2c3e50',
-          fontSize: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "25px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2
+          style={{
+            margin: "0 0 20px 0",
+            color: "#2c3e50",
+            fontSize: "22px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
           📝 참석 응답 현황
         </h2>
 
         {rsvps.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: '14px'
-            }}>
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "14px",
+              }}
+            >
               <thead>
-                <tr style={{ backgroundColor: '#f8f9fa' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                <tr style={{ backgroundColor: "#f8f9fa" }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
                     응답자
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "center",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
                     참석 여부
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "center",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
                     성인
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "center",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
                     아동
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "center",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
                     총 인원
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "center",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
                     응답일
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {rsvps.map((rsvp) => (
-                  <tr key={rsvp.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                    <td style={{ padding: '12px' }}>
+                  <tr
+                    key={rsvp.id}
+                    style={{ borderBottom: "1px solid #dee2e6" }}
+                  >
+                    <td style={{ padding: "12px" }}>
                       <strong>{rsvp.responderName}</strong>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        backgroundColor: rsvp.isAttending ? '#d4edda' : '#f8d7da',
-                        color: rsvp.isAttending ? '#155724' : '#721c24'
-                      }}>
-                        {rsvp.isAttending ? '✅ 참석' : '❌ 불참'}
+                    <td style={{ padding: "12px", textAlign: "center" }}>
+                      <span
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          backgroundColor: rsvp.isAttending
+                            ? "#d4edda"
+                            : "#f8d7da",
+                          color: rsvp.isAttending ? "#155724" : "#721c24",
+                        }}
+                      >
+                        {rsvp.isAttending ? "✅ 참석" : "❌ 불참"}
                       </span>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <td style={{ padding: "12px", textAlign: "center" }}>
                       {rsvp.adultCount}명
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <td style={{ padding: "12px", textAlign: "center" }}>
                       {rsvp.childrenCount}명
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <td style={{ padding: "12px", textAlign: "center" }}>
                       <strong>{rsvp.adultCount + rsvp.childrenCount}명</strong>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#6c757d' }}>
-                      {rsvp.createdAt ? new Date(rsvp.createdAt).toLocaleDateString('ko-KR') : '-'}
+                    <td
+                      style={{
+                        padding: "12px",
+                        textAlign: "center",
+                        fontSize: "12px",
+                        color: "#6c757d",
+                      }}
+                    >
+                      {rsvp.createdAt
+                        ? new Date(rsvp.createdAt).toLocaleDateString("ko-KR")
+                        : "-"}
                     </td>
                   </tr>
                 ))}
@@ -739,12 +815,14 @@ const AdminDashboard: React.FC = () => {
             </table>
           </div>
         ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px',
-            color: '#6c757d',
-            fontSize: '16px'
-          }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "#6c757d",
+              fontSize: "16px",
+            }}
+          >
             📭 아직 응답이 없습니다.
           </div>
         )}
