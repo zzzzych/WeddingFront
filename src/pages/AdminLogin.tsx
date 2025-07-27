@@ -357,7 +357,7 @@ const AdminLogin: React.FC = () => {
               color: '#155724',
               margin: '5px 0 0 0'
             }}>
-              기본 계정: <code>admin</code> / <code>wedding2025!</code>
+              기본 계정: <code>admin</code> / <code>admin</code>
             </p>
           </div>
         </div>
