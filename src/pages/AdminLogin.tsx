@@ -28,11 +28,11 @@ const AdminLogin: React.FC = () => {
   }, [navigate]);
 
   // 입력값 변경 처리
-  const handleInputChange = (field: keyof AdminCredentials, value: string) => {
-    setCredentials(prev => ({
-      ...prev,
-      [field]: value
-    }));
+const handleInputChange = (field: keyof AdminCredentials, value: string) => {
+  setCredentials((prev: AdminCredentials) => ({
+    ...prev,
+    [field]: value
+  }));
     
     // 에러 메시지 제거
     if (error) {

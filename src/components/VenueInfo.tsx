@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { InvitationResponse } from '../types';
 
+
 // Props 타입 정의
 interface VenueInfoProps {
   invitationData: InvitationResponse;  // 청첩장 데이터

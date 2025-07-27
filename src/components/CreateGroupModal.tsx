@@ -14,8 +14,11 @@ interface GroupFeatureSettings {
   showCeremonyProgram: boolean;   // 본식 순서
 }
 
-// 확장된 그룹 생성 요청
-interface ExtendedCreateGroupRequest extends CreateGroupRequest {
+// ✅ 확장된 그룹 생성 요청 타입 (기능 설정 포함)
+interface ExtendedCreateGroupRequest {
+  groupName: string;           // ✅ 추가
+  groupType: GroupType;        // ✅ 추가  
+  greetingMessage: string;     // ✅ 추가
   features: GroupFeatureSettings;
 }
 

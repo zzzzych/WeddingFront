@@ -1,7 +1,8 @@
-// 청첩장 관련 API 서비스 함수들
+// API 서비스 함수들
 import { apiGet, apiPost } from './api';
 import { 
-  InvitationResponse, 
+  InvitationAPIResponse,  // ✅ 변경: InvitationResponse → InvitationAPIResponse
+  InvitationResponse,     // ✅ 추가: 기존 컴포넌트용
   RsvpRequest, 
   RsvpResponse,
   AdminCredentials,
@@ -9,16 +10,10 @@ import {
   InvitationGroup
 } from '../types';
 
-// 고유 코드로 청첩장 정보 조회 (하객용)
-export const getInvitationByCode = async (uniqueCode: string): Promise<InvitationResponse> => {
-  try {
-    // GET /api/invitation/:uniqueCode
-    const response = await apiGet(`/api/invitation/${uniqueCode}`);
-    return response;
-  } catch (error) {
-    console.error('청첩장 정보 조회 실패:', error);
-    throw error;
-  }
+// ✅ 청첩장 정보 조회 (서버 API 직접 호출)
+// ✅ 타입 매개변수 제거
+export const getInvitationByCode = async (uniqueCode: string): Promise<InvitationAPIResponse> => {
+  return apiGet(`/invitation/${uniqueCode}`);
 };
 
 // 참석 여부 응답 제출 (하객용)
