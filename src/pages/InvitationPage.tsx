@@ -22,80 +22,82 @@ const InvitationPage: React.FC = () => {
 
   // 컴포넌트 마운트 시 청첩장 데이터 로드
   useEffect(() => {
-    const loadInvitationData = async () => {
-      if (!uniqueCode) {
-        setError('유효하지 않은 접근입니다.');
-        setLoading(false);
-        return;
-      }
+   
+const loadInvitationData = async () => {
+  if (!uniqueCode) {
+    setError('유효하지 않은 접근입니다.');
+    setLoading(false);
+    return;
+  }
 
-      try {
-        setLoading(true);
-        
-        // ===== 임시 데이터 (백엔드 연결 전까지 사용) =====
-        // 실제 API 호출은 백엔드 연결 후 사용
-        // const data = await getInvitationByCode(uniqueCode);
-        
-        // uniqueCode에 따라 다른 그룹 타입 시뮬레이션
-        let groupType: GroupType = GroupType.WEDDING_GUEST;
-        let groupName = '신랑 대학 동기';
-        let showRsvp = true;
-        let showAccount = false;
-        let showShare = false;
-        
-        if (uniqueCode.includes('parent')) {
-          groupType = GroupType.PARENTS_GUEST;
-          groupName = '부모님';
-          showRsvp = false;
-          showAccount = true;
-          showShare = true;
-        } else if (uniqueCode.includes('company')) {
-          groupType = GroupType.COMPANY_GUEST;
-          groupName = '회사 동료';
-          showRsvp = false;
-          showAccount = false;
-          showShare = false;
-        }
-        
-        const mockData: InvitationResponse = {
-          groupInfo: {
-            id: '1',
-            groupName: groupName,
-            groupType: groupType,
-            uniqueCode: uniqueCode
-          },
-          weddingInfo: {
-            groomName: '김신랑',
-            brideName: '이신부',
-            weddingDate: '2025-10-25T17:00:00Z',
-            greetingMessage: '저희 두 사람, 새로운 시작을 함께 축복해주세요. 소중한 분들과 함께하는 이 특별한 날, 여러분의 축복과 사랑으로 더욱 빛나는 하루가 되길 바랍니다.',
-            venueName: '그랜드 웨딩홀',
-            venueAddress: '서울특별시 강남구 테헤란로 123',
-            venueDetail: '지하 1층 그랜드홀 (엘리베이터 이용)',
-            venuePhone: '02-1234-5678',
-            kakaoMapUrl: 'https://map.kakao.com/',
-            naverMapUrl: 'https://map.naver.com/',
-            googleMapUrl: 'https://maps.google.com/',
-            parkingInfo: '웨딩홀 지하 1~3층 무료 주차 가능 (총 150대)\n- 발렛파킹 서비스 제공\n- 주차권은 별도로 받으시기 바랍니다.',
-            transportInfo: '지하철 2호선 강남역 3번 출구에서 도보 5분\n버스 정류장: 강남역사거리 (간선 146, 360, 740)\n공항버스 6001번 강남역 하차',
-            accountInfo: ['신한은행 110-xxx-xxxxxx (신랑)', '카카오뱅크 3333-xx-xxxxxxx (신부)']
-          },
-          showRsvpForm: showRsvp,
-          showAccountInfo: showAccount,
-          showShareButton: showShare,
-          showCeremonyProgram: false
-        };
-        
-        setInvitationData(mockData);
-        setError(null);
-        
-      } catch (err) {
-        console.error('청첩장 데이터 로드 실패:', err);
-        setError('청첩장 정보를 불러올 수 없습니다.');
-      } finally {
-        setLoading(false);
-      }
+  try {
+    setLoading(true);
+    
+    // uniqueCode에 따라 다른 그룹 타입 시뮬레이션
+    let groupType: GroupType = GroupType.WEDDING_GUEST;
+    let groupName = '신랑 대학 동기';
+    let greetingMessage = '소중한 친구들을 저희 결혼식에 초대합니다. 여러분의 축복 속에서 더욱 의미있는 하루가 되길 바랍니다.';
+    let showRsvp = true;
+    let showAccount = false;
+    let showShare = false;
+    
+    if (uniqueCode.includes('parent')) {
+      groupType = GroupType.PARENTS_GUEST;
+      groupName = '부모님';
+      greetingMessage = '오늘까지 키워주시고 사랑해주신 부모님께 깊은 감사를 드리며, 저희의 새로운 출발을 함께 기뻐해주시길 바랍니다.';
+      showRsvp = false;
+      showAccount = true;
+      showShare = true;
+    } else if (uniqueCode.includes('company')) {
+      groupType = GroupType.COMPANY_GUEST;
+      groupName = '회사 동료';
+      greetingMessage = '함께 일하며 소중한 인연을 맺어온 동료 여러분을 저희 결혼식에 초대합니다. 새로운 시작을 함께 축복해주세요.';
+      showRsvp = false;
+      showAccount = false;
+      showShare = false;
+    }
+    
+    const mockData: InvitationResponse = {
+      groupInfo: {
+        id: '1',
+        groupName: groupName,
+        groupType: groupType,
+        uniqueCode: uniqueCode,
+        greetingMessage: greetingMessage  // ✅ 그룹별 개별 인사말
+      },
+      weddingInfo: {
+        groomName: '김신랑',
+        brideName: '이신부',
+        weddingDate: '2025-10-25T17:00:00Z',
+        // ❌ greetingMessage 제거 - 이제 groupInfo에서 가져옴
+        venueName: '그랜드 웨딩홀',
+        venueAddress: '서울특별시 강남구 테헤란로 123',
+        venueDetail: '지하 1층 그랜드홀 (엘리베이터 이용)',
+        venuePhone: '02-1234-5678',
+        kakaoMapUrl: 'https://map.kakao.com/',
+        naverMapUrl: 'https://map.naver.com/',
+        googleMapUrl: 'https://maps.google.com/',
+        parkingInfo: '웨딩홀 지하 1~3층 무료 주차 가능 (총 150대)\n- 발렛파킹 서비스 제공\n- 주차권은 별도로 받으시기 바랍니다.',
+        transportInfo: '지하철 2호선 강남역 3번 출구에서 도보 5분\n버스 정류장: 강남역사거리 (간선 146, 360, 740)\n공항버스 6001번 강남역 하차',
+        accountInfo: ['신한은행 110-xxx-xxxxxx (신랑)', '카카오뱅크 3333-xx-xxxxxxx (신부)']
+      },
+      showRsvpForm: showRsvp,
+      showAccountInfo: showAccount,
+      showShareButton: showShare,
+      showCeremonyProgram: false
     };
+    
+    setInvitationData(mockData);
+    setError(null);
+    
+  } catch (err) {
+    console.error('청첩장 데이터 로드 실패:', err);
+    setError('청첩장 정보를 불러올 수 없습니다.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     loadInvitationData();
   }, [uniqueCode]);
@@ -214,18 +216,30 @@ const InvitationPage: React.FC = () => {
       </div>
 
       {/* 인사말 영역 */}
-      <div style={{ 
-        backgroundColor: '#f8f9fa', 
-        padding: '20px', 
-        borderRadius: '8px', 
-        marginBottom: '20px',
-        textAlign: 'center'
-      }}>
-        <h3 style={{ marginBottom: '15px', color: '#2c3e50' }}>💝 인사말</h3>
-        <p style={{ lineHeight: '1.6', color: '#495057' }}>
-          {invitationData.weddingInfo.greetingMessage}
-        </p>
-      </div>
+      {/* 인사말 영역 - 그룹별 개별 인사말 표시 */}
+<div style={{ 
+  backgroundColor: '#f8f9fa', 
+  padding: '20px', 
+  borderRadius: '8px', 
+  marginBottom: '20px',
+  textAlign: 'center'
+}}>
+  <h3 style={{ marginBottom: '15px', color: '#2c3e50' }}>💝 인사말</h3>
+  <p style={{ lineHeight: '1.6', color: '#495057' }}>
+    {/* ✅ 변경: weddingInfo.greetingMessage → groupInfo.greetingMessage */}
+    {invitationData.groupInfo.greetingMessage}
+  </p>
+  
+  {/* 그룹별 인사말임을 알려주는 작은 힌트 (개발 단계에서만) */}
+  <div style={{
+    fontSize: '11px',
+    color: '#6c757d',
+    marginTop: '10px',
+    fontStyle: 'italic'
+  }}>
+    📝 {invitationData.groupInfo.groupName} 전용 인사말
+  </div>
+</div>
 
       {/* 포토 갤러리 (모든 그룹에서 표시) */}
       <PhotoGallery />
