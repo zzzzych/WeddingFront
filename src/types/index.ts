@@ -126,7 +126,7 @@ export interface InvitationResponse {
   showCeremonyProgram: boolean;
 }
 
-// 그룹 업데이트 요청 타입
+// 그룹 업데이트 요청 타입 (완전한 정의)
 export interface UpdateGroupRequest {
   groupName?: string;
   greetingMessage?: string;

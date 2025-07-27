@@ -2,7 +2,7 @@
 // 완성된 관리자 대시보드 (그룹별 기능 설정 시스템 통합)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllRsvps, getAllGroups } from "../services/invitationService";
+import { getAllRsvps, getAllGroups, updateGroup, createGroup } from "../services/invitationService";
 import { RsvpResponse, InvitationGroup, GroupType } from "../types";
 import CreateGroupModal from "../components/CreateGroupModal";
 import GreetingEditor from "../components/GreetingEditor";
@@ -148,37 +148,39 @@ const handleLogout = () => {
   };
 
   // 그룹별 인사말 저장
-  const handleGroupGreetingSave = async (
-    groupId: string,
-    newGreeting: string
-  ) => {
-    try {
-      setIsUpdatingGreeting(true);
+const handleGroupGreetingSave = async (
+  groupId: string,
+  newGreeting: string
+) => {
+  try {
+    setIsUpdatingGreeting(true);
 
-      // ===== 임시 처리 (백엔드 연결 시 실제 API 호출) =====
-      // const response = await updateGroupGreeting(groupId, newGreeting);
+    // ✅ 실제 API 호출로 변경
+    await updateGroup(groupId, {
+      greetingMessage: newGreeting
+    });
 
-      // 임시로 로컬 상태 업데이트
-      const updatedGroups = groups.map((group) =>
-        group.id === groupId
-          ? { ...group, greetingMessage: newGreeting }
-          : group
-      );
-      setGroups(updatedGroups);
+    // 로컬 상태 업데이트
+    const updatedGroups = groups.map((group) =>
+      group.id === groupId
+        ? { ...group, greetingMessage: newGreeting }
+        : group
+    );
+    setGroups(updatedGroups);
 
-      // 성공 메시지 표시
-      setSuccessMessage("인사말이 성공적으로 수정되었습니다!");
-      setTimeout(() => setSuccessMessage(null), 3000);
+    // 성공 메시지 표시
+    setSuccessMessage("인사말이 성공적으로 수정되었습니다!");
+    setTimeout(() => setSuccessMessage(null), 3000);
 
-      // 편집 모드 종료
-      setEditingGroupGreeting(null);
-    } catch (error: any) {
-      console.error("인사말 수정 실패:", error);
-      setError(error.message || "인사말 수정에 실패했습니다.");
-    } finally {
-      setIsUpdatingGreeting(false);
-    }
-  };
+    // 편집 모드 종료
+    setEditingGroupGreeting(null);
+  } catch (error: any) {
+    console.error("인사말 수정 실패:", error);
+    setError(error.message || "인사말 수정에 실패했습니다.");
+  } finally {
+    setIsUpdatingGreeting(false);
+  }
+};
 
   // 그룹별 인사말 편집 취소
   const handleGroupGreetingCancel = () => {

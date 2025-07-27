@@ -3,6 +3,7 @@ import { apiGet, apiPost } from './api';
 import { 
   InvitationAPIResponse,  // ✅ 변경: InvitationResponse → InvitationAPIResponse
   InvitationResponse,     // ✅ 추가: 기존 컴포넌트용
+  UpdateGroupRequest,
   RsvpRequest, 
   RsvpResponse,
   AdminCredentials,
@@ -10,6 +11,8 @@ import {
   CreateGroupRequest,
   InvitationGroup
 } from '../types';
+
+const API_BASE_URL = 'http://127.0.0.1:8080/api';  // ✅ 추가
 
 // ✅ 청첩장 정보 조회 (서버 API 직접 호출)
 // ✅ 타입 매개변수 제거
@@ -117,4 +120,22 @@ export const getAllGroups = async (): Promise<InvitationGroup[]> => {
     console.error('그룹 조회 실패:', error);
     throw error;
   }
+};
+
+// ✅ 그룹 수정 API 함수 추가
+export const updateGroup = async (groupId: string, updateData: UpdateGroupRequest): Promise<InvitationGroup> => {
+  const response = await fetch(`${API_BASE_URL}/admin/groups/${groupId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updateData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.reason || '그룹 수정에 실패했습니다.');
+  }
+
+  return response.json();
 };
