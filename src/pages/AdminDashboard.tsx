@@ -95,7 +95,7 @@ const AdminDashboard: React.FC = () => {
   }, []);
 
   // 대시보드 데이터 로드 함수
-  // 기존 코드를 찾아서 다음과 같이 수정
+  // loadDashboardData 함수에서 API 응답 처리 부분을 수정
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -125,13 +125,30 @@ const AdminDashboard: React.FC = () => {
       console.log("📊 RSVP 응답 타입:", typeof rsvpData);
       console.log("📊 RSVP 응답 구조:", Object.keys(rsvpData));
 
-      // 나머지는 그대로 유지
+      // ✅ 중요: API 응답을 배열로 변환
+      let processedRsvps = [];
+
+      if (rsvpData && rsvpData.responses && Array.isArray(rsvpData.responses)) {
+        // responses 배열이 있는 경우
+        processedRsvps = rsvpData.responses;
+        console.log("✅ responses 배열에서 데이터 추출:", processedRsvps);
+      } else if (Array.isArray(rsvpData)) {
+        // 직접 배열인 경우
+        processedRsvps = rsvpData;
+        console.log("✅ 직접 배열 데이터:", processedRsvps);
+      } else {
+        // 예상하지 못한 구조인 경우 빈 배열로 설정
+        console.warn("⚠️ 예상하지 못한 RSVP 응답 구조, 빈 배열로 설정");
+        processedRsvps = [];
+      }
+
+      // 그룹 데이터 호출
       const [groupData] = await Promise.all([getAllGroups()]);
 
       console.log("👥 불러온 그룹 데이터:", groupData);
 
-      // 일단 원래대로 설정
-      setRsvps(rsvpData);
+      // ✅ 처리된 배열 데이터로 설정
+      setRsvps(processedRsvps);
       setGroups(groupData);
 
       // 관리자 정보 (localStorage에서 가져옴)
