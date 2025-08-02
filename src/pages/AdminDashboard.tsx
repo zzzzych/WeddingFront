@@ -109,6 +109,13 @@ const AdminDashboard: React.FC = () => {
       console.log("📊 RSVP 데이터 타입:", typeof rsvpData);
       console.log("📊 RSVP 데이터 키들:", Object.keys(rsvpData));
       console.log("👥 불러온 그룹 데이터:", groupData);
+      // 컴포넌트 내부, rsvps를 받은 직후에 추가
+      console.log('RSVP 데이터 구조 확인:', rsvps);
+      console.log('첫 번째 RSVP:', rsvps[0]);
+      if (rsvps[0]) {
+        console.log('isAttending 값:', rsvps[0].isAttending);
+        console.log('isAttending 타입:', typeof rsvps[0].isAttending);
+      }
 
       // 일단 원래대로 설정하고 어떤 에러가 나는지 보기
       setRsvps(rsvpData);
