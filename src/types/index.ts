@@ -51,13 +51,21 @@ export interface WeddingInfo {
   accountInfo: string[];
 }
 
-// 나머지 타입들은 기존 유지...
+//초대 그룹
 export interface InvitationGroup {
   id?: string;
   groupName: string;
   groupType: GroupType;
   uniqueCode: string;
   greetingMessage: string;
+  
+  // 🆕 기능 설정 필드들 추가
+  showVenueInfo?: boolean;
+  showShareButton?: boolean;
+  showCeremonyProgram?: boolean;
+  showRsvpForm?: boolean;
+  showAccountInfo?: boolean;
+  showPhotoGallery?: boolean;
 }
 
 export interface RsvpResponse {

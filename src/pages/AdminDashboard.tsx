@@ -170,12 +170,19 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // 그룹 기능 설정 값 가져오기 (임시로 기본값 사용)
+  // 그룹 기능 설정 값 가져오기 (실제 데이터 사용)
   const getFeatureValue = (
     group: InvitationGroup,
     featureKey: string
   ): boolean => {
-    // 임시로 그룹 타입별 기본값 반환 (실제 API 연결 후 실제 값으로 변경 예정)
+    // 실제 저장된 값이 있으면 사용, 없으면 기본값 사용
+    const actualValue = group[featureKey as keyof InvitationGroup];
+
+    if (actualValue !== undefined && actualValue !== null) {
+      return actualValue as boolean;
+    }
+
+    // 기본값 (실제 값이 없을 때만 사용)
     const defaults = {
       WEDDING_GUEST: {
         showRsvpForm: true,
