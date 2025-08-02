@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom'; 
 import {
   getAllGroups,
   deleteGroup,
@@ -30,6 +31,7 @@ const systemFont =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<InvitationGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -174,6 +176,16 @@ const AdminDashboard: React.FC = () => {
     };
   };
 
+  //로그아웃
+  const handleLogout = () => {
+    // 로컬스토리지에서 토큰과 사용자 정보 삭제
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUser");
+
+    // 로그인 페이지로 리다이렉트
+    navigate("/012486/login");
+  };
+
   const stats = getTotalStats();
 
   if (loading) {
@@ -267,12 +279,7 @@ const AdminDashboard: React.FC = () => {
             >
               {/* 로그아웃 버튼 */}
               <button
-                onClick={() => {
-                  if (window.confirm("로그아웃하시겠습니까?")) {
-                    // 홈페이지로 이동
-                    window.location.href = "/";
-                  }
-                }}
+                onClick={handleLogout} // window.location.href = "/" 대신 handleLogout 사용
                 style={{
                   backgroundColor: AppleColors.secondaryButton,
                   color: AppleColors.text,

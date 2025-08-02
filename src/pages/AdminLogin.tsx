@@ -23,7 +23,7 @@ const AdminLogin: React.FC = () => {
     const token = localStorage.getItem('adminToken');
     if (token) {
       // 이미 로그인된 경우 대시보드로 리다이렉트
-      navigate('/admin/dashboard');
+      navigate('/012486');
     }
   }, [navigate]);
 
@@ -103,7 +103,7 @@ const AdminLogin: React.FC = () => {
         });
         
         // 대시보드로 이동
-        navigate('/admin/dashboard');
+        navigate('/012486');
       } else {
         setError('로그인 응답에 토큰이 없습니다.');
       }
