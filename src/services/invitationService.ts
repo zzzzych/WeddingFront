@@ -149,17 +149,19 @@ export const deleteGroup = async (
     // 강제 삭제 옵션이 있으면 쿼리 파라미터 추가
     const queryParams = forceDelete ? '?force=true' : '';
     
+    console.log(`🗑️ 그룹 삭제 시도: ${groupId}, 강제삭제: ${forceDelete}`);
+    
     const response = await fetch(
       `${API_BASE_URL}/admin/groups/${groupId}${queryParams}`, 
       {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          // 필요시 인증 헤더 추가
-          // 'Authorization': `Bearer ${getAuthToken()}`
         },
       }
     );
+
+    console.log('🔍 DELETE 응답 상태:', response.status);
 
     // 204 No Content는 성공을 의미
     if (response.status === 204) {
@@ -169,18 +171,36 @@ export const deleteGroup = async (
 
     // 409 Conflict - 응답이 있는 그룹
     if (response.status === 409) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || '응답이 있는 그룹은 강제 삭제가 필요합니다.');
+      let errorMessage = '응답이 있는 그룹은 강제 삭제가 필요합니다.';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.reason || errorData.error || errorMessage;
+      } catch (e) {
+        console.log('409 에러 응답 파싱 실패, 기본 메시지 사용');
+      }
+      throw new Error(errorMessage);
     }
 
     // 기타 에러
-    if (!response.ok) {
+    let errorMessage = '그룹 삭제에 실패했습니다.';
+    try {
       const errorData = await response.json();
-      throw new Error(errorData.error || '그룹 삭제에 실패했습니다.');
+      errorMessage = errorData.reason || errorData.error || errorMessage;
+    } catch (e) {
+      errorMessage = `HTTP ${response.status} 에러가 발생했습니다.`;
     }
+    
+    throw new Error(errorMessage);
 
   } catch (error: any) {
     console.error('❌ 그룹 삭제 실패:', error);
+    
+    // fetch 자체가 실패한 경우 (네트워크 에러 등)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('서버 연결에 실패했습니다. 네트워크를 확인해주세요.');
+    }
+    
+    // 이미 Error 객체인 경우 그대로 전달
     throw error;
   }
 };
