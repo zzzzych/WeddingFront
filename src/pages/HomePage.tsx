@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
         weddingTime: '18:00',
         weddingLocation: '포포인츠 바이쉐라톤 조선 서울역 19층',
         address: '서울특별시 용산구 한강대로 366',
-        greetingMessage: '두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n지환, 윤진 결홉합니다.'
+        greetingMessage: '두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n지환, 윤진 결혼합니다.'
       });
     }
   };
