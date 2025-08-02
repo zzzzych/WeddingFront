@@ -24,6 +24,25 @@ interface GroupFeatures {
   showCeremonyProgram: boolean;
 }
 
+// src/pages/AdminDashboard.tsx 파일 최상단 import 구문들 아래에 추가
+
+// 애플 디자인 색상 팔레트
+const AppleColors = {
+  primary: "#007AFF", // 애플 블루
+  success: "#34C759", // 애플 그린
+  warning: "#FF9500", // 애플 오렌지
+  danger: "#FF3B30", // 애플 레드
+  background: "#F2F2F7", // 애플 배경 그레이
+  surface: "#FFFFFF", // 표면 흰색
+  text: {
+    primary: "#000000", // 기본 텍스트
+    secondary: "#6D6D70", // 보조 텍스트
+    tertiary: "#C7C7CC", // 비활성 텍스트
+  },
+  border: "#E5E5EA", // 테두리 색상
+  shadow: "rgba(0, 0, 0, 0.1)", // 그림자
+};
+
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
@@ -34,6 +53,8 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [adminUser, setAdminUser] = useState<any>(null);
+  // 기존 상태들 (weddingInfo 관련 상태들) 아래에 추가
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   // 삭제 관련 상태 추가
   const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
   const [deleteConfirmGroup, setDeleteConfirmGroup] =
@@ -55,6 +76,20 @@ const AdminDashboard: React.FC = () => {
   >(null);
   const [isUpdatingFeatures, setIsUpdatingFeatures] = useState<boolean>(false);
 
+  // 결혼식 기본 정보 관리 상태 추가 (기존 상태들 아래에)
+  const [weddingInfo, setWeddingInfo] = useState({
+    groomName: "",
+    brideName: "",
+    weddingDate: "",
+    weddingTime: "",
+    weddingLocation: "",
+    weddingAddress: "",
+    greetingMessage: "",
+  });
+  const [isEditingWeddingInfo, setIsEditingWeddingInfo] =
+    useState<boolean>(false);
+  const [isUpdatingWeddingInfo, setIsUpdatingWeddingInfo] =
+    useState<boolean>(false);
   // 그룹별 기능 설정 데이터 (임시 데이터)
   const [groupFeatures, setGroupFeatures] = useState<{
     [groupId: string]: GroupFeatures;
@@ -392,11 +427,11 @@ const AdminDashboard: React.FC = () => {
     return (
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          fontSize: "18px",
+          minHeight: "100vh",
+          backgroundColor: AppleColors.background,
+          padding: "20px",
+          fontFamily:
+            "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         }}
       >
         ⏳ 데이터를 불러오는 중...
@@ -408,11 +443,107 @@ const AdminDashboard: React.FC = () => {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
+        backgroundColor: AppleColors.background,
         padding: "20px",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
       {/* 헤더 */}
+      <div
+        style={{
+          backgroundColor: AppleColors.surface,
+          padding: "24px 32px",
+          borderRadius: "16px",
+          marginBottom: "24px",
+          boxShadow: `0 4px 20px ${AppleColors.shadow}`,
+          border: `1px solid ${AppleColors.border}`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              margin: 0,
+              color: AppleColors.text.primary,
+              fontSize: "32px",
+              fontWeight: "700",
+              letterSpacing: "-0.5px",
+            }}
+          >
+            📊 관리자 대시보드
+          </h1>
+          <p
+            style={{
+              margin: "8px 0 0 0",
+              color: AppleColors.text.secondary,
+              fontSize: "16px",
+              fontWeight: "400",
+            }}
+          >
+            {adminUser?.username || "관리자"}님 환영합니다!
+          </p>
+        </div>
+
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            style={{
+              padding: "12px 24px",
+              backgroundColor: AppleColors.primary,
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontSize: "16px",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.2s ease",
+              boxShadow: `0 2px 8px ${AppleColors.shadow}`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#0056CC";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = AppleColors.primary;
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            ➕ 새 그룹 생성
+          </button>
+          <button
+            onClick={() => navigate("/admin/login")}
+            style={{
+              padding: "12px 24px",
+              backgroundColor: AppleColors.danger,
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontSize: "16px",
+              fontWeight: "600",
+              transition: "all 0.2s ease",
+              boxShadow: `0 2px 8px ${AppleColors.shadow}`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#D70015";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = AppleColors.danger;
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            로그아웃
+          </button>
+        </div>
+      </div>
+      {/* 결혼식 기본 정보 섹션 */}
       <div
         style={{
           backgroundColor: "white",
@@ -420,55 +551,368 @@ const AdminDashboard: React.FC = () => {
           borderRadius: "12px",
           marginBottom: "20px",
           boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
         }}
       >
-        <div>
-          <h1 style={{ margin: 0, color: "#2c3e50", fontSize: "28px" }}>
-            📊 관리자 대시보드
-          </h1>
-          <p style={{ margin: "5px 0 0 0", color: "#6c757d" }}>
-            {adminUser?.username || "관리자"}님 환영합니다!
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <h2 style={{ margin: 0, color: "#2c3e50", fontSize: "20px" }}>
+            💒 결혼식 기본 정보
+          </h2>
           <button
-            onClick={() => setIsCreateGroupModalOpen(true)}
+            onClick={() => setIsEditingWeddingInfo(!isEditingWeddingInfo)}
+            disabled={isUpdatingWeddingInfo}
             style={{
-              backgroundColor: "#007bff",
+              padding: "8px 16px",
+              backgroundColor: isEditingWeddingInfo ? "#6c757d" : "#007bff",
               color: "white",
               border: "none",
-              padding: "12px 20px",
-              borderRadius: "8px",
-              fontSize: "14px",
-              fontWeight: "bold",
+              borderRadius: "6px",
               cursor: "pointer",
+              fontSize: "14px",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: "6px",
             }}
           >
-            ✨ 새 그룹 생성
-          </button>
-          <button
-            onClick={handleLogout}
-            style={{
-              backgroundColor: "#dc3545",
-              color: "white",
-              border: "none",
-              padding: "12px 20px",
-              borderRadius: "8px",
-              fontSize: "14px",
-              cursor: "pointer",
-            }}
-          >
-            🚪 로그아웃
+            {isEditingWeddingInfo ? "📝 편집 취소" : "✏️ 정보 수정"}
           </button>
         </div>
-      </div>
 
+        {isEditingWeddingInfo ? (
+          // 편집 모드
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "20px",
+            }}
+          >
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                👰 신부 이름
+              </label>
+              <input
+                type="text"
+                value={weddingInfo.brideName}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    brideName: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+                placeholder="신부 이름 입력"
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                🤵 신랑 이름
+              </label>
+              <input
+                type="text"
+                value={weddingInfo.groomName}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    groomName: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+                placeholder="신랑 이름 입력"
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                📅 결혼식 날짜
+              </label>
+              <input
+                type="date"
+                value={weddingInfo.weddingDate}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    weddingDate: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                🕐 결혼식 시간
+              </label>
+              <input
+                type="time"
+                value={weddingInfo.weddingTime}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    weddingTime: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                🏛️ 결혼식 장소명
+              </label>
+              <input
+                type="text"
+                value={weddingInfo.weddingLocation}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    weddingLocation: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+                placeholder="예: 신라호텔 다이아몬드홀"
+              />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                📍 상세 주소
+              </label>
+              <input
+                type="text"
+                value={weddingInfo.weddingAddress}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    weddingAddress: e.target.value,
+                  }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                }}
+                placeholder="서울시 중구 동호로 249"
+              />
+            </div>
+
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  fontWeight: "600",
+                }}
+              >
+                💌 인사말
+              </label>
+              <textarea
+                value={weddingInfo.greetingMessage}
+                onChange={(e) =>
+                  setWeddingInfo((prev) => ({
+                    ...prev,
+                    greetingMessage: e.target.value,
+                  }))
+                }
+                rows={4}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  resize: "vertical",
+                }}
+                placeholder="결혼식 인사말을 입력해주세요..."
+              />
+            </div>
+
+            <div
+              style={{
+                gridColumn: "1 / -1",
+                display: "flex",
+                gap: "10px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={() => setIsEditingWeddingInfo(false)}
+                disabled={isUpdatingWeddingInfo}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  // TODO: 다음 단계에서 실제 저장 로직 구현
+                  console.log("결혼식 정보 저장:", weddingInfo);
+                  setIsEditingWeddingInfo(false);
+                }}
+                disabled={isUpdatingWeddingInfo}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                {isUpdatingWeddingInfo ? "⏳ 저장 중..." : "💾 저장하기"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // 조회 모드
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "20px",
+            }}
+          >
+            <div>
+              <strong style={{ color: "#374151" }}>👰 신부:</strong>
+              <span style={{ marginLeft: "10px", color: "#6b7280" }}>
+                {weddingInfo.brideName || "미입력"}
+              </span>
+            </div>
+            <div>
+              <strong style={{ color: "#374151" }}>🤵 신랑:</strong>
+              <span style={{ marginLeft: "10px", color: "#6b7280" }}>
+                {weddingInfo.groomName || "미입력"}
+              </span>
+            </div>
+            <div>
+              <strong style={{ color: "#374151" }}>📅 날짜:</strong>
+              <span style={{ marginLeft: "10px", color: "#6b7280" }}>
+                {weddingInfo.weddingDate || "미입력"}
+              </span>
+            </div>
+            <div>
+              <strong style={{ color: "#374151" }}>🕐 시간:</strong>
+              <span style={{ marginLeft: "10px", color: "#6b7280" }}>
+                {weddingInfo.weddingTime || "미입력"}
+              </span>
+            </div>
+            <div>
+              <strong style={{ color: "#374151" }}>🏛️ 장소:</strong>
+              <span style={{ marginLeft: "10px", color: "#6b7280" }}>
+                {weddingInfo.weddingLocation || "미입력"}
+              </span>
+            </div>
+            <div>
+              <strong style={{ color: "#374151" }}>📍 주소:</strong>
+              <span style={{ marginLeft: "10px", color: "#6b7280" }}>
+                {weddingInfo.weddingAddress || "미입력"}
+              </span>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <strong style={{ color: "#374151" }}>💌 인사말:</strong>
+              <div
+                style={{
+                  marginTop: "8px",
+                  padding: "12px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "6px",
+                  color: "#6b7280",
+                  lineHeight: "1.5",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {weddingInfo.greetingMessage || "인사말이 입력되지 않았습니다."}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       {/* 성공/에러 메시지 */}
       {successMessage && (
         <div
@@ -1247,6 +1691,23 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      {/* CreateGroupModal 수정 */}
+      {showCreateModal && (
+        <CreateGroupModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={(newGroup: InvitationGroup) => {
+            // 로컬 상태 업데이트
+            setGroups((prev) => [...prev, newGroup]);
+
+            // 성공 메시지 표시
+            setSuccessMessage(
+              `"${newGroup.groupName}" 그룹이 성공적으로 생성되었습니다!`
+            );
+            setTimeout(() => setSuccessMessage(null), 3000);
+          }}
+        />
       )}
     </div>
   );
