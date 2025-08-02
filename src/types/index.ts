@@ -130,7 +130,15 @@ export interface InvitationResponse {
 export interface UpdateGroupRequest {
   groupName?: string;
   greetingMessage?: string;
-  uniqueCode?: string;  // 🆕 URL 코드 편집용 필드 추가
+  uniqueCode?: string;
+  
+  // 🆕 기능 설정 필드들 추가
+  showVenueInfo?: boolean;
+  showShareButton?: boolean;
+  showCeremonyProgram?: boolean;
+  showRsvpForm?: boolean;
+  showAccountInfo?: boolean;
+  showPhotoGallery?: boolean;
 }
 
 // 그룹별 인사말 수정 전용 요청
