@@ -14,7 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           
           {/* 그룹별 청첩장 페이지 */}
-          <Route path="/invitation/:code" element={<InvitationPage />} />
+          <Route path="/invitation/:uniqueCode" element={<InvitationPage />} />
 
           {/* 보안 강화된 관리자 로그인 */}
           <Route path="/012486/login" element={<AdminLogin />} />
