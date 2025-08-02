@@ -31,7 +31,7 @@ const InvitationPage: React.FC = () => {
 
         // 실제 서버 API 호출
         const response = await fetch(
-          `http://127.0.0.1:8080/api/invitation/${uniqueCode}`
+          `https://api.leelee.kr/api/invitation/${uniqueCode}`
         );
 
         if (!response.ok) {

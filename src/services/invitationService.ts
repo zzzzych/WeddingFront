@@ -12,7 +12,7 @@ import {
   InvitationGroup
 } from '../types';
 
-const API_BASE_URL = 'http://127.0.0.1:8080/api';  // ✅ 추가
+const API_BASE_URL = 'http://api.leelee.kr/api';
 
 // ✅ 청첩장 정보 조회 (서버 API 직접 호출)
 // ✅ 타입 매개변수 제거
@@ -59,7 +59,7 @@ export const createGroup = async (groupData: CreateGroupRequest): Promise<Invita
 // ✅ 이 함수만 남겨두세요 (중복 제거)
 export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
   try {
-    const response = await fetch('http://127.0.0.1:8080/api/admin/rsvps', {
+    const response = await fetch('https://api.leelee.kr/api/admin/rsvps', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
 // ✅ 이 함수도 있어야 합니다
 export const getAllGroups = async (): Promise<InvitationGroup[]> => {
   try {
-    const response = await fetch('http://127.0.0.1:8080/api/admin/groups', {
+    const response = await fetch('https://api.leelee.kr/api/admin/groups', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
