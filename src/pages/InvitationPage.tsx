@@ -9,6 +9,12 @@ import ShareButton from '../components/ShareButton'; // ✅ 추가
 
 const InvitationPage: React.FC = () => {
   const { uniqueCode } = useParams<{ uniqueCode: string }>();
+  // ✅ 디버깅 코드 추가
+  console.log("🔍 현재 URL:", window.location.pathname);
+  console.log("🔍 uniqueCode 파라미터:", uniqueCode);
+  console.log("🔍 모든 params:", useParams());
+
+  // ... 나머지 코드
 
   // ✅ state 타입 수정
   const [invitationData, setInvitationData] =
