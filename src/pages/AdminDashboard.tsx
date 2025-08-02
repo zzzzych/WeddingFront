@@ -106,29 +106,12 @@ const AdminDashboard: React.FC = () => {
       ]);
 
       console.log("📊 불러온 RSVP 데이터:", rsvpData);
+      console.log("📊 RSVP 데이터 타입:", typeof rsvpData);
+      console.log("📊 RSVP 데이터 키들:", Object.keys(rsvpData));
       console.log("👥 불러온 그룹 데이터:", groupData);
 
-      // 서버 응답 구조에 맞게 RSVP 데이터 변환
-      let processedRsvps = [];
-      if (
-        (rsvpData as any).responses &&
-        Array.isArray((rsvpData as any).responses)
-      ) {
-        // 각 응답에서 response 객체 추출
-        processedRsvps = (rsvpData as any).responses.map((item: any) => ({
-          id: item.response.id,
-          responderName: item.response.responderName,
-          isAttending: item.response.isAttending,
-          adultCount: item.response.adultCount,
-          childrenCount: item.response.childrenCount,
-          submittedAt: item.response.submittedAt,
-        }));
-      } else if (Array.isArray(rsvpData)) {
-        // 만약 직접 배열로 오는 경우
-        processedRsvps = rsvpData;
-      }
-
-      setRsvps(processedRsvps);
+      // 일단 원래대로 설정하고 어떤 에러가 나는지 보기
+      setRsvps(rsvpData);
       setGroups(groupData);
 
       // 관리자 정보 (localStorage에서 가져옴)
