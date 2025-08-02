@@ -66,47 +66,55 @@ const AdminDashboard: React.FC = () => {
 
   //그룹 삭제
   const handleDeleteGroup = async (groupId: string) => {
-    try {
-      // 1차 삭제 시도
-      const confirmDelete = window.confirm(
-        "정말로 이 그룹을 삭제하시겠습니까?"
+  try {
+    // 1차 삭제 시도
+    const confirmDelete = window.confirm('정말로 이 그룹을 삭제하시겠습니까?');
+    if (!confirmDelete) return;
+
+    console.log('🗑️ 일반 삭제 시도:', groupId);
+    await deleteGroup(groupId, false); // 일반 삭제 시도
+    await fetchGroups();
+    alert('그룹이 삭제되었습니다.');
+    
+  } catch (error: any) {
+    console.error('그룹 삭제 실패:', error);
+    
+    // 409 Conflict 에러 또는 응답이 있는 그룹인 경우
+    if (error.message && (
+        error.message.includes('응답이 있는') || 
+        error.message.includes('응답이') ||
+        error.message.includes('force=true')
+      )) {
+      
+      // 응답 수 추출 (에러 메시지에서)
+      const responseCount = error.message.match(/(\d+)개의 응답/)?.[1] || '여러';
+      
+      const forceConfirm = window.confirm(
+        `⚠️ 강제 삭제 확인\n\n` +
+        `이 그룹에는 ${responseCount}개의 응답이 있습니다.\n` +
+        `응답 데이터와 함께 그룹을 강제로 삭제하시겠습니까?\n\n` +
+        `주의: 이 작업은 되돌릴 수 없습니다!\n` +
+        `- 그룹 정보 삭제\n` +
+        `- 모든 응답 데이터 삭제`
       );
-      if (!confirmDelete) return;
-
-      await deleteGroup(groupId, false); // 일반 삭제 시도
-      await fetchGroups();
-      alert("그룹이 삭제되었습니다.");
-    } catch (error: any) {
-      console.error("그룹 삭제 실패:", error);
-      console.log("에러 상세:", error.message);
-
-      // 409 Conflict 에러인 경우 (응답이 있는 그룹)
-      if (
-        error.message &&
-        (error.message.includes("응답이 있는") || error.message.includes("409"))
-      ) {
-        const forceConfirm = window.confirm(
-          "이 그룹에는 응답이 있습니다.\n응답 데이터와 함께 강제로 삭제하시겠습니까?\n\n⚠️ 주의: 이 작업은 되돌릴 수 없습니다."
-        );
-
-        if (forceConfirm) {
-          try {
-            await deleteGroup(groupId, true); // 강제 삭제
-            await fetchGroups();
-            alert("그룹과 관련 응답이 모두 삭제되었습니다.");
-          } catch (forceError) {
-            console.error("강제 삭제 실패:", forceError);
-            alert("강제 삭제에도 실패했습니다. 관리자에게 문의하세요.");
-          }
+      
+      if (forceConfirm) {
+        try {
+          console.log('🔥 강제 삭제 시도:', groupId);
+          await deleteGroup(groupId, true); // 강제 삭제
+          await fetchGroups();
+          alert(`✅ 성공!\n그룹과 ${responseCount}개의 응답이 모두 삭제되었습니다.`);
+        } catch (forceError: any) {
+          console.error('강제 삭제 실패:', forceError);
+          alert(`❌ 강제 삭제 실패\n${forceError.message || '알 수 없는 오류'}\n\n관리자에게 문의하세요.`);
         }
-      } else {
-        // 기타 에러
-        alert(
-          `그룹 삭제에 실패했습니다: ${error.message || "알 수 없는 오류"}`
-        );
       }
+    } else {
+      // 기타 에러
+      alert(`❌ 삭제 실패\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
     }
-  };
+  }
+};
 
   const handleUpdateGreeting = async (groupId: string, newGreeting: string) => {
     try {
