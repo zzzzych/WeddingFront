@@ -66,55 +66,65 @@ const AdminDashboard: React.FC = () => {
 
   //그룹 삭제
   const handleDeleteGroup = async (groupId: string) => {
-  try {
-    // 1차 삭제 시도
-    const confirmDelete = window.confirm('정말로 이 그룹을 삭제하시겠습니까?');
-    if (!confirmDelete) return;
-
-    console.log('🗑️ 일반 삭제 시도:', groupId);
-    await deleteGroup(groupId, false); // 일반 삭제 시도
-    await fetchGroups();
-    alert('그룹이 삭제되었습니다.');
-    
-  } catch (error: any) {
-    console.error('그룹 삭제 실패:', error);
-    
-    // 409 Conflict 에러 또는 응답이 있는 그룹인 경우
-    if (error.message && (
-        error.message.includes('응답이 있는') || 
-        error.message.includes('응답이') ||
-        error.message.includes('force=true')
-      )) {
-      
-      // 응답 수 추출 (에러 메시지에서)
-      const responseCount = error.message.match(/(\d+)개의 응답/)?.[1] || '여러';
-      
-      const forceConfirm = window.confirm(
-        `⚠️ 강제 삭제 확인\n\n` +
-        `이 그룹에는 ${responseCount}개의 응답이 있습니다.\n` +
-        `응답 데이터와 함께 그룹을 강제로 삭제하시겠습니까?\n\n` +
-        `주의: 이 작업은 되돌릴 수 없습니다!\n` +
-        `- 그룹 정보 삭제\n` +
-        `- 모든 응답 데이터 삭제`
+    try {
+      // 1차 삭제 시도
+      const confirmDelete = window.confirm(
+        "정말로 이 그룹을 삭제하시겠습니까?"
       );
-      
-      if (forceConfirm) {
-        try {
-          console.log('🔥 강제 삭제 시도:', groupId);
-          await deleteGroup(groupId, true); // 강제 삭제
-          await fetchGroups();
-          alert(`✅ 성공!\n그룹과 ${responseCount}개의 응답이 모두 삭제되었습니다.`);
-        } catch (forceError: any) {
-          console.error('강제 삭제 실패:', forceError);
-          alert(`❌ 강제 삭제 실패\n${forceError.message || '알 수 없는 오류'}\n\n관리자에게 문의하세요.`);
+      if (!confirmDelete) return;
+
+      console.log("🗑️ 일반 삭제 시도:", groupId);
+      await deleteGroup(groupId, false); // 일반 삭제 시도
+      await fetchGroups();
+      alert("그룹이 삭제되었습니다.");
+    } catch (error: any) {
+      console.error("그룹 삭제 실패:", error);
+
+      // 409 Conflict 에러 또는 응답이 있는 그룹인 경우
+      if (
+        error.message &&
+        (error.message.includes("응답이 있는") ||
+          error.message.includes("응답이") ||
+          error.message.includes("force=true"))
+      ) {
+        // 응답 수 추출 (에러 메시지에서)
+        const responseCount =
+          error.message.match(/(\d+)개의 응답/)?.[1] || "여러";
+
+        const forceConfirm = window.confirm(
+          `⚠️ 강제 삭제 확인\n\n` +
+            `이 그룹에는 ${responseCount}개의 응답이 있습니다.\n` +
+            `응답 데이터와 함께 그룹을 강제로 삭제하시겠습니까?\n\n` +
+            `주의: 이 작업은 되돌릴 수 없습니다!\n` +
+            `- 그룹 정보 삭제\n` +
+            `- 모든 응답 데이터 삭제`
+        );
+
+        if (forceConfirm) {
+          try {
+            console.log("🔥 강제 삭제 시도:", groupId);
+            await deleteGroup(groupId, true); // 강제 삭제
+            await fetchGroups();
+            alert(
+              `✅ 성공!\n그룹과 ${responseCount}개의 응답이 모두 삭제되었습니다.`
+            );
+          } catch (forceError: any) {
+            console.error("강제 삭제 실패:", forceError);
+            alert(
+              `❌ 강제 삭제 실패\n${
+                forceError.message || "알 수 없는 오류"
+              }\n\n관리자에게 문의하세요.`
+            );
+          }
         }
+      } else {
+        // 기타 에러
+        alert(
+          `❌ 삭제 실패\n${error.message || "알 수 없는 오류가 발생했습니다."}`
+        );
       }
-    } else {
-      // 기타 에러
-      alert(`❌ 삭제 실패\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
     }
-  }
-};
+  };
 
   const handleUpdateGreeting = async (groupId: string, newGreeting: string) => {
     try {
@@ -247,37 +257,79 @@ const AdminDashboard: React.FC = () => {
                 그룹별 청첩장을 관리하고 응답을 확인하세요
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
+            {/* 기존의 단일 버튼 부분을 이 코드로 교체 */}
+            <div
               style={{
-                backgroundColor: AppleColors.primary,
-                color: "white",
-                border: "none",
-                borderRadius: "12px",
-                padding: "12px 24px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                fontFamily: systemFont,
-                boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  AppleColors.primaryHover;
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 6px 20px rgba(0, 123, 255, 0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = AppleColors.primary;
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(0, 123, 255, 0.3)";
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
               }}
             >
-              + 새 그룹 생성
-            </button>
+              {/* 로그아웃 버튼 */}
+              <button
+                onClick={() => {
+                  if (window.confirm("로그아웃하시겠습니까?")) {
+                    // 홈페이지로 이동
+                    window.location.href = "/";
+                  }
+                }}
+                style={{
+                  backgroundColor: AppleColors.secondaryButton,
+                  color: AppleColors.text,
+                  border: "none",
+                  borderRadius: "12px",
+                  padding: "12px 20px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  fontFamily: systemFont,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    AppleColors.secondaryButtonHover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    AppleColors.secondaryButton;
+                }}
+              >
+                🚪 로그아웃
+              </button>
+
+              {/* 새 그룹 생성 버튼 (기존 코드 그대로) */}
+              <button
+                onClick={() => setShowCreateModal(true)}
+                style={{
+                  backgroundColor: AppleColors.primary,
+                  color: "white",
+                  border: "none",
+                  borderRadius: "12px",
+                  padding: "12px 24px",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  fontFamily: systemFont,
+                  boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    AppleColors.primaryHover;
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 6px 20px rgba(0, 123, 255, 0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = AppleColors.primary;
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0, 123, 255, 0.3)";
+                }}
+              >
+                + 새 그룹 생성
+              </button>
+            </div>
           </div>
 
           {/* 통계 카드 */}
