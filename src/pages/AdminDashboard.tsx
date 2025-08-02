@@ -108,7 +108,27 @@ const AdminDashboard: React.FC = () => {
       console.log("📊 불러온 RSVP 데이터:", rsvpData);
       console.log("👥 불러온 그룹 데이터:", groupData);
 
-      setRsvps(rsvpData);
+      // 서버 응답 구조에 맞게 RSVP 데이터 변환
+      let processedRsvps = [];
+      if (
+        (rsvpData as any).responses &&
+        Array.isArray((rsvpData as any).responses)
+      ) {
+        // 각 응답에서 response 객체 추출
+        processedRsvps = (rsvpData as any).responses.map((item: any) => ({
+          id: item.response.id,
+          responderName: item.response.responderName,
+          isAttending: item.response.isAttending,
+          adultCount: item.response.adultCount,
+          childrenCount: item.response.childrenCount,
+          submittedAt: item.response.submittedAt,
+        }));
+      } else if (Array.isArray(rsvpData)) {
+        // 만약 직접 배열로 오는 경우
+        processedRsvps = rsvpData;
+      }
+
+      setRsvps(processedRsvps);
       setGroups(groupData);
 
       // 관리자 정보 (localStorage에서 가져옴)
@@ -595,7 +615,13 @@ const AdminDashboard: React.FC = () => {
                   {/* 그룹 이름 편집 기능 */}
                   {editingGroupName === group.id ? (
                     <div style={{ marginBottom: "8px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
                         <span style={{ fontSize: "18px" }}>
                           {group.groupType === GroupType.WEDDING_GUEST && "🎊"}
                           {group.groupType === GroupType.PARENTS_GUEST && "👨‍👩‍👧‍👦"}
@@ -606,10 +632,10 @@ const AdminDashboard: React.FC = () => {
                           value={tempGroupName}
                           onChange={(e) => setTempGroupName(e.target.value)}
                           onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === "Enter") {
                               handleGroupNameSave(group.id!);
                             }
-                            if (e.key === 'Escape') {
+                            if (e.key === "Escape") {
                               handleGroupNameCancel();
                             }
                           }}
@@ -620,16 +646,24 @@ const AdminDashboard: React.FC = () => {
                             border: "2px solid #007bff",
                             borderRadius: "4px",
                             fontSize: "16px",
-                            outline: "none"
+                            outline: "none",
                           }}
                           placeholder="그룹 이름을 입력하세요"
                           autoFocus
                         />
                       </div>
-                      <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          marginTop: "8px",
+                        }}
+                      >
                         <button
                           onClick={() => handleGroupNameSave(group.id!)}
-                          disabled={isUpdatingGroupName || !tempGroupName.trim()}
+                          disabled={
+                            isUpdatingGroupName || !tempGroupName.trim()
+                          }
                           style={{
                             padding: "6px 12px",
                             backgroundColor: "#28a745",
@@ -637,8 +671,14 @@ const AdminDashboard: React.FC = () => {
                             border: "none",
                             borderRadius: "6px",
                             fontSize: "12px",
-                            cursor: isUpdatingGroupName || !tempGroupName.trim() ? "not-allowed" : "pointer",
-                            opacity: isUpdatingGroupName || !tempGroupName.trim() ? 0.6 : 1
+                            cursor:
+                              isUpdatingGroupName || !tempGroupName.trim()
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity:
+                              isUpdatingGroupName || !tempGroupName.trim()
+                                ? 0.6
+                                : 1,
                           }}
                         >
                           {isUpdatingGroupName ? "저장 중..." : "✓ 저장"}
@@ -653,8 +693,10 @@ const AdminDashboard: React.FC = () => {
                             border: "none",
                             borderRadius: "6px",
                             fontSize: "12px",
-                            cursor: isUpdatingGroupName ? "not-allowed" : "pointer",
-                            opacity: isUpdatingGroupName ? 0.6 : 1
+                            cursor: isUpdatingGroupName
+                              ? "not-allowed"
+                              : "pointer",
+                            opacity: isUpdatingGroupName ? 0.6 : 1,
                           }}
                         >
                           ✕ 취소
@@ -662,7 +704,14 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "8px",
+                      }}
+                    >
                       <h3
                         style={{
                           margin: 0,
@@ -672,7 +721,8 @@ const AdminDashboard: React.FC = () => {
                       >
                         {group.groupType === GroupType.WEDDING_GUEST && "🎊"}
                         {group.groupType === GroupType.PARENTS_GUEST && "👨‍👩‍👧‍👦"}
-                        {group.groupType === GroupType.COMPANY_GUEST && "🏢"}{" "}
+                        {group.groupType === GroupType.COMPANY_GUEST &&
+                          "🏢"}{" "}
                         {group.groupName}
                       </h3>
                       <button
