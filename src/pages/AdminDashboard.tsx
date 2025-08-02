@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from "react-router-dom";
 import {
   getAllGroups,
   deleteGroup,
@@ -150,6 +150,23 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error("그룹 이름 업데이트 실패:", error);
       alert("그룹 이름 업데이트에 실패했습니다.");
+    }
+  };
+
+  // URL 코드 업데이트 함수 추가
+  const handleUpdateGroupCode = async (groupId: string, newCode: string) => {
+    try {
+      // updateGroup을 사용하여 uniqueCode 업데이트
+      await updateGroup(groupId, { uniqueCode: newCode });
+      await fetchGroups();
+      alert("✅ URL 코드가 업데이트되었습니다!");
+    } catch (error: any) {
+      console.error("URL 코드 업데이트 실패:", error);
+      if (error.message && error.message.includes("이미 존재")) {
+        alert("❌ 이미 사용 중인 URL 코드입니다.\n다른 코드를 사용해주세요.");
+      } else {
+        alert("❌ URL 코드 업데이트에 실패했습니다.");
+      }
     }
   };
 
@@ -1207,19 +1224,13 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 고유 링크 */}
-                  <div
-                    style={{
-                      backgroundColor: AppleColors.cardBackground,
-                      padding: "12px",
-                      borderRadius: "8px",
-                      marginBottom: "16px",
-                    }}
-                  >
+                  {/* 그룹 고유 링크 */}
+                  <div>
                     <div
                       style={{
-                        fontSize: "12px",
-                        color: AppleColors.secondaryText,
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: AppleColors.text,
                         marginBottom: "4px",
                         fontFamily: systemFont,
                       }}
@@ -1232,9 +1243,108 @@ const AdminDashboard: React.FC = () => {
                         color: AppleColors.primary,
                         fontFamily: "Monaco, Consolas, monospace",
                         wordBreak: "break-all",
+                        marginBottom: "8px",
                       }}
                     >
                       https://leelee.kr/invitation/{group.uniqueCode}
+                    </div>
+
+                    {/* URL 관리 버튼들 */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          const url = `https://leelee.kr/invitation/${group.uniqueCode}`;
+                          navigator.clipboard
+                            .writeText(url)
+                            .then(() => {
+                              alert("✅ URL이 클립보드에 복사되었습니다!");
+                            })
+                            .catch(() => {
+                              alert(
+                                "❌ 복사에 실패했습니다. 브라우저가 지원하지 않는 기능입니다."
+                              );
+                            });
+                        }}
+                        style={{
+                          backgroundColor: AppleColors.primary,
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          padding: "6px 12px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          fontFamily: systemFont,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#0066CC";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            AppleColors.primary;
+                        }}
+                      >
+                        📋 URL 복사
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const newCode = prompt(
+                            "새로운 URL 코드를 입력하세요:\n(영문, 숫자, 하이픈만 사용 가능, 3-20자)",
+                            group.uniqueCode
+                          );
+
+                          if (
+                            newCode &&
+                            newCode !== group.uniqueCode &&
+                            group.id
+                          ) {
+                            // URL 코드 유효성 검사
+                            const isValid = /^[a-zA-Z0-9-]{3,20}$/.test(
+                              newCode
+                            );
+                            if (isValid) {
+                              handleUpdateGroupCode(group.id, newCode);
+                            } else {
+                              alert(
+                                "❌ 잘못된 형식입니다.\n영문, 숫자, 하이픈만 사용하여 3-20자로 입력해주세요."
+                              );
+                            }
+                          }
+                        }}
+                        style={{
+                          backgroundColor: AppleColors.secondary,
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          padding: "6px 12px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          fontFamily: systemFont,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#FF9500";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            AppleColors.secondary;
+                        }}
+                      >
+                        ✏️ URL 편집
+                      </button>
                     </div>
                   </div>
 

@@ -130,6 +130,7 @@ export interface InvitationResponse {
 export interface UpdateGroupRequest {
   groupName?: string;
   greetingMessage?: string;
+  uniqueCode?: string;  // 🆕 URL 코드 편집용 필드 추가
 }
 
 // 그룹별 인사말 수정 전용 요청
