@@ -95,29 +95,42 @@ const AdminDashboard: React.FC = () => {
   }, []);
 
   // 대시보드 데이터 로드 함수
+  // 기존 코드를 찾아서 다음과 같이 수정
   const loadDashboardData = async () => {
     try {
       setLoading(true);
 
-      // ===== 실제 API 호출로 변경 =====
-      const [rsvpData, groupData] = await Promise.all([
-        getAllRsvps(),
-        getAllGroups(),
-      ]);
+      // ===== API 응답 구조 자세히 확인 =====
+      console.log("🔍 RSVP API 호출 시작...");
 
-      console.log("📊 불러온 RSVP 데이터:", rsvpData);
-      console.log("📊 RSVP 데이터 타입:", typeof rsvpData);
-      console.log("📊 RSVP 데이터 키들:", Object.keys(rsvpData));
-      console.log("👥 불러온 그룹 데이터:", groupData);
-      // 컴포넌트 내부, rsvps를 받은 직후에 추가
-      console.log('RSVP 데이터 구조 확인:', rsvps);
-      console.log('첫 번째 RSVP:', rsvps[0]);
-      if (rsvps[0]) {
-        console.log('isAttending 값:', rsvps[0].isAttending);
-        console.log('isAttending 타입:', typeof rsvps[0].isAttending);
+      // RSVP 데이터 호출
+      const rsvpResponse = await fetch(
+        "https://api.leelee.kr/api/admin/rsvps",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("📡 RSVP API 응답 상태:", rsvpResponse.status);
+
+      if (!rsvpResponse.ok) {
+        throw new Error(`RSVP API 에러! status: ${rsvpResponse.status}`);
       }
 
-      // 일단 원래대로 설정하고 어떤 에러가 나는지 보기
+      const rsvpData = await rsvpResponse.json();
+      console.log("📊 원본 RSVP 응답:", rsvpData);
+      console.log("📊 RSVP 응답 타입:", typeof rsvpData);
+      console.log("📊 RSVP 응답 구조:", Object.keys(rsvpData));
+
+      // 나머지는 그대로 유지
+      const [groupData] = await Promise.all([getAllGroups()]);
+
+      console.log("👥 불러온 그룹 데이터:", groupData);
+
+      // 일단 원래대로 설정
       setRsvps(rsvpData);
       setGroups(groupData);
 
