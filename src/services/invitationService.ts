@@ -89,7 +89,6 @@ export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
   }
 };
 
-// ✅ 이 함수도 있어야 합니다
 export const getAllGroups = async (): Promise<InvitationGroup[]> => {
   try {
     const response = await fetch('https://api.leelee.kr/api/admin/groups', {
@@ -106,12 +105,14 @@ export const getAllGroups = async (): Promise<InvitationGroup[]> => {
     const data = await response.json();
     console.log('🔍 Groups API 응답:', data);
     
-    if (data.groups && Array.isArray(data.groups)) {
-      return data.groups;
-    }
-    
+    // ✅ 단순 배열로 처리
     if (Array.isArray(data)) {
       return data;
+    }
+    
+    // 기존 구조 지원
+    if (data.groups && Array.isArray(data.groups)) {
+      return data.groups;
     }
     
     console.warn('예상하지 못한 응답 형식:', data);
