@@ -170,6 +170,70 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // 그룹 기능 설정 값 가져오기 (임시로 기본값 사용)
+  const getFeatureValue = (
+    group: InvitationGroup,
+    featureKey: string
+  ): boolean => {
+    // 임시로 그룹 타입별 기본값 반환 (실제 API 연결 후 실제 값으로 변경 예정)
+    const defaults = {
+      WEDDING_GUEST: {
+        showRsvpForm: true,
+        showAccountInfo: false,
+        showShareButton: false,
+        showVenueInfo: true,
+        showPhotoGallery: true,
+        showCeremonyProgram: true,
+      },
+      PARENTS_GUEST: {
+        showRsvpForm: false,
+        showAccountInfo: true,
+        showShareButton: true,
+        showVenueInfo: false,
+        showPhotoGallery: true,
+        showCeremonyProgram: false,
+      },
+      COMPANY_GUEST: {
+        showRsvpForm: false,
+        showAccountInfo: false,
+        showShareButton: false,
+        showVenueInfo: false,
+        showPhotoGallery: true,
+        showCeremonyProgram: false,
+      },
+    };
+
+    const groupDefaults =
+      defaults[group.groupType as keyof typeof defaults] ||
+      defaults.WEDDING_GUEST;
+    return groupDefaults[featureKey as keyof typeof groupDefaults] || false;
+  };
+
+  // 기능 설정 토글 처리
+  const handleFeatureToggle = async (
+    groupId: string,
+    featureKey: string,
+    enabled: boolean
+  ) => {
+    try {
+      console.log(`🔧 기능 설정 변경: ${featureKey} = ${enabled}`);
+
+      // API 호출로 기능 설정 업데이트
+      const updateData: any = {};
+      updateData[featureKey] = enabled;
+
+      await updateGroup(groupId, updateData);
+      await fetchGroups(); // 그룹 목록 새로고침
+
+      alert(
+        `✅ ${featureKey} 설정이 ${enabled ? "활성화" : "비활성화"}되었습니다.`
+      );
+    } catch (error: any) {
+      console.error("기능 설정 업데이트 실패:", error);
+      alert(`❌ 설정 변경에 실패했습니다: ${error.message}`);
+    }
+  };
+
   const startEditingGreeting = (group: InvitationGroup) => {
     setEditingGroupId(group.id || null);
     setEditingGreeting(group.greetingMessage || "");
@@ -1464,6 +1528,108 @@ const AdminDashboard: React.FC = () => {
                           "인사말이 설정되지 않았습니다."}
                       </div>
                     )}
+                  </div>
+                  {/* 그룹 기능 설정 */}
+                  <div style={{ marginTop: "16px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: AppleColors.text,
+                          fontFamily: systemFont,
+                        }}
+                      >
+                        ⚙️ 기능 설정
+                      </span>
+                    </div>
+
+                    {/* 기능 설정 체크박스들 */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(140px, 1fr))",
+                        gap: "8px",
+                        backgroundColor: AppleColors.inputBackground,
+                        padding: "12px",
+                        borderRadius: "8px",
+                        border: `1px solid ${AppleColors.border}`,
+                      }}
+                    >
+                      {[
+                        {
+                          key: "showRsvpForm",
+                          label: "📝 참석응답",
+                          icon: "📝",
+                        },
+                        {
+                          key: "showAccountInfo",
+                          label: "💳 계좌정보",
+                          icon: "💳",
+                        },
+                        {
+                          key: "showShareButton",
+                          label: "📤 공유버튼",
+                          icon: "📤",
+                        },
+                        {
+                          key: "showVenueInfo",
+                          label: "📍 오시는길",
+                          icon: "📍",
+                        },
+                        {
+                          key: "showPhotoGallery",
+                          label: "📸 포토갤러리",
+                          icon: "📸",
+                        },
+                        {
+                          key: "showCeremonyProgram",
+                          label: "📋 본식순서",
+                          icon: "📋",
+                        },
+                      ].map((feature) => (
+                        <label
+                          key={feature.key}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "12px",
+                            cursor: "pointer",
+                            padding: "4px",
+                            borderRadius: "4px",
+                            transition: "all 0.2s ease",
+                            fontFamily: systemFont,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={getFeatureValue(group, feature.key)}
+                            onChange={(e) =>
+                              handleFeatureToggle(
+                                group.id!,
+                                feature.key,
+                                e.target.checked
+                              )
+                            }
+                            style={{
+                              cursor: "pointer",
+                            }}
+                          />
+                          <span style={{ color: AppleColors.text }}>
+                            {feature.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
