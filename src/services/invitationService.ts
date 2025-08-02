@@ -12,7 +12,7 @@ import {
   InvitationGroup
 } from '../types';
 
-const API_BASE_URL = 'http://api.leelee.kr/api';
+const API_BASE_URL = 'https://api.leelee.kr/api';
 
 // ✅ 청첩장 정보 조회 (서버 API 직접 호출)
 // ✅ 타입 매개변수 제거
