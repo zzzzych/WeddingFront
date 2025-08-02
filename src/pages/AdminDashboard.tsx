@@ -1020,9 +1020,9 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {rsvps.map((rsvp) => (
+                {rsvps.map((rsvp, index) => (
                   <tr
-                    key={rsvp.id}
+                    key={rsvp.id || `rsvp-${index}`} // ← id가 없으면 index 사용
                     style={{ borderBottom: "1px solid #dee2e6" }}
                   >
                     <td style={{ padding: "12px" }}>
