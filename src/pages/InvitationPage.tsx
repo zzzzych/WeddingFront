@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getInvitationByCode } from "../services/invitationService";
 import { InvitationAPIResponse, InvitationResponse, GroupType } from "../types"; // ✅ InvitationAPIResponse 추가
-import RsvpForm from '../components/RsvpForm';
-import VenueInfo from '../components/VenueInfo';
-import PhotoGallery from '../components/PhotoGallery';
-import ShareButton from '../components/ShareButton'; // ✅ 추가
-
+import RsvpForm from "../components/RsvpForm";
+import VenueInfo from "../components/VenueInfo";
+import PhotoGallery from "../components/PhotoGallery";
+import ShareButton from "../components/ShareButton"; // ✅ 추가
 
 const InvitationPage: React.FC = () => {
   const { uniqueCode } = useParams<{ uniqueCode: string }>();
@@ -46,37 +45,38 @@ const InvitationPage: React.FC = () => {
         }
 
         // 서버에서 받은 데이터를 그대로 사용
-        const serverData: InvitationAPIResponse = await response.json();
+        const serverData = await response.json();
 
-        // ✅ 서버 응답을 기존 컴포넌트 형식에 맞게 변환
+        // ✅ 실제 백엔드 응답 구조에 맞게 수정
         const transformedData: InvitationResponse = {
           weddingInfo: {
-            groomName: serverData.groomName,
-            brideName: serverData.brideName,
-            weddingDate: serverData.weddingDate,
-            weddingLocation: serverData.weddingLocation,
-            greetingMessage: serverData.greetingMessage,
-            ceremonyProgram: serverData.ceremonyProgram,
-            accountInfo: serverData.accountInfo,
-            // ✅ weddingLocation에서 장소명 추출 (임시)
-            venueName: serverData.weddingLocation.split(" ")[0] || "웨딩홀",
-            venueAddress: serverData.weddingLocation,
-            venueDetail: undefined,
-            kakaoMapUrl: undefined,
-            naverMapUrl: undefined,
-            parkingInfo: undefined,
-            transportInfo: undefined,
+            groomName: serverData.weddingInfo.groomName,
+            brideName: serverData.weddingInfo.brideName,
+            weddingDate: serverData.weddingInfo.weddingDate,
+            weddingLocation:
+              serverData.weddingInfo.venueName +
+              " " +
+              serverData.weddingInfo.venueAddress,
+            greetingMessage: serverData.weddingInfo.greetingMessage,
+            ceremonyProgram: serverData.weddingInfo.ceremonyProgram,
+            accountInfo: serverData.weddingInfo.accountInfo,
+            venueName: serverData.weddingInfo.venueName,
+            venueAddress: serverData.weddingInfo.venueAddress,
+            venueDetail: serverData.weddingInfo.venueDetail,
+            kakaoMapUrl: serverData.weddingInfo.kakaoMapUrl,
+            naverMapUrl: serverData.weddingInfo.naverMapUrl,
+            parkingInfo: serverData.weddingInfo.parkingInfo,
+            transportInfo: serverData.weddingInfo.transportInfo,
           },
-          // ✅ 그룹 정보 추가
           groupInfo: {
-            groupName: serverData.groupName,
-            groupType: serverData.groupType,
-            greetingMessage: serverData.greetingMessage,
+            groupName: serverData.groupInfo.groupName,
+            groupType: serverData.groupInfo.groupType,
+            greetingMessage: serverData.groupInfo.greetingMessage,
           },
-          showRsvpForm: serverData.features.showRsvpForm,
-          showAccountInfo: serverData.features.showAccountInfo,
-          showShareButton: serverData.features.showShareButton,
-          showCeremonyProgram: serverData.features.showCeremonyProgram,
+          showRsvpForm: serverData.availableFeatures.showRsvpForm,
+          showAccountInfo: serverData.availableFeatures.showAccountInfo,
+          showShareButton: serverData.availableFeatures.showShareButton,
+          showCeremonyProgram: serverData.availableFeatures.showCeremonyProgram,
         };
 
         setInvitationData(transformedData);
