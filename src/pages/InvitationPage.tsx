@@ -7,6 +7,7 @@ import VenueInfo from '../components/VenueInfo';
 import PhotoGallery from '../components/PhotoGallery';
 import ShareButton from '../components/ShareButton'; // ✅ 추가
 
+
 const InvitationPage: React.FC = () => {
   const { uniqueCode } = useParams<{ uniqueCode: string }>();
   // ✅ 디버깅 코드 추가

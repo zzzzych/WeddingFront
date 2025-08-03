@@ -4,8 +4,9 @@ import {
   getAllGroups,
   deleteGroup,
   updateGroup,
+  getAllRsvps, // ✅ 추가
 } from "../services/invitationService";
-import { InvitationGroup } from "../types";
+import { InvitationGroup, RsvpResponse } from "../types"; // ✅ RsvpResponse 타입 추가
 import CreateGroupModal from "../components/CreateGroupModal";
 
 // 애플 디자인 색상 팔레트
@@ -39,6 +40,9 @@ const AdminDashboard: React.FC = () => {
   const [editingGreeting, setEditingGreeting] = useState("");
   const [isEditingWeddingInfo, setIsEditingWeddingInfo] = useState(false);
 
+  // RSVP 데이터 상태 추가
+  const [rsvps, setRsvps] = useState<RsvpResponse[]>([]);
+  const [rsvpLoading, setRsvpLoading] = useState(true);
   // 결혼식 기본 정보 상태
   const [weddingInfo, setWeddingInfo] = useState({
     groomName: "이지환",
@@ -53,6 +57,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchGroups();
+    fetchRsvps(); // ✅ RSVP 데이터도 함께 로딩
   }, []);
 
   const fetchGroups = async () => {
@@ -63,6 +68,31 @@ const AdminDashboard: React.FC = () => {
       console.error("그룹 목록 가져오기 실패:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRsvps = async () => {
+    try {
+      setRsvpLoading(true);
+      const data = await getAllRsvps();
+
+      // 서버 응답 구조 처리 (타입 안전성 개선)
+      let processedRsvps: any[] = [];
+      if ((data as any)?.responses && Array.isArray((data as any).responses)) {
+        // responses 배열에서 response 객체 추출
+        processedRsvps = (data as any).responses.map(
+          (item: any) => item.response
+        );
+      } else if (Array.isArray(data)) {
+        // 이미 배열 형태인 경우
+        processedRsvps = data;
+      }
+
+      setRsvps(processedRsvps as RsvpResponse[]);
+    } catch (error) {
+      console.error("RSVP 데이터 가져오기 실패:", error);
+    } finally {
+      setRsvpLoading(false);
     }
   };
 
@@ -1666,43 +1696,112 @@ const AdminDashboard: React.FC = () => {
             📋 RSVP 응답 현황
           </h3>
 
-          <div
-            style={{
-              backgroundColor: AppleColors.inputBackground,
-              borderRadius: "12px",
-              padding: "20px",
-              textAlign: "center",
-            }}
-          >
+          {rsvpLoading ? (
             <div
               style={{
-                fontSize: "48px",
-                marginBottom: "16px",
-                opacity: 0.6,
+                backgroundColor: AppleColors.inputBackground,
+                borderRadius: "12px",
+                padding: "20px",
+                textAlign: "center",
               }}
             >
-              📊
+              <div
+                style={{
+                  fontSize: "16px",
+                  color: AppleColors.secondaryText,
+                  fontFamily: systemFont,
+                }}
+              >
+                RSVP 데이터를 불러오는 중...
+              </div>
             </div>
+          ) : rsvps.length === 0 ? (
             <div
               style={{
-                fontSize: "16px",
-                color: AppleColors.secondaryText,
-                fontFamily: systemFont,
+                backgroundColor: AppleColors.inputBackground,
+                borderRadius: "12px",
+                padding: "20px",
+                textAlign: "center",
               }}
             >
-              RSVP 응답 데이터가 아직 없습니다.
+              <div
+                style={{
+                  fontSize: "48px",
+                  marginBottom: "16px",
+                  opacity: 0.6,
+                }}
+              >
+                📊
+              </div>
+              <div
+                style={{
+                  fontSize: "16px",
+                  color: AppleColors.secondaryText,
+                  fontFamily: systemFont,
+                }}
+              >
+                RSVP 응답 데이터가 아직 없습니다.
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: AppleColors.secondaryText,
+                  marginTop: "8px",
+                  fontFamily: systemFont,
+                }}
+              >
+                하객들이 응답을 시작하면 여기에 표시됩니다.
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: "14px",
-                color: AppleColors.secondaryText,
-                marginTop: "8px",
-                fontFamily: systemFont,
-              }}
-            >
-              하객들이 응답을 시작하면 여기에 표시됩니다.
+          ) : (
+            <div>
+              <div
+                style={{
+                  fontSize: "16px",
+                  color: AppleColors.text,
+                  marginBottom: "16px",
+                  fontFamily: systemFont,
+                }}
+              >
+                총 {rsvps.length}개의 응답이 있습니다.
+              </div>
+              {rsvps.map((rsvp, index) => (
+                <div
+                  key={rsvp.id || `rsvp-${index}`}
+                  style={{
+                    backgroundColor: AppleColors.inputBackground,
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginBottom: "8px",
+                    border: `1px solid ${AppleColors.border}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: AppleColors.text,
+                      fontFamily: systemFont,
+                    }}
+                  >
+                    {rsvp.responderName} - {rsvp.isAttending ? "참석" : "불참"}
+                  </div>
+                  {rsvp.isAttending && (
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: AppleColors.secondaryText,
+                        marginTop: "4px",
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      성인 {rsvp.adultCount}명, 자녀 {rsvp.childrenCount}명
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
 

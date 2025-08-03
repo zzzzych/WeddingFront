@@ -35,8 +35,8 @@ export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Pro
 // 관리자 로그인
 export const adminLogin = async (credentials: AdminCredentials): Promise<LoginResponse> => {
   try {
-    // POST /api/admin/login
-    const response = await apiPost('/api/admin/login', credentials);
+    // ✅ 수정: /api/admin/login → /admin/login (중복 /api 제거)
+    const response = await apiPost('/admin/login', credentials);
     return response;
   } catch (error) {
     console.error('관리자 로그인 실패:', error);
