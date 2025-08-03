@@ -17,8 +17,11 @@ const API_BASE_URL = 'https://api.leelee.kr/api';
 // ✅ 청첩장 정보 조회 (서버 API 직접 호출)
 // ✅ 타입 매개변수 제거
 export const getInvitationByCode = async (uniqueCode: string): Promise<InvitationAPIResponse> => {
-  return apiGet(`/invitation/${uniqueCode}`);
+  // 수정 전: return apiGet(`/invitation/${uniqueCode}`);
+  // 수정 후:
+  return apiGet(`/api/invitation/${uniqueCode}`);
 };
+
 
 // 참석 여부 응답 제출 (하객용)
 export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Promise<RsvpResponse> => {
@@ -35,14 +38,17 @@ export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Pro
 // 관리자 로그인
 export const adminLogin = async (credentials: AdminCredentials): Promise<LoginResponse> => {
   try {
-    // ✅ 수정: /api/admin/login → /admin/login (중복 /api 제거)
-    const response = await apiPost('/admin/login', credentials);
+    // ✅ 수정 전: const response = await apiPost('/admin/login', credentials);
+    // ✅ 수정 후: /api/admin/login으로 변경 (백엔드 라우트와 일치)
+    const response = await apiPost('/api/admin/login', credentials);
     return response;
   } catch (error) {
     console.error('관리자 로그인 실패:', error);
     throw error;
   }
 };
+
+
 
 // 새 그룹 생성 (관리자용)
 export const createGroup = async (groupData: CreateGroupRequest): Promise<InvitationGroup> => {
