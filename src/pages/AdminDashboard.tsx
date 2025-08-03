@@ -8,6 +8,14 @@ import {
 } from "../services/invitationService";
 import { InvitationGroup, RsvpResponse } from "../types"; // ✅ RsvpResponse 타입 추가
 import CreateGroupModal from "../components/CreateGroupModal";
+import CreateAdminModal from "../components/CreateAdminModal";
+import {
+  AdminCreateResponse,
+  AdminInfo,
+  AdminListResponse,
+  getAdminRoleLabel,
+} from "../types";
+import { getAdminList } from "../services/invitationService";
 
 // 애플 디자인 색상 팔레트
 const AppleColors = {
@@ -54,6 +62,46 @@ const AdminDashboard: React.FC = () => {
     greetingMessage:
       "두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n지환, 윤진 결혼합니다.",
   });
+  // ✅ 새로 추가할 상태들
+  const [showCreateAdminModal, setShowCreateAdminModal] =
+    useState<boolean>(false);
+  const [adminList, setAdminList] = useState<AdminInfo[]>([]);
+  const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false);
+  const [showAdminList, setShowAdminList] = useState<boolean>(false);
+
+  // ✅ 관리자 목록 조회 함수
+  const fetchAdminList = async () => {
+    try {
+      setLoadingAdmins(true);
+      const response: AdminListResponse = await getAdminList();
+      setAdminList(response.admins);
+      console.log("✅ 관리자 목록 조회 성공:", response);
+    } catch (error: any) {
+      console.error("❌ 관리자 목록 조회 실패:", error);
+      alert(`❌ 관리자 목록을 불러오는데 실패했습니다: ${error.message}`);
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  // ✅ 관리자 생성 성공 처리
+  const handleCreateAdminSuccess = (newAdmin: AdminCreateResponse) => {
+    console.log("🎉 새 관리자 생성 완료:", newAdmin);
+
+    // 관리자 목록이 열려있다면 새로고침
+    if (showAdminList) {
+      fetchAdminList();
+    }
+  };
+
+  // ✅ 관리자 목록 토글
+  const toggleAdminList = () => {
+    if (!showAdminList) {
+      // 목록을 처음 열 때만 데이터 조회
+      fetchAdminList();
+    }
+    setShowAdminList(!showAdminList);
+  };
 
   useEffect(() => {
     fetchGroups();
@@ -345,188 +393,127 @@ const AdminDashboard: React.FC = () => {
           padding: "40px 20px",
         }}
       >
-        {/* 헤더 섹션 */}
+        {/* 헤더 섹션의 버튼 영역 */}
         <div
           style={{
-            backgroundColor: AppleColors.cardBackground,
-            borderRadius: "16px",
-            padding: "32px",
-            marginBottom: "24px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+            display: "flex",
+            justifyContent: "space-between", // ✅ 수정: space-between으로 변경
+            alignItems: "center",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "24px",
-            }}
-          >
-            <div>
-              <h1
-                style={{
-                  fontSize: "32px",
-                  fontWeight: "700",
-                  color: AppleColors.text,
-                  margin: "0 0 8px 0",
-                  fontFamily: systemFont,
-                }}
-              >
-                웨딩 초대장 관리
-              </h1>
-              <p
-                style={{
-                  fontSize: "17px",
-                  color: AppleColors.secondaryText,
-                  margin: "0",
-                  fontFamily: systemFont,
-                }}
-              >
-                그룹별 청첩장을 관리하고 응답을 확인하세요
-              </p>
-            </div>
-            {/* 기존의 단일 버튼 부분을 이 코드로 교체 */}
-            <div
+          <div>
+            <h1
               style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
+                fontSize: "32px",
+                fontWeight: "600",
+                color: AppleColors.text,
+                margin: "0 0 8px 0",
               }}
             >
-              {/* 로그아웃 버튼 */}
-              <button
-                onClick={handleLogout} // window.location.href = "/" 대신 handleLogout 사용
-                style={{
-                  backgroundColor: AppleColors.secondaryButton,
-                  color: AppleColors.text,
-                  border: "none",
-                  borderRadius: "12px",
-                  padding: "12px 20px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  fontFamily: systemFont,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    AppleColors.secondaryButtonHover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    AppleColors.secondaryButton;
-                }}
-              >
-                🚪 로그아웃
-              </button>
-
-              {/* 새 그룹 생성 버튼 (기존 코드 그대로) */}
-              <button
-                onClick={() => setShowCreateModal(true)}
-                style={{
-                  backgroundColor: AppleColors.primary,
-                  color: "white",
-                  border: "none",
-                  borderRadius: "12px",
-                  padding: "12px 24px",
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  fontFamily: systemFont,
-                  boxShadow: "0 4px 12px rgba(0, 123, 255, 0.3)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    AppleColors.primaryHover;
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 6px 20px rgba(0, 123, 255, 0.4)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = AppleColors.primary;
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(0, 123, 255, 0.3)";
-                }}
-              >
-                + 새 그룹 생성
-              </button>
-            </div>
+              관리자 대시보드
+            </h1>
+            <p
+              style={{
+                fontSize: "16px",
+                color: AppleColors.secondaryText,
+                margin: 0,
+              }}
+            >
+              청첩장 그룹 관리 및 통계
+            </p>
           </div>
 
-          {/* 통계 카드 */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "16px",
-            }}
-          >
-            {[
-              {
-                title: "총 그룹 수",
-                value: stats.totalGroups,
-                icon: "👥",
-                color: AppleColors.primary,
-              },
-              {
-                title: "예상 하객",
-                value: stats.totalGuests,
-                icon: "📊",
-                color: AppleColors.secondary,
-              },
-              {
-                title: "실제 응답",
-                value: stats.totalResponses,
-                icon: "✅",
-                color: AppleColors.success,
-              },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                style={{
-                  backgroundColor: AppleColors.inputBackground,
-                  borderRadius: "12px",
-                  padding: "20px",
-                  textAlign: "center",
-                  border: `1px solid ${AppleColors.border}`,
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "24px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  {stat.icon}
-                </div>
-                <div
-                  style={{
-                    fontSize: "28px",
-                    fontWeight: "700",
-                    color: stat.color,
-                    marginBottom: "4px",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  {stat.value}
-                </div>
-                <div
-                  style={{
-                    fontSize: "14px",
-                    color: AppleColors.secondaryText,
-                    fontWeight: "500",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  {stat.title}
-                </div>
-              </div>
-            ))}
+          {/* ✅ 새로 추가: 오른쪽 버튼 그룹 */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            {/* 관리자 목록 버튼 */}
+            <button
+              onClick={toggleAdminList}
+              disabled={loadingAdmins}
+              style={{
+                padding: "12px 20px",
+                backgroundColor: showAdminList ? AppleColors.primary : "white",
+                color: showAdminList ? "white" : AppleColors.primary,
+                border: `2px solid ${AppleColors.primary}`,
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: loadingAdmins ? "not-allowed" : "pointer",
+                opacity: loadingAdmins ? 0.7 : 1,
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              {loadingAdmins ? (
+                <>
+                  <div
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      border: "2px solid currentColor",
+                      borderTop: "2px solid transparent",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                  로딩 중...
+                </>
+              ) : (
+                <>👥 관리자 목록 {showAdminList ? "숨기기" : "보기"}</>
+              )}
+            </button>
+
+            {/* 새 관리자 생성 버튼 */}
+            <button
+              onClick={() => setShowCreateAdminModal(true)}
+              style={{
+                padding: "12px 20px",
+                backgroundColor: AppleColors.success,
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "#059669";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = AppleColors.success;
+              }}
+            >
+              ➕ 새 관리자 생성
+            </button>
+
+            {/* 기존 로그아웃 버튼 */}
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: "12px 20px",
+                backgroundColor: AppleColors.destructive,
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "#dc2626";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = AppleColors.destructive;
+              }}
+            >
+              로그아웃
+            </button>
           </div>
         </div>
 
@@ -1804,7 +1791,167 @@ const AdminDashboard: React.FC = () => {
           )}
         </div>
       </div>
+      // src/pages/AdminDashboard.tsx의 그룹 목록 섹션 다음에 추가
+      {/* ✅ 새로 추가: 관리자 목록 섹션 */}
+      {showAdminList && (
+        <div
+          style={{
+            backgroundColor: AppleColors.cardBackground,
+            borderRadius: "16px",
+            padding: "32px",
+            marginBottom: "24px",
+            border: `1px solid ${AppleColors.border}`,
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+          }}
+        >
+          <div style={{ marginBottom: "24px" }}>
+            <h2
+              style={{
+                fontSize: "24px",
+                fontWeight: "600",
+                color: AppleColors.text,
+                marginBottom: "8px",
+              }}
+            >
+              👥 관리자 목록
+            </h2>
+            <p
+              style={{
+                fontSize: "14px",
+                color: AppleColors.secondaryText,
+                margin: 0,
+              }}
+            >
+              총 {adminList.length}명의 관리자가 등록되어 있습니다
+            </p>
+          </div>
 
+          {loadingAdmins ? (
+            <div style={{ textAlign: "center", padding: "40px" }}>
+              <div
+                style={{
+                  fontSize: "16px",
+                  color: AppleColors.secondaryText,
+                }}
+              >
+                관리자 목록을 불러오는 중...
+              </div>
+            </div>
+          ) : adminList.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px" }}>
+              <div
+                style={{
+                  fontSize: "16px",
+                  color: AppleColors.secondaryText,
+                }}
+              >
+                등록된 관리자가 없습니다
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gap: "16px",
+              }}
+            >
+              {adminList.map((admin) => (
+                <div
+                  key={admin.id}
+                  style={{
+                    backgroundColor: "white",
+                    border: `1px solid ${AppleColors.border}`,
+                    borderRadius: "12px",
+                    padding: "20px",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <h3
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "600",
+                          color: AppleColors.text,
+                          marginBottom: "4px",
+                        }}
+                      >
+                        {admin.username}
+                      </h3>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          fontSize: "14px",
+                          color: AppleColors.secondaryText,
+                        }}
+                      >
+                        <span>🎭 {getAdminRoleLabel(admin.role)}</span>
+                        <span>•</span>
+                        <span>
+                          📅{" "}
+                          {new Date(admin.createdAt).toLocaleDateString(
+                            "ko-KR"
+                          )}
+                        </span>
+                        {admin.lastLoginAt && (
+                          <>
+                            <span>•</span>
+                            <span>
+                              🕐 마지막 로그인:{" "}
+                              {new Date(admin.lastLoginAt).toLocaleDateString(
+                                "ko-KR"
+                              )}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "6px 12px",
+                        backgroundColor:
+                          admin.role === "super_admin"
+                            ? AppleColors.destructive
+                            : admin.role === "admin"
+                            ? AppleColors.primary
+                            : AppleColors.warning,
+                        color: "white",
+                        borderRadius: "20px",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {getAdminRoleLabel(admin.role)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {/* ✅ CreateAdminModal 컴포넌트 추가 (return 문 마지막 부분에) */}
+      <CreateAdminModal
+        isOpen={showCreateAdminModal}
+        onClose={() => setShowCreateAdminModal(false)}
+        onSuccess={handleCreateAdminSuccess}
+      />
+      {/* CSS 애니메이션 (기존 것에 추가) */}
+      <style>{`
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`}</style>
       {/* 그룹 생성 모달 */}
       {showCreateModal && (
         <CreateGroupModal
@@ -1816,6 +1963,12 @@ const AdminDashboard: React.FC = () => {
           }}
         />
       )}
+      {/* ✅ 여기에 CreateAdminModal 추가 */}
+      <CreateAdminModal
+        isOpen={showCreateAdminModal}
+        onClose={() => setShowCreateAdminModal(false)}
+        onSuccess={handleCreateAdminSuccess}
+      />
     </div>
   );
 };

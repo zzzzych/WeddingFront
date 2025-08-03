@@ -59,3 +59,59 @@ export const apiPut = (endpoint: string, data: any, options: ApiRequestOptions =
 export const apiDelete = (endpoint: string, options: ApiRequestOptions = {}): Promise<any> => {
   return apiRequest(endpoint, { method: 'DELETE', ...options });
 };
+
+// src/services/api.ts 파일에 추가할 함수
+
+// ✅ 인증이 필요한 API 요청 (JWT 토큰 포함)
+export const authenticatedApiRequest = async (endpoint: string, options: ApiRequestOptions = {}): Promise<any> => {
+  const token = localStorage.getItem('adminToken');
+  
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  const config: RequestInit = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(url, config);
+    
+    if (response.status === 401) {
+      // 인증 실패 시 토큰 제거
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('인증된 API 요청 실패:', error);
+    throw error;
+  }
+};
+
+// ✅ 인증된 POST 요청
+export const authenticatedApiPost = (endpoint: string, data: any, options: ApiRequestOptions = {}): Promise<any> => {
+  return authenticatedApiRequest(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    ...options,
+  });
+};
+
+// ✅ 인증된 GET 요청
+export const authenticatedApiGet = (endpoint: string, options: ApiRequestOptions = {}): Promise<any> => {
+  return authenticatedApiRequest(endpoint, { method: 'GET', ...options });
+};

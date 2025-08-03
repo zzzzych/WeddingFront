@@ -154,3 +154,72 @@ export interface LoginResponse {
   expiresAt: string;  // Date를 JSON으로 직렬화하면 string이 됨
   username: string;
 }
+
+// src/types/index.ts 파일 하단에 추가할 타입들
+
+// ✅ 관리자 생성 관련 타입들 추가
+export interface CreateAdminRequest {
+  username: string;
+  password: string;
+  role: string;
+}
+
+export interface AdminCreateResponse {
+  id: string;
+  username: string;
+  role: string;
+  createdAt: string; // ISO 문자열 형태
+  message: string;
+}
+
+export interface AdminInfo {
+  id: string;
+  username: string;
+  role: string;
+  createdAt: string; // ISO 문자열 형태
+  lastLoginAt?: string; // 옵셔널
+}
+
+export interface AdminListResponse {
+  admins: AdminInfo[];
+  totalCount: number;
+}
+
+export type AdminRole = 'admin' | 'super_admin' | 'manager';
+
+export interface AdminRoleOption {
+  value: AdminRole;
+  label: string;
+  description: string;
+}
+
+// ✅ 관리자 역할 옵션 상수
+export const ADMIN_ROLE_OPTIONS: AdminRoleOption[] = [
+  {
+    value: 'admin',
+    label: '일반 관리자',
+    description: '기본 관리 권한'
+  },
+  {
+    value: 'super_admin',
+    label: '슈퍼 관리자', 
+    description: '모든 권한 (다른 관리자 생성 가능)'
+  },
+  {
+    value: 'manager',
+    label: '매니저',
+    description: '제한된 관리 권한'
+  }
+];
+
+// ✅ 역할별 권한 설명 함수
+export const getAdminRoleDescription = (role: string): string => {
+  const roleOption = ADMIN_ROLE_OPTIONS.find(option => option.value === role);
+  return roleOption ? roleOption.description : '알 수 없는 역할';
+};
+
+// ✅ 역할별 라벨 함수  
+export const getAdminRoleLabel = (role: string): string => {
+  const roleOption = ADMIN_ROLE_OPTIONS.find(option => option.value === role);
+  return roleOption ? roleOption.label : role;
+};

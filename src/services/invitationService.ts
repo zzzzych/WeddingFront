@@ -9,7 +9,10 @@ import {
   AdminCredentials,
   LoginResponse,
   CreateGroupRequest,
-  InvitationGroup
+  InvitationGroup,
+  CreateAdminRequest,
+  AdminCreateResponse,
+  AdminListResponse
 } from '../types';
 
 const API_BASE_URL = 'https://api.leelee.kr/api';
@@ -220,4 +223,97 @@ export const deleteGroup = async (
     // 이미 Error 객체인 경우 그대로 전달
     throw error;
   }
+};
+
+// src/services/invitationService.ts 파일에 추가할 함수들
+
+// ✅ 새 관리자 생성 (기존 관리자만 가능)
+export const createAdmin = async (adminData: CreateAdminRequest): Promise<AdminCreateResponse> => {
+  try {
+    // JWT 토큰을 헤더에 포함해서 요청
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+
+    const response = await apiPost('/api/admin/create-admin', adminData, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return response;
+  } catch (error) {
+    console.error('관리자 생성 실패:', error);
+    throw error;
+  }
+};
+
+// ✅ 관리자 목록 조회 (기존 관리자만 가능)
+export const getAdminList = async (): Promise<AdminListResponse> => {
+  try {
+    // JWT 토큰을 헤더에 포함해서 요청
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+
+    const response = await apiGet('/api/admin/list', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return response;
+  } catch (error) {
+    console.error('관리자 목록 조회 실패:', error);
+    throw error;
+  }
+};
+
+// ✅ 토큰 유효성 검사 헬퍼 함수
+export const isTokenValid = (): boolean => {
+  const token = localStorage.getItem('adminToken');
+  const userInfo = localStorage.getItem('adminUser');
+  
+  if (!token || !userInfo) {
+    return false;
+  }
+  
+  try {
+    const user = JSON.parse(userInfo);
+    const expirationTime = new Date(user.expiresAt);
+    const currentTime = new Date();
+    
+    // 토큰이 만료되었는지 확인 (5분 여유시간 추가)
+    return currentTime.getTime() < (expirationTime.getTime() - 5 * 60 * 1000);
+  } catch (error) {
+    console.error('토큰 검증 실패:', error);
+    return false;
+  }
+};
+
+// ✅ 인증된 API 요청을 위한 헬퍼 함수
+export const authenticatedRequest = async (endpoint: string, options: any = {}) => {
+  const token = localStorage.getItem('adminToken');
+  
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  
+  if (!isTokenValid()) {
+    // 토큰이 만료된 경우 로컬 스토리지 정리
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    throw new Error('토큰이 만료되었습니다. 다시 로그인해주세요.');
+  }
+  
+  return fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers
+    }
+  });
 };
