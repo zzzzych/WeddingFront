@@ -56,10 +56,10 @@ export const createGroup = async (groupData: CreateGroupRequest): Promise<Invita
   }
 };
 
-// ✅ 이 함수만 남겨두세요 (중복 제거)
+
 export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
   try {
-    const response = await fetch('https://api.leelee.kr/api/admin/rsvps', {
+    const response = await fetch(`${API_BASE_URL}/admin/rsvps`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
 
 export const getAllGroups = async (): Promise<InvitationGroup[]> => {
   try {
-    const response = await fetch('https://api.leelee.kr/api/admin/groups', {
+    const response = await fetch(`${API_BASE_URL}/admin/groups`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
