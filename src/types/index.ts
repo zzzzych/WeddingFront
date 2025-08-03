@@ -40,7 +40,6 @@ export interface WeddingInfo {
   weddingDate: string;
   venueName: string;
   venueAddress: string;
-  venueDetail: string;
   kakaoMapUrl?: string;
   naverMapUrl?: string;
   parkingInfo?: string;
@@ -112,7 +111,6 @@ export interface InvitationResponse {
     // ✅ 서버에는 없지만 컴포넌트에서 필요한 필드들 (옵셔널로 처리)
     venueName?: string;
     venueAddress?: string;
-    venueDetail?: string;
     kakaoMapUrl?: string;
     naverMapUrl?: string;
     parkingInfo?: string;

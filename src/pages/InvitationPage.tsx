@@ -138,15 +138,13 @@ const InvitationPage: React.FC = () => {
             ceremonyProgram: serverData.ceremonyProgram || serverData.weddingInfo?.ceremonyProgram || "오후 6시 예식 시작\n오후 7시 축가 및 답사\n오후 7시 30분 식사",
             accountInfo: serverData.accountInfo || serverData.weddingInfo?.accountInfo || [
               "농협 121065-56-105215 (고인옥 / 신랑母)",
-              "국민 123456-78-901234 (김영희 / 신부母)"
             ],
-            venueName: serverData.venueName || serverData.weddingInfo?.venueName || "포포인츠 바이쉐라톤 조선 서울역",
+            venueName: serverData.venueName || serverData.weddingInfo?.venueName || "포포인츠 바이쉐라톤 조선 서울역 19층",
             venueAddress: serverData.venueAddress || serverData.weddingInfo?.venueAddress || "서울특별시 용산구 한강대로 366",
-            venueDetail: serverData.venueDetail || serverData.weddingInfo?.venueDetail || "19층 그랜드볼룸",
             kakaoMapUrl: serverData.kakaoMapUrl || serverData.weddingInfo?.kakaoMapUrl,
             naverMapUrl: serverData.naverMapUrl || serverData.weddingInfo?.naverMapUrl,
-            parkingInfo: serverData.parkingInfo || serverData.weddingInfo?.parkingInfo || "건물 지하 주차장 이용 가능",
-            transportInfo: serverData.transportInfo || serverData.weddingInfo?.transportInfo || "서울역 도보 5분, 지하철 1,4호선 서울역 2번 출구",
+            parkingInfo: serverData.parkingInfo || serverData.weddingInfo?.parkingInfo || "포포인츠 바이 쉐라톤 조선 서울역 주차장 지하 2-4층 이용",
+            transportInfo: serverData.transportInfo || serverData.weddingInfo?.transportInfo || "서울역 10번 출구쪽 지하 연결 통로 이용 도보 4분, 서울역 12번 출구 도보 2분",
           },
           groupInfo: {
             groupName: serverData.groupName || serverData.groupInfo?.groupName || "소중한 분들",
@@ -189,11 +187,10 @@ const InvitationPage: React.FC = () => {
             greetingMessage: "두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.",
             ceremonyProgram: "오후 6시 예식 시작\n오후 7시 축가 및 답사\n오후 7시 30분 식사",
             accountInfo: ["농협 121065-56-105215 (고인옥 / 신랑母)"],
-            venueName: "포포인츠 바이쉐라톤 조선 서울역",
+            venueName: "포포인츠 바이쉐라톤 조선 서울역 19층",
             venueAddress: "서울특별시 용산구 한강대로 366",
-            venueDetail: "19층 그랜드볼룸",
-            parkingInfo: "건물 지하 주차장 이용 가능",
-            transportInfo: "서울역 도보 5분, 지하철 1,4호선 서울역 2번 출구",
+            parkingInfo: "포포인츠 바이 쉐라톤 조선 서울역 주차장 지하 2-4층 이용",
+            transportInfo: "서울역 10번 출구쪽 지하 연결 통로 이용 도보 4분, 서울역 12번 출구 도보 2분",
           },
           groupInfo: {
             groupName: "소중한 분들",
@@ -595,9 +592,7 @@ const InvitationPage: React.FC = () => {
               margin: "0 0 24px 0",
               fontFamily: systemFont,
             }}
-          >
-            {invitationData.groupInfo.groupName}에게
-          </h2>
+          >소중한 분들께</h2>
           <div
             style={{
               fontSize: "18px",
@@ -1136,7 +1131,7 @@ const InvitationPage: React.FC = () => {
               groomName={invitationData.weddingInfo.groomName}
               brideName={invitationData.weddingInfo.brideName}
               weddingDate={invitationData.weddingInfo.weddingDate}
-              venueName={invitationData.weddingInfo.venueName || "포포인츠 바이쉐라톤 조선 서울역"}
+              venueName={invitationData.weddingInfo.venueName || "포포인츠 바이쉐라톤 조선 서울역 19층"}
             />
 
             <div

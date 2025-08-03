@@ -166,24 +166,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 </div>
               </div>
             </div>
-
-            {weddingInfo.venueDetail && (
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px',
-                border: '1px solid #e9ecef'
-              }}>
-                <p style={{
-                  margin: 0,
-                  fontSize: '14px',
-                  color: '#6c757d',
-                  lineHeight: '1.5'
-                }}>
-                  {weddingInfo.venueDetail}
-                </p>
-              </div>
-            )}
           </div>
 
           {/* 일시 정보 */}
