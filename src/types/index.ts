@@ -41,10 +41,8 @@ export interface WeddingInfo {
   venueName: string;
   venueAddress: string;
   venueDetail: string;
-  venuePhone?: string;
   kakaoMapUrl?: string;
   naverMapUrl?: string;
-  googleMapUrl?: string;
   parkingInfo?: string;
   transportInfo?: string;
   ceremonyProgram: string;
@@ -115,10 +113,8 @@ export interface InvitationResponse {
     venueName?: string;
     venueAddress?: string;
     venueDetail?: string;
-    venuePhone?: string;
     kakaoMapUrl?: string;
     naverMapUrl?: string;
-    googleMapUrl?: string;
     parkingInfo?: string;
     transportInfo?: string;
   };

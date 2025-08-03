@@ -20,13 +20,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
     }
   };
 
-  // 전화 걸기
-  const makePhoneCall = (phoneNumber: string | undefined) => {
-    if (phoneNumber) {
-      window.location.href = `tel:${phoneNumber}`;
-    }
-  };
-
   // 주소 복사
   const copyAddress = async () => {
     if (weddingInfo.venueAddress) {
@@ -174,35 +167,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               </div>
             </div>
 
-            {weddingInfo.venuePhone && (
-              <div style={{ marginBottom: '15px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <span style={{ color: '#6c757d', fontSize: '14px' }}>📞</span>
-                  <span style={{ fontSize: '15px', color: '#495057' }}>
-                    {weddingInfo.venuePhone}
-                  </span>
-                  <button
-                    onClick={() => makePhoneCall(weddingInfo.venuePhone)}
-                    style={{
-                      backgroundColor: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      fontSize: '12px',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    📞 전화걸기
-                  </button>
-                </div>
-              </div>
-            )}
-
             {weddingInfo.venueDetail && (
               <div style={{
                 backgroundColor: '#f8f9fa',
@@ -319,29 +283,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               }}
             >
               🧭 네이버맵으로 보기
-            </button>
-
-            {/* 구글맵 */}
-            <button
-              onClick={() => openMapLink(weddingInfo.googleMapUrl)}
-              disabled={!weddingInfo.googleMapUrl}
-              style={{
-                backgroundColor: weddingInfo.googleMapUrl ? '#4285f4' : '#e9ecef',
-                color: weddingInfo.googleMapUrl ? 'white' : '#6c757d',
-                border: 'none',
-                padding: '16px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                cursor: weddingInfo.googleMapUrl ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
-              }}
-            >
-              🌐 구글맵으로 보기
             </button>
           </div>
 
@@ -481,27 +422,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               border: '1px solid #dee2e6',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '15px' }}>🚗</div>
-              <p style={{ color: '#6c757d', margin: 0 }}>
-                교통 및 주차 정보는 웨딩홀에 직접 문의해주세요.
-              </p>
-              {weddingInfo.venuePhone && (
-                <button
-                  onClick={() => makePhoneCall(weddingInfo.venuePhone)}
-                  style={{
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    marginTop: '15px'
-                  }}
-                >
-                  📞 웨딩홀 전화걸기
-                </button>
-              )}
             </div>
           )}
         </div>
