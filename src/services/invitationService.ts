@@ -79,14 +79,24 @@ export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
     const data = await response.json();
     console.log('🔍 RSVP API 응답:', data);
     
+    // 백엔드가 통계 데이터만 반환하므로 빈 배열 반환
+    console.log('🔍 RSVP API 응답:', data);
+
+    // 통계 데이터는 정상이지만 개별 응답 목록이 없는 경우
+    if (data.totalResponses !== undefined) {
+      console.log('📊 RSVP 통계:', data);
+      return []; // 현재는 통계만 있으므로 빈 배열 반환
+    }
+
+    // 기존 로직 유지
     if (data.responses && Array.isArray(data.responses)) {
       return data.responses;
     }
-    
+
     if (Array.isArray(data)) {
       return data;
     }
-    
+
     console.warn('예상하지 못한 RSVP 응답 형식:', data);
     return [];
   } catch (error) {
