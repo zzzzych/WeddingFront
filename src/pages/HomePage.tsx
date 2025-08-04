@@ -72,70 +72,56 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 결혼식 기본 정보 조회 (실제 API 호출 시도)
-        try {
-          const weddingResponse = await fetch("/api/wedding/info");
-          const weddingData = await weddingResponse.json();
+  const fetchData = async () => {
+    try {
+      // HomePage는 기본 정보만 표시하므로 API 호출 없이 기본값 설정
+      setWeddingInfo({
+        groomName: "지환",
+        brideName: "윤진", 
+        greetingMessage: `두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.`,
+      });
 
-          setWeddingInfo({
-            groomName: weddingData.groomName || "지환",
-            brideName: weddingData.brideName || "윤진",
-            greetingMessage:
-              weddingData.greetingMessage ||
-              `두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.`,
-          });
-        } catch (apiError) {
-          // API 실패 시 기본값 사용
-          console.log("API 호출 실패, 기본값 사용:", apiError);
-          setWeddingInfo({
-            groomName: "지환",
-            brideName: "윤진",
-            greetingMessage: `두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.`,
-          });
-        }
-
-        // 실제 이미지 파일들 적용 (wedding-1.jpeg ~ wedding-8.jpeg)
-        const photoList = [];
-        for (let i = 1; i <= 8; i++) {
-          photoList.push({
-            id: `wedding-${i}`,
-            url: `/images/wedding-${i}.jpeg`,
-            alt: `웨딩 사진 ${i}`,
-          });
-        }
-
-        setPhotos(photoList);
-        console.log("이미지 로드 완료:", photoList.length, "개");
-      } catch (err) {
-        console.error("데이터 로딩 실패:", err);
-        setError("데이터를 불러오는데 실패했습니다.");
-
-        // 에러 시에도 기본값 설정
-        setWeddingInfo({
-          groomName: "지환",
-          brideName: "윤진",
-          greetingMessage: `두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.`,
+      // 실제 이미지 파일들 적용 (wedding-1.jpeg ~ wedding-8.jpeg)
+      const photoList = [];
+      for (let i = 1; i <= 8; i++) {
+        photoList.push({
+          id: `wedding-${i}`,
+          url: `/images/wedding-${i}.jpeg`,
+          alt: `웨딩 사진 ${i}`,
         });
-
-        // 에러 시에도 이미지는 표시
-        const photoList = [];
-        for (let i = 1; i <= 8; i++) {
-          photoList.push({
-            id: `wedding-${i}`,
-            url: `/images/wedding-${i}.jpeg`,
-            alt: `웨딩 사진 ${i}`,
-          });
-        }
-        setPhotos(photoList);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchData();
-  }, []);
+      setPhotos(photoList);
+      console.log("HomePage 데이터 로드 완료:", photoList.length, "개 이미지");
+      
+    } catch (err) {
+      console.error("데이터 로딩 실패:", err);
+      setError("데이터를 불러오는데 실패했습니다.");
+
+      // 에러 시에도 기본값 설정
+      setWeddingInfo({
+        groomName: "지환",
+        brideName: "윤진",
+        greetingMessage: `두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.`,
+      });
+
+      // 에러 시에도 이미지는 표시
+      const photoList = [];
+      for (let i = 1; i <= 8; i++) {
+        photoList.push({
+          id: `wedding-${i}`,
+          url: `/images/wedding-${i}.jpeg`,
+          alt: `웨딩 사진 ${i}`,
+        });
+      }
+      setPhotos(photoList);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
 
   useEffect(() => {
     if (!loading) {

@@ -15,14 +15,14 @@ import {
   AdminListResponse
 } from '../types';
 
-const API_BASE_URL = 'https://api.leelee.kr/api';
+const API_BASE_URL = 'https://api.leelee.kr';
 
 // ✅ 청첩장 정보 조회 (서버 API 직접 호출)
 // ✅ 타입 매개변수 제거
 export const getInvitationByCode = async (uniqueCode: string): Promise<InvitationAPIResponse> => {
   // 수정 전: return apiGet(`/invitation/${uniqueCode}`);
   // 수정 후:
-  return apiGet(`/api/invitation/${uniqueCode}`);
+  return apiGet(`/invitation/${uniqueCode}`);
 };
 
 
@@ -30,7 +30,7 @@ export const getInvitationByCode = async (uniqueCode: string): Promise<Invitatio
 export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Promise<RsvpResponse> => {
   try {
     // POST /api/invitation/:uniqueCode/rsvp
-    const response = await apiPost(`/api/invitation/${uniqueCode}/rsvp`, rsvpData);
+    const response = await apiPost(`/invitation/${uniqueCode}/rsvp`, rsvpData);
     return response;
   } catch (error) {
     console.error('참석 응답 제출 실패:', error);
@@ -43,7 +43,7 @@ export const adminLogin = async (credentials: AdminCredentials): Promise<LoginRe
   try {
     // ✅ 수정 전: const response = await apiPost('/admin/login', credentials);
     // ✅ 수정 후: /api/admin/login으로 변경 (백엔드 라우트와 일치)
-    const response = await apiPost('/api/admin/login', credentials);
+    const response = await apiPost('/admin/login', credentials);
     return response;
   } catch (error) {
     console.error('관리자 로그인 실패:', error);
@@ -57,7 +57,7 @@ export const adminLogin = async (credentials: AdminCredentials): Promise<LoginRe
 export const createGroup = async (groupData: CreateGroupRequest): Promise<InvitationGroup> => {
   try {
     // POST /api/admin/groups
-    const response = await apiPost('/api/admin/groups', groupData);
+    const response = await apiPost('/admin/groups', groupData);
     return response;
   } catch (error) {
     console.error('그룹 생성 실패:', error);
