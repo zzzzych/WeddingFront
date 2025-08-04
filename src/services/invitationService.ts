@@ -68,7 +68,7 @@ export const createGroup = async (groupData: CreateGroupRequest): Promise<Invita
 
 export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/rsvps`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export const getAllRsvps = async (): Promise<RsvpResponse[]> => {
 
 export const getAllGroups = async (): Promise<InvitationGroup[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/groups`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/groups`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ export const getAllGroups = async (): Promise<InvitationGroup[]> => {
 
 // ✅ 그룹 수정 API 함수 추가
 export const updateGroup = async (groupId: string, updateData: UpdateGroupRequest): Promise<InvitationGroup> => {
-  const response = await fetch(`${API_BASE_URL}/admin/groups/${groupId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/groups/${groupId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export const deleteGroup = async (
     console.log(`🗑️ 그룹 삭제 시도: ${groupId}, 강제삭제: ${forceDelete}`);
     
     const response = await fetch(
-      `${API_BASE_URL}/admin/groups/${groupId}${queryParams}`, 
+      `${API_BASE_URL}/api/admin/groups/${groupId}${queryParams}`, 
       {
         method: 'DELETE',
         headers: {
