@@ -12,7 +12,8 @@ import {
   InvitationGroup,
   CreateAdminRequest,
   AdminCreateResponse,
-  AdminListResponse
+  AdminListResponse,
+  RsvpListResponse
 } from '../types';
 
 const API_BASE_URL = 'https://api.leelee.kr';
@@ -314,4 +315,29 @@ export const authenticatedRequest = async (endpoint: string, options: any = {}) 
       ...options.headers
     }
   });
+};
+
+// ✅ 새로운 개별 응답 목록 API 호출 함수 (Step 6에서 추가)
+export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/list`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // TODO: JWT 토큰 인증이 필요한 경우 주석 해제
+        // 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ getAllRsvpsList 응답:', data);
+    return data; // RsvpListResponse 형태로 반환
+  } catch (error) {
+    console.error('❌ RSVP 목록 조회 실패:', error);
+    throw error;
+  }
 };

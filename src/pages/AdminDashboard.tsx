@@ -4,9 +4,14 @@ import {
   getAllGroups,
   deleteGroup,
   updateGroup,
-  getAllRsvps, // ✅ RSVP 데이터 조회를 위한 import
+  getAllRsvpsList, // ✅ 새로운 함수로 변경
 } from "../services/invitationService";
-import { InvitationGroup, RsvpResponse } from "../types"; // ✅ 타입 정의 import
+import {
+  InvitationGroup,
+  RsvpListResponse, // ✅ 새로 추가
+  SimpleRsvpWithGroupInfo, // ✅ 새로 추가
+  RsvpSummary, // ✅ 새로 추가
+} from "../types";
 import CreateGroupModal from "../components/CreateGroupModal";
 import CreateAdminModal from "../components/CreateAdminModal";
 import {
@@ -43,7 +48,7 @@ const systemFont =
 // ==================== 📱 메인 컴포넌트 ====================
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  
+
   // ==================== 🔄 상태 관리 ====================
   // 그룹 관련 상태
   const [groups, setGroups] = useState<InvitationGroup[]>([]); // 그룹 목록
@@ -56,11 +61,12 @@ const AdminDashboard: React.FC = () => {
   const [isEditingWeddingInfo, setIsEditingWeddingInfo] = useState(false); // 결혼식 정보 편집 모드 여부
 
   // RSVP 응답 관련 상태
-  const [rsvps, setRsvps] = useState<RsvpResponse[]>([]); // RSVP 응답 목록
+  const [rsvpData, setRsvpData] = useState<RsvpListResponse | null>(null); // ✅ 전체 RSVP 데이터 (응답 목록 + 통계)
   const [rsvpLoading, setRsvpLoading] = useState(true); // RSVP 로딩 상태
 
   // 관리자 관련 상태
-  const [showCreateAdminModal, setShowCreateAdminModal] = useState<boolean>(false); // 관리자 생성 모달 표시 여부
+  const [showCreateAdminModal, setShowCreateAdminModal] =
+    useState<boolean>(false); // 관리자 생성 모달 표시 여부
   const [adminList, setAdminList] = useState<AdminInfo[]>([]); // 관리자 목록
   const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false); // 관리자 목록 로딩 상태
   const [showAdminList, setShowAdminList] = useState<boolean>(false); // 관리자 목록 표시 여부
@@ -73,7 +79,8 @@ const AdminDashboard: React.FC = () => {
     weddingTime: "18:00", // 결혼식 시간
     weddingLocation: "포포인츠 바이쉐라톤 조선 서울역 19층", // 결혼식 장소
     address: "서울특별시 용산구 한강대로 366", // 주소
-    greetingMessage: // 인사말
+    // 인사말
+    greetingMessage:
       "두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n지환, 윤진 결혼합니다.",
   });
 
@@ -129,27 +136,25 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // RSVP 데이터 조회 함수
+  // ✅ RSVP 데이터 조회 함수 (새로운 API 사용)
   const fetchRsvps = async () => {
     try {
       setRsvpLoading(true);
-      const data = await getAllRsvps();
+      console.log("🔄 RSVP 데이터 조회 시작...");
 
-      // 서버 응답 구조 처리 (타입 안전성 개선)
-      let processedRsvps: any[] = [];
-      if ((data as any)?.responses && Array.isArray((data as any).responses)) {
-        // responses 배열에서 response 객체 추출
-        processedRsvps = (data as any).responses.map(
-          (item: any) => item.response
-        );
-      } else if (Array.isArray(data)) {
-        // 이미 배열 형태인 경우
-        processedRsvps = data;
-      }
+      // 새로운 API 호출 - 개별 응답 목록과 통계를 함께 가져옴
+      const data = await getAllRsvpsList();
 
-      setRsvps(processedRsvps as RsvpResponse[]);
+      console.log("✅ RSVP 데이터 조회 성공:", data);
+      console.log(
+        `📊 통계: 총 ${data.summary.totalResponses}개 응답, ${data.summary.attendingResponses}명 참석`
+      );
+      console.log(`👥 개별 응답: ${data.responses.length}개`);
+
+      setRsvpData(data);
     } catch (error) {
-      console.error("RSVP 데이터 가져오기 실패:", error);
+      console.error("❌ RSVP 데이터 가져오기 실패:", error);
+      setRsvpData(null);
     } finally {
       setRsvpLoading(false);
     }
@@ -1897,7 +1902,7 @@ const AdminDashboard: React.FC = () => {
                 RSVP 데이터를 불러오는 중...
               </div>
             </div>
-          ) : rsvps.length === 0 ? (
+          ) : !rsvpData || rsvpData.responses.length === 0 ? (
             // RSVP 데이터가 없을 때
             <div
               style={{
@@ -1937,53 +1942,206 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           ) : (
-            // RSVP 응답 목록 표시
+            // ✅ 새로운 RSVP 응답 목록과 통계 표시
             <div>
+              {/* 통계 정보 먼저 표시 */}
               <div
                 style={{
-                  fontSize: "16px",
-                  color: AppleColors.text,
-                  marginBottom: "16px",
-                  fontFamily: systemFont,
+                  backgroundColor: AppleColors.inputBackground,
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "20px",
+                  border: `1px solid ${AppleColors.border}`,
                 }}
               >
-                총 {rsvps.length}개의 응답이 있습니다.
-              </div>
-              {rsvps.map((rsvp, index) => (
-                <div
-                  key={rsvp.id || `rsvp-${index}`}
+                <h4
                   style={{
-                    backgroundColor: AppleColors.inputBackground,
-                    borderRadius: "8px",
-                    padding: "12px",
-                    marginBottom: "8px",
-                    border: `1px solid ${AppleColors.border}`,
+                    fontSize: "18px",
+                    fontWeight: "600",
+                    color: AppleColors.text,
+                    margin: "0 0 12px 0",
+                    fontFamily: systemFont,
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      color: AppleColors.text,
-                      fontFamily: systemFont,
-                    }}
-                  >
-                    {rsvp.responderName} - {rsvp.isAttending ? "참석" : "불참"}
-                  </div>
-                  {rsvp.isAttending && (
+                  📊 응답 통계
+                </h4>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                    gap: "12px",
+                  }}
+                >
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        color: AppleColors.text,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      {rsvpData.summary.totalResponses}
+                    </div>
                     <div
                       style={{
                         fontSize: "12px",
                         color: AppleColors.secondaryText,
-                        marginTop: "4px",
                         fontFamily: systemFont,
                       }}
                     >
-                      성인 {rsvp.adultCount}명, 자녀 {rsvp.childrenCount}명
+                      총 응답
                     </div>
-                  )}
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        color: AppleColors.success,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      {rsvpData.summary.attendingResponses}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: AppleColors.secondaryText,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      참석
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        color: AppleColors.destructive,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      {rsvpData.summary.notAttendingResponses}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: AppleColors.secondaryText,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      불참
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        color: AppleColors.primary,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      {rsvpData.summary.totalAttendingCount}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: AppleColors.secondaryText,
+                        fontFamily: systemFont,
+                      }}
+                    >
+                      총 참석인원
+                    </div>
+                  </div>
                 </div>
-              ))}
+                <div
+                  style={{
+                    marginTop: "12px",
+                    fontSize: "14px",
+                    color: AppleColors.secondaryText,
+                    textAlign: "center",
+                    fontFamily: systemFont,
+                  }}
+                >
+                  성인 {rsvpData.summary.totalAdultCount}명, 자녀{" "}
+                  {rsvpData.summary.totalChildrenCount}명
+                </div>
+              </div>
+
+              {/* 개별 응답자 목록 */}
+              <div>
+                <h4
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
+                    color: AppleColors.text,
+                    margin: "0 0 16px 0",
+                    fontFamily: systemFont,
+                  }}
+                >
+                  👥 개별 응답 목록
+                </h4>
+                {rsvpData.responses.map((rsvpWithGroup, index) => (
+                  <div
+                    key={rsvpWithGroup.response.id || `rsvp-${index}`}
+                    style={{
+                      backgroundColor: AppleColors.inputBackground,
+                      borderRadius: "8px",
+                      padding: "12px",
+                      marginBottom: "8px",
+                      border: `1px solid ${AppleColors.border}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: AppleColors.text,
+                          fontFamily: systemFont,
+                        }}
+                      >
+                        {rsvpWithGroup.response.responderName} -{" "}
+                        {rsvpWithGroup.response.isAttending ? "참석" : "불참"}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: AppleColors.secondaryText,
+                          fontFamily: systemFont,
+                          backgroundColor: AppleColors.cardBackground,
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {rsvpWithGroup.groupInfo.groupName}
+                      </div>
+                    </div>
+                    {rsvpWithGroup.response.isAttending && (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: AppleColors.secondaryText,
+                          fontFamily: systemFont,
+                        }}
+                      >
+                        성인 {rsvpWithGroup.response.adultCount}명, 자녀{" "}
+                        {rsvpWithGroup.response.childrenCount}명
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
