@@ -41,16 +41,14 @@ export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Pro
 // 관리자 로그인
 export const adminLogin = async (credentials: AdminCredentials): Promise<LoginResponse> => {
   try {
-    // ✅ 수정 전: const response = await apiPost('/admin/login', credentials);
-    // ✅ 수정 후: /api/admin/login으로 변경 (백엔드 라우트와 일치)
-    const response = await apiPost('/admin/login', credentials);
+    // ✅ 수정: /admin/login → /api/admin/login
+    const response = await apiPost('/api/admin/login', credentials);
     return response;
   } catch (error) {
     console.error('관리자 로그인 실패:', error);
     throw error;
   }
 };
-
 
 
 // 새 그룹 생성 (관리자용)
