@@ -521,23 +521,6 @@ const InvitationPage: React.FC = () => {
             Wedding Invitation
           </div>
 
-          {/* 그룹 이름 표시 */}
-          <div
-            style={{
-              fontSize: "16px",
-              fontWeight: "400",
-              marginTop: "12px",
-              opacity: 0.85,
-              fontFamily: systemFont,
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              padding: "8px 16px",
-              borderRadius: "20px",
-              display: "inline-block",
-            }}
-          >
-            {invitationData.groupInfo.groupName}
-          </div>
-
           {/* 결혼식 일자 표시 - 🆕 서버 데이터 기반으로 동적 생성 (개선된 버전) */}
           <div
             style={{
@@ -1133,25 +1116,6 @@ const InvitationPage: React.FC = () => {
               weddingDate={invitationData.weddingInfo.weddingDate}
               venueName={invitationData.weddingInfo.venueName || "포포인츠 바이쉐라톤 조선 서울역 19층"}
             />
-
-            <div
-              style={{
-                marginTop: "24px",
-                padding: "20px",
-                backgroundColor: AppleColors.background,
-                borderRadius: "12px",
-                fontSize: "14px",
-                color: AppleColors.secondaryText,
-                lineHeight: "1.5",
-                fontFamily: systemFont,
-              }}
-            >
-              💡 <strong>공유 팁:</strong>
-              <br />
-              모바일에서는 설치된 앱으로 바로 공유할 수 있고,
-              <br />
-              링크 복사를 통해 어디든 자유롭게 공유하세요.
-            </div>
           </div>
         )}
       </div>

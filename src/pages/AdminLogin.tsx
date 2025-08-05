@@ -329,37 +329,12 @@ const AdminLogin: React.FC = () => {
           <p style={{
             fontSize: '13px',
             color: '#6c757d',
-            margin: '0 0 10px 0',
+            margin: '0',
             lineHeight: '1.4'
           }}>
             🔒 관리자만 접근 가능합니다<br />
             계정 정보는 시스템 관리자에게 문의하세요
           </p>
-          
-          {/* 실제 계정 안내 */}
-          <div style={{
-            backgroundColor: '#d4edda',
-            border: '1px solid #c3e6cb',
-            borderRadius: '4px',
-            padding: '10px',
-            marginTop: '10px'
-          }}>
-            <p style={{
-              fontSize: '12px',
-              color: '#155724',
-              margin: 0,
-              fontWeight: 'bold'
-            }}>
-              🔐 실제 관리자 계정으로 로그인
-            </p>
-            <p style={{
-              fontSize: '12px',
-              color: '#155724',
-              margin: '5px 0 0 0'
-            }}>
-              기본 계정: <code>admin</code> / <code>admin</code>
-            </p>
-          </div>
         </div>
       </div>
 

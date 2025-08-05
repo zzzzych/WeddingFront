@@ -267,56 +267,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               🧭 네이버맵으로 보기
             </button>
           </div>
-
-          {/* 길찾기 안내 */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            padding: '20px',
-            border: '1px solid #dee2e6'
-          }}>
-            <h4 style={{
-              fontSize: '16px',
-              color: '#2c3e50',
-              margin: '0 0 15px 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              🧭 길찾기 팁
-            </h4>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '15px',
-              fontSize: '14px'
-            }}>
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px'
-              }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#495057' }}>
-                  🚗 자동차 이용
-                </div>
-                <div style={{ color: '#6c757d', fontSize: '13px' }}>
-                  네비게이션에 정확한 주소를 입력하세요
-                </div>
-              </div>
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px'
-              }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#495057' }}>
-                  🚇 대중교통 이용
-                </div>
-                <div style={{ color: '#6c757d', fontSize: '13px' }}>
-                  지하철/버스 경로를 확인하세요
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
