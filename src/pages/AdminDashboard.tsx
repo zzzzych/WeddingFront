@@ -4,9 +4,9 @@ import {
   getAllGroups,
   deleteGroup,
   updateGroup,
-  getAllRsvps, // ✅ 추가
+  getAllRsvps, // ✅ RSVP 데이터 조회를 위한 import
 } from "../services/invitationService";
-import { InvitationGroup, RsvpResponse } from "../types"; // ✅ RsvpResponse 타입 추가
+import { InvitationGroup, RsvpResponse } from "../types"; // ✅ 타입 정의 import
 import CreateGroupModal from "../components/CreateGroupModal";
 import CreateAdminModal from "../components/CreateAdminModal";
 import {
@@ -17,6 +17,7 @@ import {
 } from "../types";
 import { getAdminList } from "../services/invitationService";
 
+// ==================== 🎨 스타일 설정 ====================
 // 애플 디자인 색상 팔레트
 const AppleColors = {
   background: "#f5f5f7",
@@ -35,41 +36,49 @@ const AppleColors = {
   secondaryButtonHover: "#e5e5ea",
 };
 
-// 시스템 폰트
+// 시스템 폰트 설정
 const systemFont =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
+// ==================== 📱 메인 컴포넌트 ====================
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [groups, setGroups] = useState<InvitationGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
-  const [editingGreeting, setEditingGreeting] = useState("");
-  const [isEditingWeddingInfo, setIsEditingWeddingInfo] = useState(false);
+  
+  // ==================== 🔄 상태 관리 ====================
+  // 그룹 관련 상태
+  const [groups, setGroups] = useState<InvitationGroup[]>([]); // 그룹 목록
+  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [showCreateModal, setShowCreateModal] = useState(false); // 그룹 생성 모달 표시 여부
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null); // 편집 중인 그룹 ID
+  const [editingGreeting, setEditingGreeting] = useState(""); // 편집 중인 인사말
 
-  // RSVP 데이터 상태 추가
-  const [rsvps, setRsvps] = useState<RsvpResponse[]>([]);
-  const [rsvpLoading, setRsvpLoading] = useState(true);
+  // 결혼식 정보 편집 상태
+  const [isEditingWeddingInfo, setIsEditingWeddingInfo] = useState(false); // 결혼식 정보 편집 모드 여부
+
+  // RSVP 응답 관련 상태
+  const [rsvps, setRsvps] = useState<RsvpResponse[]>([]); // RSVP 응답 목록
+  const [rsvpLoading, setRsvpLoading] = useState(true); // RSVP 로딩 상태
+
+  // 관리자 관련 상태
+  const [showCreateAdminModal, setShowCreateAdminModal] = useState<boolean>(false); // 관리자 생성 모달 표시 여부
+  const [adminList, setAdminList] = useState<AdminInfo[]>([]); // 관리자 목록
+  const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false); // 관리자 목록 로딩 상태
+  const [showAdminList, setShowAdminList] = useState<boolean>(false); // 관리자 목록 표시 여부
+
   // 결혼식 기본 정보 상태
   const [weddingInfo, setWeddingInfo] = useState({
-    groomName: "이지환",
-    brideName: "이윤진",
-    weddingDate: "2025-10-25",
-    weddingTime: "18:00",
-    weddingLocation: "포포인츠 바이쉐라톤 조선 서울역 19층",
-    address: "서울특별시 용산구 한강대로 366",
-    greetingMessage:
+    groomName: "이지환", // 신랑 이름
+    brideName: "이윤진", // 신부 이름
+    weddingDate: "2025-10-25", // 결혼식 날짜
+    weddingTime: "18:00", // 결혼식 시간
+    weddingLocation: "포포인츠 바이쉐라톤 조선 서울역 19층", // 결혼식 장소
+    address: "서울특별시 용산구 한강대로 366", // 주소
+    greetingMessage: // 인사말
       "두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n지환, 윤진 결혼합니다.",
   });
-  // ✅ 새로 추가할 상태들
-  const [showCreateAdminModal, setShowCreateAdminModal] =
-    useState<boolean>(false);
-  const [adminList, setAdminList] = useState<AdminInfo[]>([]);
-  const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false);
-  const [showAdminList, setShowAdminList] = useState<boolean>(false);
 
-  // ✅ 관리자 목록 조회 함수
+  // ==================== 🔧 관리자 관련 함수들 ====================
+  // 관리자 목록 조회 함수
   const fetchAdminList = async () => {
     try {
       setLoadingAdmins(true);
@@ -84,17 +93,16 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // ✅ 관리자 생성 성공 처리
+  // 관리자 생성 성공 처리 함수
   const handleCreateAdminSuccess = (newAdmin: AdminCreateResponse) => {
     console.log("🎉 새 관리자 생성 완료:", newAdmin);
-
     // 관리자 목록이 열려있다면 새로고침
     if (showAdminList) {
       fetchAdminList();
     }
   };
 
-  // ✅ 관리자 목록 토글
+  // 관리자 목록 토글 함수
   const toggleAdminList = () => {
     if (!showAdminList) {
       // 목록을 처음 열 때만 데이터 조회
@@ -103,11 +111,13 @@ const AdminDashboard: React.FC = () => {
     setShowAdminList(!showAdminList);
   };
 
+  // ==================== 🔄 초기 데이터 로딩 ====================
   useEffect(() => {
-    fetchGroups();
-    fetchRsvps(); // ✅ RSVP 데이터도 함께 로딩
+    fetchGroups(); // 그룹 목록 조회
+    fetchRsvps(); // RSVP 데이터 조회
   }, []);
 
+  // 그룹 목록 조회 함수
   const fetchGroups = async () => {
     try {
       const data = await getAllGroups();
@@ -119,6 +129,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // RSVP 데이터 조회 함수
   const fetchRsvps = async () => {
     try {
       setRsvpLoading(true);
@@ -144,7 +155,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  //그룹 삭제
+  // ==================== 🗑️ 그룹 삭제 함수 ====================
   const handleDeleteGroup = async (groupId: string) => {
     try {
       // 1차 삭제 시도
@@ -206,9 +217,10 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // ==================== ✏️ 그룹 정보 업데이트 함수들 ====================
+  // 인사말 업데이트 함수
   const handleUpdateGreeting = async (groupId: string, newGreeting: string) => {
     try {
-      // updateGroup을 사용하여 인사말 업데이트
       await updateGroup(groupId, { greetingMessage: newGreeting });
       await fetchGroups();
       setEditingGroupId(null);
@@ -219,9 +231,9 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // 그룹명 업데이트 함수
   const handleUpdateGroupName = async (groupId: string, newName: string) => {
     try {
-      // updateGroup을 사용하여 그룹명 업데이트
       await updateGroup(groupId, { groupName: newName });
       await fetchGroups();
       alert("그룹 이름이 업데이트되었습니다.");
@@ -231,10 +243,9 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // URL 코드 업데이트 함수 추가
+  // URL 코드 업데이트 함수
   const handleUpdateGroupCode = async (groupId: string, newCode: string) => {
     try {
-      // updateGroup을 사용하여 uniqueCode 업데이트
       await updateGroup(groupId, { uniqueCode: newCode });
       await fetchGroups();
       alert("✅ URL 코드가 업데이트되었습니다!");
@@ -248,7 +259,8 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // 그룹 기능 설정 값 가져오기 (실제 데이터 사용)
+  // ==================== ⚙️ 그룹 기능 설정 관련 함수들 ====================
+  // 그룹 기능 설정 값 가져오기 함수
   const getFeatureValue = (
     group: InvitationGroup,
     featureKey: string
@@ -260,7 +272,7 @@ const AdminDashboard: React.FC = () => {
       return actualValue as boolean;
     }
 
-    // 기본값 (실제 값이 없을 때만 사용)
+    // 기본값 설정 (실제 값이 없을 때만 사용)
     const defaults = {
       WEDDING_GUEST: {
         showRsvpForm: true,
@@ -294,7 +306,7 @@ const AdminDashboard: React.FC = () => {
     return groupDefaults[featureKey as keyof typeof groupDefaults] || false;
   };
 
-  // 기능 설정 토글 처리
+  // 기능 설정 토글 처리 함수
   const handleFeatureToggle = async (
     groupId: string,
     featureKey: string,
@@ -319,11 +331,14 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // ==================== 🔧 유틸리티 함수들 ====================
+  // 인사말 편집 시작 함수
   const startEditingGreeting = (group: InvitationGroup) => {
     setEditingGroupId(group.id || null);
     setEditingGreeting(group.greetingMessage || "");
   };
 
+  // 그룹 타입 표시 텍스트 변환 함수
   const getGroupTypeDisplay = (type: string) => {
     const typeMap: { [key: string]: string } = {
       WEDDING_GUEST: "🎎 결혼식 초대",
@@ -333,27 +348,28 @@ const AdminDashboard: React.FC = () => {
     return typeMap[type] || type;
   };
 
+  // 전체 통계 계산 함수
   const getTotalStats = () => {
     return {
       totalGroups: groups.length,
-      // 임시로 0으로 설정 (해당 필드가 없으므로)
-      totalGuests: 0,
-      totalResponses: 0,
+      totalGuests: 0, // 임시로 0으로 설정 (해당 필드가 없으므로)
+      totalResponses: 0, // 임시로 0으로 설정
     };
   };
 
-  //로그아웃
+  // 로그아웃 처리 함수
   const handleLogout = () => {
     // 로컬스토리지에서 토큰과 사용자 정보 삭제
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminUser");
-
     // 로그인 페이지로 리다이렉트
     navigate("/012486/login");
   };
 
+  // ==================== 📊 통계 데이터 ====================
   const stats = getTotalStats();
 
+  // ==================== 🔄 로딩 화면 ====================
   if (loading) {
     return (
       <div
@@ -378,6 +394,7 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
+  // ==================== 🎨 메인 렌더링 ====================
   return (
     <div
       style={{
@@ -393,14 +410,15 @@ const AdminDashboard: React.FC = () => {
           padding: "40px 20px",
         }}
       >
-        {/* 헤더 섹션의 버튼 영역 */}
+        {/* ==================== 📋 헤더 섹션 ==================== */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between", // ✅ 수정: space-between으로 변경
+            justifyContent: "space-between",
             alignItems: "center",
           }}
         >
+          {/* 헤더 제목 영역 */}
           <div>
             <h1
               style={{
@@ -423,7 +441,7 @@ const AdminDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* ✅ 새로 추가: 오른쪽 버튼 그룹 */}
+          {/* 헤더 버튼 그룹 */}
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             {/* 관리자 목록 버튼 */}
             <button
@@ -491,7 +509,28 @@ const AdminDashboard: React.FC = () => {
               ➕ 새 관리자 생성
             </button>
 
-            {/* 기존 로그아웃 버튼 */}
+            {/* 새 그룹 생성 버튼 */}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                padding: "12px 20px",
+                backgroundColor: AppleColors.primary,
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              ➕ 새 그룹 생성
+            </button>
+
+            {/* 로그아웃 버튼 */}
             <button
               onClick={handleLogout}
               style={{
@@ -517,7 +556,156 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* 결혼식 기본 정보 섹션 */}
+        {/* ==================== 👥 관리자 목록 섹션 ==================== */}
+        {showAdminList && (
+          <div
+            style={{
+              backgroundColor: AppleColors.cardBackground,
+              borderRadius: "16px",
+              padding: "32px",
+              marginTop: "24px",
+              marginBottom: "24px",
+              border: `1px solid ${AppleColors.border}`,
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+            }}
+          >
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "600",
+                  color: AppleColors.text,
+                  marginBottom: "8px",
+                }}
+              >
+                👥 관리자 목록
+              </h2>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: AppleColors.secondaryText,
+                  margin: 0,
+                }}
+              >
+                총 {adminList.length}명의 관리자가 등록되어 있습니다
+              </p>
+            </div>
+
+            {loadingAdmins ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+                <div
+                  style={{
+                    fontSize: "16px",
+                    color: AppleColors.secondaryText,
+                  }}
+                >
+                  관리자 목록을 불러오는 중...
+                </div>
+              </div>
+            ) : adminList.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+                <div
+                  style={{
+                    fontSize: "16px",
+                    color: AppleColors.secondaryText,
+                  }}
+                >
+                  등록된 관리자가 없습니다
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gap: "16px",
+                }}
+              >
+                {adminList.map((admin) => (
+                  <div
+                    key={admin.id}
+                    style={{
+                      backgroundColor: "white",
+                      border: `1px solid ${AppleColors.border}`,
+                      borderRadius: "12px",
+                      padding: "20px",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <h3
+                          style={{
+                            fontSize: "18px",
+                            fontWeight: "600",
+                            color: AppleColors.text,
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {admin.username}
+                        </h3>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            fontSize: "14px",
+                            color: AppleColors.secondaryText,
+                          }}
+                        >
+                          <span>🎭 {getAdminRoleLabel(admin.role)}</span>
+                          <span>•</span>
+                          <span>
+                            📅{" "}
+                            {new Date(admin.createdAt).toLocaleDateString(
+                              "ko-KR"
+                            )}
+                          </span>
+                          {admin.lastLoginAt && (
+                            <>
+                              <span>•</span>
+                              <span>
+                                🕐 마지막 로그인:{" "}
+                                {new Date(admin.lastLoginAt).toLocaleDateString(
+                                  "ko-KR"
+                                )}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: "6px 12px",
+                          backgroundColor:
+                            admin.role === "super_admin"
+                              ? AppleColors.destructive
+                              : admin.role === "admin"
+                              ? AppleColors.primary
+                              : AppleColors.warning,
+                          color: "white",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {getAdminRoleLabel(admin.role)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==================== 💒 결혼식 기본 정보 섹션 ==================== */}
         <div
           style={{
             backgroundColor: AppleColors.cardBackground,
@@ -581,6 +769,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {isEditingWeddingInfo ? (
+            // 편집 모드 - 결혼식 정보 수정 폼
             <div
               style={{
                 display: "grid",
@@ -588,7 +777,7 @@ const AdminDashboard: React.FC = () => {
                 gap: "20px",
               }}
             >
-              {/* 신랑 이름 */}
+              {/* 신랑 이름 입력 */}
               <div>
                 <label
                   style={{
@@ -634,7 +823,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 신부 이름 */}
+              {/* 신부 이름 입력 */}
               <div>
                 <label
                   style={{
@@ -680,7 +869,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 결혼식 날짜 */}
+              {/* 결혼식 날짜 입력 */}
               <div>
                 <label
                   style={{
@@ -726,7 +915,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 결혼식 시간 */}
+              {/* 결혼식 시간 입력 */}
               <div>
                 <label
                   style={{
@@ -772,7 +961,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 결혼식 장소 */}
+              {/* 결혼식 장소 입력 */}
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
@@ -819,7 +1008,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 주소 */}
+              {/* 주소 입력 */}
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
@@ -863,7 +1052,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 인사말 */}
+              {/* 인사말 입력 */}
               <div style={{ gridColumn: "1 / -1" }}>
                 <label
                   style={{
@@ -911,7 +1100,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              {/* 저장 버튼 */}
+              {/* 저장/취소 버튼 */}
               <div
                 style={{
                   gridColumn: "1 / -1",
@@ -948,7 +1137,7 @@ const AdminDashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    // 저장 로직 (다음 단계에서 구현)
+                    // 저장 로직 (향후 API 연동 시 구현)
                     console.log("결혼식 정보 저장:", weddingInfo);
                     setIsEditingWeddingInfo(false);
                   }}
@@ -981,7 +1170,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           ) : (
-            // 조회 모드
+            // 조회 모드 - 결혼식 정보 표시
             <div
               style={{
                 display: "grid",
@@ -989,7 +1178,7 @@ const AdminDashboard: React.FC = () => {
                 gap: "20px",
               }}
             >
-              {/* 결혼식 정보 카드들 */}
+              {/* 결혼식 기본 정보 카드들 */}
               {[
                 { label: "신랑", value: weddingInfo.groomName, icon: "🤵" },
                 { label: "신부", value: weddingInfo.brideName, icon: "👰" },
@@ -1112,7 +1301,7 @@ const AdminDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* 그룹 관리 섹션 */}
+        {/* ==================== 👥 그룹 관리 섹션 ==================== */}
         <div
           style={{
             backgroundColor: AppleColors.cardBackground,
@@ -1136,6 +1325,7 @@ const AdminDashboard: React.FC = () => {
           </h3>
 
           {groups.length === 0 ? (
+            // 그룹이 없을 때 표시
             <div
               style={{
                 textAlign: "center",
@@ -1161,6 +1351,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           ) : (
+            // 그룹 목록 표시
             <div
               style={{
                 display: "grid",
@@ -1245,7 +1436,7 @@ const AdminDashboard: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* 그룹 정보 - 임시 데이터 사용 */}
+                  {/* 그룹 통계 정보 */}
                   <div
                     style={{
                       display: "grid",
@@ -1313,7 +1504,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   {/* 그룹 고유 링크 */}
-                  <div>
+                  <div style={{ marginBottom: "16px" }}>
                     <div
                       style={{
                         fontSize: "14px",
@@ -1436,8 +1627,8 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 인사말 편집 */}
-                  <div>
+                  {/* 인사말 편집 섹션 */}
+                  <div style={{ marginBottom: "16px" }}>
                     <div
                       style={{
                         display: "flex",
@@ -1475,6 +1666,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
 
                     {editingGroupId === group.id ? (
+                      // 인사말 편집 모드
                       <div>
                         <textarea
                           value={editingGreeting}
@@ -1536,6 +1728,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       </div>
                     ) : (
+                      // 인사말 표시 모드
                       <div
                         style={{
                           backgroundColor: AppleColors.cardBackground,
@@ -1553,8 +1746,9 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  {/* 그룹 기능 설정 */}
-                  <div style={{ marginTop: "16px" }}>
+
+                  {/* 그룹 기능 설정 섹션 */}
+                  <div>
                     <div
                       style={{
                         display: "flex",
@@ -1661,7 +1855,7 @@ const AdminDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* RSVP 현황 섹션 */}
+        {/* ==================== 📋 RSVP 응답 현황 섹션 ==================== */}
         <div
           style={{
             backgroundColor: AppleColors.cardBackground,
@@ -1684,6 +1878,7 @@ const AdminDashboard: React.FC = () => {
           </h3>
 
           {rsvpLoading ? (
+            // RSVP 로딩 상태
             <div
               style={{
                 backgroundColor: AppleColors.inputBackground,
@@ -1703,6 +1898,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           ) : rsvps.length === 0 ? (
+            // RSVP 데이터가 없을 때
             <div
               style={{
                 backgroundColor: AppleColors.inputBackground,
@@ -1741,6 +1937,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           ) : (
+            // RSVP 응답 목록 표시
             <div>
               <div
                 style={{
@@ -1791,167 +1988,8 @@ const AdminDashboard: React.FC = () => {
           )}
         </div>
       </div>
-      // src/pages/AdminDashboard.tsx의 그룹 목록 섹션 다음에 추가
-      {/* ✅ 새로 추가: 관리자 목록 섹션 */}
-      {showAdminList && (
-        <div
-          style={{
-            backgroundColor: AppleColors.cardBackground,
-            borderRadius: "16px",
-            padding: "32px",
-            marginBottom: "24px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-          }}
-        >
-          <div style={{ marginBottom: "24px" }}>
-            <h2
-              style={{
-                fontSize: "24px",
-                fontWeight: "600",
-                color: AppleColors.text,
-                marginBottom: "8px",
-              }}
-            >
-              👥 관리자 목록
-            </h2>
-            <p
-              style={{
-                fontSize: "14px",
-                color: AppleColors.secondaryText,
-                margin: 0,
-              }}
-            >
-              총 {adminList.length}명의 관리자가 등록되어 있습니다
-            </p>
-          </div>
 
-          {loadingAdmins ? (
-            <div style={{ textAlign: "center", padding: "40px" }}>
-              <div
-                style={{
-                  fontSize: "16px",
-                  color: AppleColors.secondaryText,
-                }}
-              >
-                관리자 목록을 불러오는 중...
-              </div>
-            </div>
-          ) : adminList.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px" }}>
-              <div
-                style={{
-                  fontSize: "16px",
-                  color: AppleColors.secondaryText,
-                }}
-              >
-                등록된 관리자가 없습니다
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gap: "16px",
-              }}
-            >
-              {adminList.map((admin) => (
-                <div
-                  key={admin.id}
-                  style={{
-                    backgroundColor: "white",
-                    border: `1px solid ${AppleColors.border}`,
-                    borderRadius: "12px",
-                    padding: "20px",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div>
-                      <h3
-                        style={{
-                          fontSize: "18px",
-                          fontWeight: "600",
-                          color: AppleColors.text,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        {admin.username}
-                      </h3>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "12px",
-                          fontSize: "14px",
-                          color: AppleColors.secondaryText,
-                        }}
-                      >
-                        <span>🎭 {getAdminRoleLabel(admin.role)}</span>
-                        <span>•</span>
-                        <span>
-                          📅{" "}
-                          {new Date(admin.createdAt).toLocaleDateString(
-                            "ko-KR"
-                          )}
-                        </span>
-                        {admin.lastLoginAt && (
-                          <>
-                            <span>•</span>
-                            <span>
-                              🕐 마지막 로그인:{" "}
-                              {new Date(admin.lastLoginAt).toLocaleDateString(
-                                "ko-KR"
-                              )}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor:
-                          admin.role === "super_admin"
-                            ? AppleColors.destructive
-                            : admin.role === "admin"
-                            ? AppleColors.primary
-                            : AppleColors.warning,
-                        color: "white",
-                        borderRadius: "20px",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {getAdminRoleLabel(admin.role)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {/* ✅ CreateAdminModal 컴포넌트 추가 (return 문 마지막 부분에) */}
-      <CreateAdminModal
-        isOpen={showCreateAdminModal}
-        onClose={() => setShowCreateAdminModal(false)}
-        onSuccess={handleCreateAdminSuccess}
-      />
-      {/* CSS 애니메이션 (기존 것에 추가) */}
-      <style>{`
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`}</style>
+      {/* ==================== 🎭 모달 컴포넌트들 ==================== */}
       {/* 그룹 생성 모달 */}
       {showCreateModal && (
         <CreateGroupModal
@@ -1959,16 +1997,25 @@ const AdminDashboard: React.FC = () => {
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => {
             setShowCreateModal(false);
-            fetchGroups();
+            fetchGroups(); // 그룹 목록 새로고침
           }}
         />
       )}
-      {/* ✅ 여기에 CreateAdminModal 추가 */}
+
+      {/* 관리자 생성 모달 */}
       <CreateAdminModal
         isOpen={showCreateAdminModal}
         onClose={() => setShowCreateAdminModal(false)}
         onSuccess={handleCreateAdminSuccess}
       />
+
+      {/* ==================== 🎨 CSS 애니메이션 스타일 ==================== */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
