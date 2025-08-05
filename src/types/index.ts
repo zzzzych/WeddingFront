@@ -276,3 +276,17 @@ export interface InvitationResponse {
   showShareButton: boolean;         // 공유 버튼 표시 여부
   showCeremonyProgram: boolean;     // 예식 순서 표시 여부
 }
+
+// RSVP 응답 수정 요청 타입 (서버의 UpdateRsvpRequest와 일치)
+export interface UpdateRsvpRequest {
+  responderName: string;          // 응답자 이름
+  isAttending: boolean;           // 참석 여부
+  adultCount: number;             // 성인 참석 인원 수
+  childrenCount: number;          // 자녀 참석 인원 수
+}
+
+// 그룹 정보가 포함된 RSVP 응답 타입 (서버의 SimpleRsvpWithGroupInfo와 일치)
+export interface SimpleRsvpWithGroupInfo {
+  response: SimpleRsvpResponse;   // 응답 정보
+  groupInfo: SimpleGroupInfo;     // 그룹 정보
+}

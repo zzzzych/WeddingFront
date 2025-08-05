@@ -5,12 +5,17 @@ import {
   deleteGroup,
   updateGroup,
   getAllRsvpsList, // ✅ 새로운 함수로 변경
+  getRsvpList,           // ✅ 새로 추가
+  updateRsvpResponse,    // ✅ 새로 추가
+  deleteRsvpResponse     // ✅ 새로 추가
 } from "../services/invitationService";
 import {
   InvitationGroup,
   RsvpListResponse, // ✅ 새로 추가
   SimpleRsvpWithGroupInfo, // ✅ 새로 추가
   RsvpSummary, // ✅ 새로 추가
+  SimpleRsvpWithGroupInfo,  // ✅ 새로 추가
+  UpdateRsvpRequest         // ✅ 새로 추가
 } from "../types";
 import CreateGroupModal from "../components/CreateGroupModal";
 import CreateAdminModal from "../components/CreateAdminModal";
@@ -63,6 +68,11 @@ const AdminDashboard: React.FC = () => {
   // RSVP 응답 관련 상태
   const [rsvpData, setRsvpData] = useState<RsvpListResponse | null>(null); // ✅ 전체 RSVP 데이터 (응답 목록 + 통계)
   const [rsvpLoading, setRsvpLoading] = useState(true); // RSVP 로딩 상태
+  // 기존 상태들 아래에 추가
+  const [rsvpList, setRsvpList] = useState<SimpleRsvpWithGroupInfo[]>([]);
+  const [editingRsvp, setEditingRsvp] = useState<SimpleRsvpWithGroupInfo | null>(null);
+  const [showRsvpList, setShowRsvpList] = useState(false);
+  const [loadingRsvps, setLoadingRsvps] = useState(false);
 
   // 관리자 관련 상태
   const [showCreateAdminModal, setShowCreateAdminModal] =
@@ -160,6 +170,90 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // RSVP 목록 조회 함수
+  const fetchRsvpList = async () => {
+    try {
+      setLoadingRsvps(true);
+      console.log("📋 RSVP 목록 조회 시작...");
+      
+      const rsvpData = await getRsvpList();
+      console.log("📋 RSVP 목록 데이터:", rsvpData);
+      
+      setRsvpList(rsvpData);
+    } catch (error) {
+      console.error("RSVP 목록 조회 실패:", error);
+      alert("RSVP 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setLoadingRsvps(false);
+    }
+  };
+
+  // RSVP 목록 토글 함수
+  const toggleRsvpList = async () => {
+    if (!showRsvpList) {
+      await fetchRsvpList(); // 처음 열 때만 데이터 로드
+    }
+    setShowRsvpList(!showRsvpList);
+  };
+
+  // RSVP 응답 수정 함수
+  const handleUpdateRsvp = async (
+    rsvpId: string, 
+    updateData: UpdateRsvpRequest
+  ) => {
+    try {
+      console.log("✏️ RSVP 응답 수정 시도:", rsvpId, updateData);
+      
+      await updateRsvpResponse(rsvpId, updateData);
+      await fetchRsvpList(); // 목록 새로고침
+      setEditingRsvp(null); // 편집 모드 종료
+      
+      alert("✅ 응답이 성공적으로 수정되었습니다!");
+    } catch (error: any) {
+      console.error("RSVP 응답 수정 실패:", error);
+      alert(`❌ 응답 수정에 실패했습니다: ${error.message}`);
+    }
+  };
+
+  // RSVP 응답 삭제 함수
+  const handleDeleteRsvp = async (rsvp: SimpleRsvpWithGroupInfo) => {
+    const confirmDelete = window.confirm(
+      `⚠️ 응답 삭제 확인\n\n` +
+      `응답자: ${rsvp.response.responderName}\n` +
+      `그룹: ${rsvp.groupInfo.groupName}\n` +
+      `참석 여부: ${rsvp.response.isAttending ? "참석" : "불참"}\n\n` +
+      `이 응답을 삭제하시겠습니까?\n` +
+      `주의: 이 작업은 되돌릴 수 없습니다!`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      console.log("🗑️ RSVP 응답 삭제 시도:", rsvp.response.id);
+      
+      if (!rsvp.response.id) {
+        throw new Error("응답 ID가 없습니다.");
+      }
+      
+      await deleteRsvpResponse(rsvp.response.id);
+      await fetchRsvpList(); // 목록 새로고침
+      
+      alert("✅ 응답이 성공적으로 삭제되었습니다!");
+    } catch (error: any) {
+      console.error("RSVP 응답 삭제 실패:", error);
+      alert(`❌ 응답 삭제에 실패했습니다: ${error.message}`);
+    }
+  };
+
+  // 편집 모드 시작 함수
+  const startEditingRsvp = (rsvp: SimpleRsvpWithGroupInfo) => {
+    setEditingRsvp(rsvp);
+  };
+
+  // 편집 모드 취소 함수
+  const cancelEditingRsvp = () => {
+    setEditingRsvp(null);
+  };
   // ==================== 🗑️ 그룹 삭제 함수 ====================
   const handleDeleteGroup = async (groupId: string) => {
     try {
@@ -448,27 +542,27 @@ const AdminDashboard: React.FC = () => {
 
           {/* 헤더 버튼 그룹 */}
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {/* 관리자 목록 버튼 */}
+            {/* ✅ RSVP 목록 버튼 - 새로 추가 */}
             <button
-              onClick={toggleAdminList}
-              disabled={loadingAdmins}
+              onClick={toggleRsvpList}
+              disabled={loadingRsvps}
               style={{
                 padding: "12px 20px",
-                backgroundColor: showAdminList ? AppleColors.primary : "white",
-                color: showAdminList ? "white" : AppleColors.primary,
+                backgroundColor: showRsvpList ? AppleColors.primary : "white",
+                color: showRsvpList ? "white" : AppleColors.primary,
                 border: `2px solid ${AppleColors.primary}`,
                 borderRadius: "10px",
                 fontSize: "14px",
                 fontWeight: "600",
-                cursor: loadingAdmins ? "not-allowed" : "pointer",
-                opacity: loadingAdmins ? 0.7 : 1,
+                cursor: loadingRsvps ? "not-allowed" : "pointer",
+                opacity: loadingRsvps ? 0.7 : 1,
                 transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
               }}
             >
-              {loadingAdmins ? (
+              {loadingRsvps ? (
                 <>
                   <div
                     style={{
@@ -483,7 +577,7 @@ const AdminDashboard: React.FC = () => {
                   로딩 중...
                 </>
               ) : (
-                <>👥 관리자 목록 {showAdminList ? "숨기기" : "보기"}</>
+                <>💌 응답 목록 {showRsvpList ? "숨기기" : "보기"}</>
               )}
             </button>
 
@@ -560,6 +654,92 @@ const AdminDashboard: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* ==================== 💌 RSVP 응답 목록 섹션 ==================== */}
+        {showRsvpList && (
+          <div
+            style={{
+              backgroundColor: AppleColors.cardBackground,
+              borderRadius: "16px",
+              padding: "32px",
+              marginTop: "24px",
+              marginBottom: "24px",
+              border: `1px solid ${AppleColors.border}`,
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+            }}
+          >
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "600",
+                  color: AppleColors.text,
+                  marginBottom: "8px",
+                }}
+              >
+                💌 참석 응답 목록
+              </h2>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: AppleColors.secondaryText,
+                  margin: 0,
+                }}
+              >
+                총 {rsvpList.length}개의 응답이 있습니다
+              </p>
+            </div>
+
+            {loadingRsvps ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+                <div
+                  style={{
+                    fontSize: "16px",
+                    color: AppleColors.secondaryText,
+                  }}
+                >
+                  응답 목록을 불러오는 중...
+                </div>
+              </div>
+            ) : rsvpList.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+                <div
+                  style={{
+                    fontSize: "16px",
+                    color: AppleColors.secondaryText,
+                  }}
+                >
+                  아직 응답이 없습니다
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gap: "16px",
+                }}
+              >
+                {rsvpList.map((rsvpItem) => (
+                  <div
+                    key={rsvpItem.response.id}
+                    style={{
+                      backgroundColor: "white",
+                      border: `1px solid ${AppleColors.border}`,
+                      borderRadius: "12px",
+                      padding: "20px",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    {/* 응답 아이템 내용은 다음 단계에서 추가 */}
+                    <div style={{ fontSize: "14px", color: AppleColors.text }}>
+                      {rsvpItem.response.responderName} - {rsvpItem.groupInfo.groupName}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ==================== 👥 관리자 목록 섹션 ==================== */}
         {showAdminList && (

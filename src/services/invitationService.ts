@@ -341,3 +341,93 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
     throw error;
   }
 };
+
+// 개별 RSVP 응답 목록 조회 (관리자용)
+export const getRsvpList = async (): Promise<SimpleRsvpWithGroupInfo[]> => {
+  try {
+    console.log('📋 개별 RSVP 목록 조회 시작...');
+    
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/list`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('📋 RSVP 목록 API 응답:', data);
+    
+    // 배열 형태로 반환된 개별 응답 목록 처리
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    console.warn('예상하지 못한 RSVP 목록 응답 형식:', data);
+    return [];
+  } catch (error) {
+    console.error('RSVP 목록 조회 실패:', error);
+    throw error;
+  }
+};
+
+// RSVP 응답 수정 (관리자용)
+export const updateRsvpResponse = async (
+  rsvpId: string, 
+  updateData: UpdateRsvpRequest
+): Promise<SimpleRsvpResponse> => {
+  try {
+    console.log(`✏️ RSVP 응답 수정 시도: ${rsvpId}`, updateData);
+    
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/${rsvpId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.reason || 'RSVP 응답 수정에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    console.log('✅ RSVP 응답 수정 성공:', result);
+    return result;
+  } catch (error) {
+    console.error('RSVP 응답 수정 실패:', error);
+    throw error;
+  }
+};
+
+// RSVP 응답 삭제 (관리자용)
+export const deleteRsvpResponse = async (rsvpId: string): Promise<void> => {
+  try {
+    console.log(`🗑️ RSVP 응답 삭제 시도: ${rsvpId}`);
+    
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/${rsvpId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // 204 No Content는 성공을 의미
+    if (response.status === 204) {
+      console.log('✅ RSVP 응답 삭제 성공');
+      return;
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.reason || 'RSVP 응답 삭제에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('RSVP 응답 삭제 실패:', error);
+    throw error;
+  }
+};
