@@ -30,7 +30,7 @@ export const getInvitationByCode = async (uniqueCode: string): Promise<Invitatio
 export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Promise<RsvpResponse> => {
   try {
     // POST /api/invitation/:uniqueCode/rsvp
-    const response = await apiPost(`/invitation/${uniqueCode}/rsvp`, rsvpData);
+    const response = await apiPost(`api/invitation/${uniqueCode}/rsvp`, rsvpData);
     return response;
   } catch (error) {
     console.error('참석 응답 제출 실패:', error);
@@ -55,7 +55,7 @@ export const adminLogin = async (credentials: AdminCredentials): Promise<LoginRe
 export const createGroup = async (groupData: CreateGroupRequest): Promise<InvitationGroup> => {
   try {
     // POST /api/admin/groups
-    const response = await apiPost('/admin/groups', groupData);
+    const response = await apiPost('api/admin/groups', groupData);
     return response;
   } catch (error) {
     console.error('그룹 생성 실패:', error);
