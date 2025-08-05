@@ -37,13 +37,27 @@ export const apiGet = (endpoint: string, options: ApiRequestOptions = {}): Promi
   return apiRequest(endpoint, { method: 'GET', ...options });
 };
 
-// POST 요청  
-export const apiPost = (endpoint: string, data: any, options: ApiRequestOptions = {}): Promise<any> => {
-  return apiRequest(endpoint, {
-    method: 'POST',
-    body: JSON.stringify(data),
-    ...options,
-  });
+// POST 요청
+export const apiPost = async (endpoint: string, data: any, options: any = {}) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // 🔥 이 부분이 중요!
+        ...options.headers // 추가 헤더들 (Authorization 등)
+      },
+      body: JSON.stringify(data) // JSON 문자열로 변환
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API POST 요청 실패:', error);
+    throw error;
+  }
 };
 
 // PUT 요청
