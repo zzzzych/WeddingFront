@@ -28,6 +28,14 @@ const systemFont =
 // ==================== 📊 타입 정의 ====================
 
 /**
+ * AdminDashboardLayout 컴포넌트 타입 확장
+ * 정적 메서드 Loading을 포함하도록 타입 정의
+ */
+type AdminDashboardLayoutComponent = React.FC<AdminDashboardLayoutProps> & {
+  Loading: React.ComponentType; // ✅ React.FC에서 React.ComponentType으로 변경
+};
+
+/**
  * 헤더 버튼 Props 타입
  */
 interface HeaderButtonProps {
@@ -246,7 +254,7 @@ const LoadingOverlay: React.FC = () => (
  * 관리자 대시보드의 전체 레이아웃을 담당하는 메인 컴포넌트
  * 헤더, 메인 컨텐츠 영역, 반응형 디자인을 포함
  */
-const AdminDashboardLayout: React.FC<AdminDashboardLayoutProps> = ({
+const AdminDashboardLayoutBase: React.FC<AdminDashboardLayoutProps> = ({
   children,
   showAdminList,
   onToggleAdminList,
@@ -348,11 +356,11 @@ const AdminDashboardLayout: React.FC<AdminDashboardLayoutProps> = ({
   );
 };
 
-// 로딩 상태용 정적 메서드 내보내기
+// 정적 속성 할당
+const AdminDashboardLayout = AdminDashboardLayoutBase as AdminDashboardLayoutComponent;
 AdminDashboardLayout.Loading = LoadingOverlay;
 
 export default AdminDashboardLayout;
-
 // ==================== 📝 사용 예시 ====================
 /*
 사용 예시:

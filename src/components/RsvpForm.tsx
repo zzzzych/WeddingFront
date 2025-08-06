@@ -96,6 +96,12 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       };
 
       // API 호출
+      const submitDataWithCode: RsvpRequest = {
+        ...submitData,
+        // uniqueCode를 어떻게 처리할지에 따라 달라짐
+        // 서버에서 uniqueCode로 그룹을 찾는 경우라면 다른 API 엔드포인트가 필요
+      };
+
       await submitRsvp(uniqueCode, submitData);
 
       // 성공 처리

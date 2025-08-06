@@ -135,32 +135,37 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   ];
 
   // 입력값 변경 처리
-  const handleInputChange = (
-    field: keyof CreateGroupRequest,
-    value: string | GroupType
+ const handleInputChange = (
+    field: keyof CreateGroupRequest | keyof GroupFeatureSettings,
+    value: string | GroupType | boolean
   ) => {
     setFormData((prev) => {
       const updated = { ...prev };
 
-      if (field === "groupType" && value in defaultGreetingTemplates) {
+      // ✅ 수정: 타입 가드 추가
+      if (field === "groupType" && typeof value === 'string' && value in defaultGreetingTemplates) {
         // 그룹 타입 변경 시 기본 설정 적용
         updated.groupType = value as GroupType;
         updated.greetingMessage = defaultGreetingTemplates[value as GroupType];
         updated.features = defaultFeaturesByType[value as GroupType];
-      } else {
-        // 타입 안전성을 위한 분기 처리
-        if (field === "groupType") {
-          updated[field] = value as GroupType;
-        } else {
-          updated[field] = value as string;
-        }
+      } else if (field in updated.features) {
+        // features 객체 내의 필드인 경우
+        updated.features = {
+          ...updated.features,
+          [field]: value as boolean
+        };
+      } else if (field === "groupType") {
+        updated[field] = value as GroupType;
+      } else if (field in updated) {
+        // 타입 안전성을 위한 추가 체크
+        (updated as any)[field] = value as string;
       }
 
       return updated;
     });
 
     // 에러 메시지 제거
-    if (errors[field]) {
+    if (errors[field as string]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
@@ -223,7 +228,10 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         greetingMessage: formData.greetingMessage.trim(),
       });
 
-      onSuccess(newGroup);
+     onSuccess({
+  ...newGroup,
+  groupType: newGroup.groupType as GroupType, // 명시적 타입 캐스팅
+} as InvitationGroup);
 
       // 폼 초기화
       setFormData({

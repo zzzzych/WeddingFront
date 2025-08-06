@@ -378,13 +378,14 @@ export const deleteRsvpResponse = async (rsvpId: string): Promise<void> => {
 
 /**
  * 일반 사용자가 RSVP 응답 제출
+ * @param uniqueCode - 청첩장 고유 코드
  * @param rsvpData - 제출할 RSVP 응답 데이터
  * @returns Promise<RsvpSubmitResponse> - 제출 결과
  */
-export const submitRsvp = async (rsvpData: RsvpRequest): Promise<RsvpSubmitResponse> => {
+export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Promise<RsvpSubmitResponse> => {
   try {
-    console.log('✉️ RSVP 응답 제출 시작:', rsvpData);
-    const response = await apiPost('/api/rsvp', rsvpData);
+    console.log('✉️ RSVP 응답 제출 시작:', { uniqueCode, rsvpData });
+    const response = await apiPost(`/api/invitation/${uniqueCode}/rsvp`, rsvpData);
     console.log('✅ RSVP 응답 제출 완료:', response);
     return response;
   } catch (error) {

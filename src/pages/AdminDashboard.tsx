@@ -64,10 +64,11 @@ const AdminDashboard: React.FC = () => {
 
   // ==================== 🔄 로딩 상태 처리 ====================
   
-  // 초기 로딩 중일 때는 로딩 컴포넌트 표시
-  if (loading) {
-    return <AdminDashboardLayout.Loading />;
-  }
+    // 초기 로딩 중일 때는 로딩 컴포넌트 표시
+    if (loading) {
+    const Loading = AdminDashboardLayout.Loading as React.ComponentType;
+    return <Loading />;
+    }
 
   // ==================== 🎨 메인 렌더링 ====================
   
