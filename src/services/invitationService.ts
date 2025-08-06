@@ -35,27 +35,67 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 // ==================== 🛠️ 공통 API 헬퍼 함수들 ====================
 
 /**
- * GET 요청을 위한 공통 함수
- * @param endpoint - API 엔드포인트 (예: '/api/groups')
- * @param options - 추가 옵션 (헤더, 인증 등)
+ * GET 요청을 위한 인증된 API 호출 헬퍼 함수
+ * @param endpoint - API 엔드포인트
  * @returns Promise<any> - API 응답 데이터
  */
-const apiGet = async (endpoint: string, options: any = {}): Promise<any> => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.reason || `HTTP ${response.status} 에러가 발생했습니다.`);
+export const apiGet = async (endpoint: string, options: any = {}): Promise<any> => {
+  // 토큰 존재 여부 확인
+  const token = localStorage.getItem('adminToken');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
   }
+  
+  // 토큰 만료 여부 사전 확인
+  if (!isTokenValid()) {
+    // 토큰이 만료된 경우 로컬 스토리지 정리
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    throw new Error('토큰이 만료되었습니다. 다시 로그인해주세요.');
+  }
+  
+  // 인증 헤더 추가
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    ...options.headers,
+  };
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      method: 'GET',
+      headers,
+    });
 
-  return response.json();
+    // 401 Unauthorized 응답 처리 (토큰 만료 등)
+    if (response.status === 401) {
+      console.error('🔐 인증 실패 - 토큰이 만료되었거나 유효하지 않음');
+      
+      // 로컬 스토리지에서 인증 정보 제거
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      
+      // 사용자에게 재로그인 요청
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    // 기타 HTTP 에러 처리
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+    
+  } catch (error: any) {
+    // 네트워크 에러나 파싱 에러 처리
+    if (error.message && error.message.includes('인증이 만료되었습니다')) {
+      throw error; // 인증 에러는 그대로 전달
+    }
+    
+    console.error('❌ API GET 요청 실패:', error);
+    throw error;
+  }
 };
 
 /**
@@ -577,16 +617,37 @@ export const isTokenValid = (): boolean => {
   const userInfo = localStorage.getItem('adminUser');
   
   if (!token || !userInfo) {
+    console.log('🔍 토큰 또는 사용자 정보가 없음');
     return false;
   }
   
   try {
     const user = JSON.parse(userInfo);
+    
+    // expiresAt 필드 존재 여부 확인
+    if (!user.expiresAt) {
+      console.log('🔍 사용자 정보에 만료 시간이 없음');
+      return false;
+    }
+    
     const expirationTime = new Date(user.expiresAt);
     const currentTime = new Date();
     
-    // 토큰이 만료되었는지 확인 (5분 여유시간 추가)
-    return currentTime.getTime() < (expirationTime.getTime() - 5 * 60 * 1000);
+    // 현재 시간과 만료 시간 로깅
+    console.log('🕐 현재 시간:', currentTime.toISOString());
+    console.log('🕐 만료 시간:', expirationTime.toISOString());
+    
+    // 토큰이 이미 만료되었는지 확인 (1분 여유시간 추가)
+    const isValid = currentTime.getTime() < (expirationTime.getTime() - 60 * 1000);
+    
+    console.log('🔍 토큰 유효성 검사 결과:', isValid);
+    
+    if (!isValid) {
+      console.log('⚠️ 토큰이 만료되었거나 곧 만료됩니다.');
+    }
+    
+    return isValid;
+    
   } catch (error) {
     console.error('❌ 토큰 검증 실패:', error);
     return false;
