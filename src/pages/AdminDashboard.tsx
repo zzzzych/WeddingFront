@@ -36,12 +36,16 @@ const AdminDashboard: React.FC = () => {
     adminList,
     adminLoading,
     showAdminList,
+    editingRsvpId,
+    editingRsvpData,
 
     // 상태 변경 함수들
     setShowCreateModal,
     setEditingGroupId,
     setShowCreateAdminModal,
-
+    cancelEditingRsvp,
+    handleUpdateRsvp,
+    updateEditingRsvpData,
     // 데이터 로딩 함수들
     fetchGroups,
 
@@ -56,6 +60,8 @@ const AdminDashboard: React.FC = () => {
     startEditingGreeting,
     getTotalStats,
     handleLogout,
+    startEditingRsvp,
+  
   } = useAdminDashboard();
 
   // ==================== 📊 통계 데이터 계산 ====================
@@ -114,6 +120,13 @@ const AdminDashboard: React.FC = () => {
         rsvpData={rsvpData}
         rsvpLoading={rsvpLoading}
         onDeleteRsvp={handleDeleteRsvp}
+        // 새로 추가할 props들
+        editingRsvpId={editingRsvpId}
+        editingRsvpData={editingRsvpData}
+        onStartEditingRsvp={startEditingRsvp}
+        onCancelEditingRsvp={cancelEditingRsvp}
+        onUpdateRsvp={handleUpdateRsvp}
+        onUpdateEditingRsvpData={updateEditingRsvpData}
       />
 
       {/* ==================== 🔧 모달들 ==================== */}

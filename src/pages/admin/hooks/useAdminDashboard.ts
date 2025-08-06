@@ -9,7 +9,8 @@ import {
   updateGroup,
   getAllRsvpsList,
   deleteRsvpResponse,
-  getAdminList
+  getAdminList,
+  updateRsvpResponse
 } from "../../../services/invitationService";
 import {
   InvitationGroup,
@@ -43,6 +44,17 @@ export const useAdminDashboard = () => {
   const [adminList, setAdminList] = useState<AdminInfo[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [showAdminList, setShowAdminList] = useState(false);
+
+  // RSVP 편집 관련 상태
+  const [editingRsvpId, setEditingRsvpId] = useState<string | null>(null);
+  const [editingRsvpData, setEditingRsvpData] = useState<{
+    responderName: string;
+    isAttending: boolean;
+    adultCount: number;
+    childrenCount: number;
+    phoneNumber?: string;
+    message?: string;
+  } | null>(null);
 
   // ==================== 🔄 데이터 로딩 함수들 ====================
 
@@ -268,6 +280,58 @@ export const useAdminDashboard = () => {
     }
   };
 
+  /**
+ * RSVP 편집 시작 함수
+ */
+const startEditingRsvp = (rsvp: any) => {
+  setEditingRsvpId(rsvp.id);
+  setEditingRsvpData({
+    responderName: rsvp.guestName || rsvp.response?.responderName,
+    isAttending: rsvp.willAttend ?? rsvp.response?.isAttending,
+    adultCount: rsvp.response?.adultCount || 1,
+    childrenCount: rsvp.response?.childrenCount || 0,
+    phoneNumber: rsvp.phoneNumber || rsvp.response?.phoneNumber || '',
+    message: rsvp.message || rsvp.response?.message || ''
+  });
+};
+
+/**
+ * RSVP 편집 취소 함수
+ */
+const cancelEditingRsvp = () => {
+  setEditingRsvpId(null);
+  setEditingRsvpData(null);
+};
+
+/**
+ * RSVP 응답 업데이트 함수
+ */
+const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
+  try {
+    console.log(`🔄 RSVP 업데이트: ${rsvpId}`, updateData);
+    await updateRsvpResponse(rsvpId, updateData);
+    await fetchAllRsvps(); // 데이터 새로고침
+    setEditingRsvpId(null);
+    setEditingRsvpData(null);
+    alert("✅ RSVP 응답이 업데이트되었습니다.");
+  } catch (error: any) {
+    console.error("❌ RSVP 업데이트 실패:", error);
+    alert(`❌ RSVP 업데이트에 실패했습니다: ${error.message}`);
+  }
+};
+
+/**
+ * 편집 중인 RSVP 데이터 변경 함수
+ */
+const updateEditingRsvpData = (field: string, value: any) => {
+  if (editingRsvpData) {
+    setEditingRsvpData({
+      ...editingRsvpData,
+      [field]: value
+    });
+  }
+};
+
   // ==================== 👥 관리자 관련 함수들 ====================
 
   /**
@@ -338,12 +402,17 @@ export const useAdminDashboard = () => {
     adminList,
     adminLoading,
     showAdminList,
+    editingRsvpId,
+  editingRsvpData,
+
 
     // 상태 변경 함수들
     setShowCreateModal,
     setEditingGroupId,
     setEditingGreeting,
     setShowCreateAdminModal,
+    setEditingRsvpId,
+  setEditingRsvpData,
 
     // 데이터 로딩 함수들
     fetchGroups,
@@ -362,5 +431,10 @@ export const useAdminDashboard = () => {
     startEditingGreeting,
     getTotalStats,
     handleLogout,
+
+    startEditingRsvp,
+  cancelEditingRsvp,
+  handleUpdateRsvp,
+  updateEditingRsvpData,
   };
 };

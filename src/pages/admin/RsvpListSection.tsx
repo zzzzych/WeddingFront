@@ -19,6 +19,7 @@ const AppleColors = {
   destructive: "#ff3b30",          // 삭제/위험 상태 색상
   border: "#d2d2d7",               // 테두리 색상
   inputBackground: "#f2f2f7",      // 입력 필드 배경색
+  secondaryButton: "#f2f2f7",      // 보조 버튼 배경색 (이 줄 추가)
 };
 
 /**
@@ -30,20 +31,34 @@ const systemFont =
 // ==================== 📊 타입 정의 ====================
 
 /**
- * RsvpListSection 컴포넌트 Props 타입
+ * RsvpListSection 컴포넌트 Props 타입 (업데이트됨)
  */
 interface RsvpListSectionProps {
   rsvpData: RsvpListResponse | null;    // RSVP 데이터
   rsvpLoading: boolean;                 // RSVP 로딩 상태
   onDeleteRsvp: (rsvpId: string, guestName: string) => void; // RSVP 삭제 함수
+  // 새로 추가되는 편집 관련 props
+  editingRsvpId?: string | null;        // 현재 편집 중인 RSVP ID
+  editingRsvpData?: any;                // 편집 중인 RSVP 데이터
+  onStartEditingRsvp?: (rsvp: any) => void; // RSVP 편집 시작 함수
+  onCancelEditingRsvp?: () => void;     // RSVP 편집 취소 함수
+  onUpdateRsvp?: (rsvpId: string, updateData: any) => void; // RSVP 업데이트 함수
+  onUpdateEditingRsvpData?: (field: string, value: any) => void; // 편집 데이터 업데이트
 }
 
 /**
- * 개별 RSVP 카드 Props 타입
+ * 개별 RSVP 카드 Props 타입 (업데이트됨)
  */
 interface RsvpCardProps {
   rsvp: any;                            // RSVP 응답 데이터 (변환된 형태)
   onDeleteRsvp: (rsvpId: string, guestName: string) => void;
+  // 새로 추가되는 편집 관련 props
+  isEditing?: boolean;                  // 현재 편집 중인지 여부
+  editingData?: any;                    // 편집 중인 데이터
+  onStartEditingRsvp?: (rsvp: any) => void;
+  onCancelEditingRsvp?: () => void;
+  onUpdateRsvp?: (rsvpId: string, updateData: any) => void;
+  onUpdateEditingRsvpData?: (field: string, value: any) => void;
 }
 
 /**
@@ -87,9 +102,235 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, color }) => (
 // ==================== 🃏 개별 RSVP 카드 컴포넌트 ====================
 
 /**
- * 개별 RSVP 응답을 표시하는 카드 컴포넌트
+ * 개별 RSVP 응답을 표시하고 편집할 수 있는 카드 컴포넌트
  */
-const RsvpCard: React.FC<RsvpCardProps> = ({ rsvp, onDeleteRsvp }) => {
+const RsvpCard: React.FC<RsvpCardProps> = ({ 
+  rsvp, 
+  onDeleteRsvp, 
+  isEditing = false,
+  editingData,
+  onStartEditingRsvp,
+  onCancelEditingRsvp,
+  onUpdateRsvp,
+  onUpdateEditingRsvpData
+}) => {
+  // 참석 상태에 따른 색상 결정
+  const getStatusColor = (willAttend: boolean) => {
+    return willAttend ? AppleColors.success : AppleColors.destructive;
+  };
+
+  // 성인/아동 인원 표시 함수
+  const getAttendeeInfo = (rsvp: any) => {
+    const adultCount = rsvp.response?.adultCount || 1;
+    const childrenCount = rsvp.response?.childrenCount || 0;
+    
+    const parts = [];
+    if (adultCount > 0) parts.push(`성인 ${adultCount}명`);
+    if (childrenCount > 0) parts.push(`아동 ${childrenCount}명`);
+    
+    return parts.join(', ') || '성인 1명';
+  };
+
+  if (isEditing && editingData) {
+    // 편집 모드
+    return (
+      <div
+        style={{
+          border: `2px solid ${AppleColors.primary}`,
+          borderRadius: "8px",
+          padding: "20px",
+          backgroundColor: AppleColors.cardBackground,
+          boxShadow: "0 4px 12px rgba(0, 122, 255, 0.15)",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {/* 편집 헤더 */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h4 style={{ margin: 0, color: AppleColors.primary, fontSize: "16px" }}>
+              ✏️ RSVP 응답 편집
+            </h4>
+            <span style={{ 
+              fontSize: "12px", 
+              color: AppleColors.secondaryText, 
+              backgroundColor: AppleColors.inputBackground,
+              padding: "4px 8px",
+              borderRadius: "4px"
+            }}>
+              {rsvp.groupName}
+            </span>
+          </div>
+
+          {/* 편집 폼 */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            {/* 응답자 이름 */}
+            <div>
+              <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
+                응답자 이름
+              </label>
+              <input
+                type="text"
+                value={editingData.responderName}
+                onChange={(e) => onUpdateEditingRsvpData?.('responderName', e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontFamily: systemFont,
+                }}
+              />
+            </div>
+
+            {/* 참석 여부 */}
+            <div>
+              <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
+                참석 여부
+              </label>
+              <select
+                value={editingData.isAttending ? "true" : "false"}
+                onChange={(e) => onUpdateEditingRsvpData?.('isAttending', e.target.value === "true")}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontFamily: systemFont,
+                }}
+              >
+                <option value="true">✅ 참석</option>
+                <option value="false">❌ 불참</option>
+              </select>
+            </div>
+
+            {/* 성인 인원 */}
+            <div>
+              <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
+                성인 인원
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={editingData.adultCount}
+                onChange={(e) => onUpdateEditingRsvpData?.('adultCount', parseInt(e.target.value) || 1)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontFamily: systemFont,
+                }}
+              />
+            </div>
+
+            {/* 아동 인원 */}
+            <div>
+              <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
+                아동 인원
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="20"
+                value={editingData.childrenCount}
+                onChange={(e) => onUpdateEditingRsvpData?.('childrenCount', parseInt(e.target.value) || 0)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontFamily: systemFont,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 전화번호 */}
+          <div>
+            <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
+              전화번호 (선택사항)
+            </label>
+            <input
+              type="tel"
+              value={editingData.phoneNumber || ''}
+              onChange={(e) => onUpdateEditingRsvpData?.('phoneNumber', e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: `1px solid ${AppleColors.border}`,
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontFamily: systemFont,
+              }}
+            />
+          </div>
+
+          {/* 메시지 */}
+          <div>
+            <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
+              메시지 (선택사항)
+            </label>
+            <textarea
+              value={editingData.message || ''}
+              onChange={(e) => onUpdateEditingRsvpData?.('message', e.target.value)}
+              rows={3}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: `1px solid ${AppleColors.border}`,
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontFamily: systemFont,
+                resize: "vertical",
+              }}
+            />
+          </div>
+
+          {/* 편집 버튼들 */}
+          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <button
+              onClick={onCancelEditingRsvp}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: AppleColors.secondaryButton,
+                color: AppleColors.text,
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              취소
+            </button>
+            <button
+              onClick={() => onUpdateRsvp?.(rsvp.id, editingData)}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: AppleColors.primary,
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              저장
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 일반 표시 모드
   return (
     <div
       style={{
@@ -103,98 +344,88 @@ const RsvpCard: React.FC<RsvpCardProps> = ({ rsvp, onDeleteRsvp }) => {
         transition: "all 0.2s ease",
       }}
     >
-      {/* RSVP 정보 영역 */}
+      {/* 응답자 정보 */}
       <div style={{ flex: 1 }}>
-        {/* 상단: 이름, 그룹, 참석 상태 */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            marginBottom: "4px",
-            flexWrap: "wrap",
-          }}
-        >
-          {/* 응답자 이름 */}
-          <span
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+          {/* 이름 */}
+          <h4
             style={{
               fontSize: "16px",
               fontWeight: "600",
               color: AppleColors.text,
+              margin: 0,
             }}
           >
-            {rsvp.guestName}
-          </span>
+            {rsvp.guestName || rsvp.response?.responderName}
+          </h4>
           
-          {/* 그룹명 뱃지 */}
+          {/* 그룹명 */}
           <span
             style={{
-              fontSize: "14px",
+              fontSize: "12px",
               color: AppleColors.secondaryText,
               backgroundColor: AppleColors.inputBackground,
               padding: "2px 8px",
               borderRadius: "4px",
-              fontWeight: "500",
             }}
           >
             {rsvp.groupName}
           </span>
           
-          {/* 참석 상태 뱃지 */}
+          {/* 참석 여부 */}
           <span
             style={{
-              fontSize: "14px",
+              fontSize: "12px",
               fontWeight: "600",
-              padding: "2px 8px",
-              borderRadius: "4px",
               color: "white",
-              backgroundColor:
-                rsvp.willAttend === true
-                  ? AppleColors.success
-                  : rsvp.willAttend === false
-                  ? AppleColors.destructive
-                  : AppleColors.warning,
+              backgroundColor: getStatusColor(rsvp.willAttend ?? rsvp.response?.isAttending),
+              padding: "4px 8px",
+              borderRadius: "4px",
             }}
           >
-            {getAttendanceStatus(rsvp.willAttend)}
+            {rsvp.willAttend ?? rsvp.response?.isAttending ? "참석" : "불참"}
           </span>
         </div>
         
-        {/* 중간: 연락처 및 동행자 정보 */}
-        <div
+        {/* 상세 정보 */}
+        <div style={{ display: "flex", gap: "16px", fontSize: "14px", color: AppleColors.secondaryText }}>
+          {/* 인원 정보 */}
+          <span>👥 {getAttendeeInfo(rsvp)}</span>
+          
+          {/* 전화번호 */}
+          {rsvp.phoneNumber && (
+            <span>📞 {rsvp.phoneNumber}</span>
+          )}
+          
+          {/* 메시지 */}
+          {rsvp.message && (
+            <span>💬 {rsvp.message.length > 20 ? rsvp.message.substring(0, 20) + '...' : rsvp.message}</span>
+          )}
+        </div>
+      </div>
+
+      {/* 액션 버튼들 */}
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          onClick={() => onStartEditingRsvp?.(rsvp)}
           style={{
-            fontSize: "14px",
-            color: AppleColors.secondaryText,
-            marginBottom: rsvp.message ? "8px" : "0",
+            padding: "8px 16px",
+            backgroundColor: AppleColors.primary,
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.2s",
           }}
         >
-          전화번호: {rsvp.phoneNumber || "없음"} | 동행자: {rsvp.companions || 0}명
-        </div>
-        
-        {/* 하단: 메시지 (있는 경우) */}
-        {rsvp.message && (
-          <div
-            style={{
-              fontSize: "14px",
-              color: AppleColors.text,
-              fontStyle: "italic",
-              backgroundColor: AppleColors.inputBackground,
-              padding: "8px",
-              borderRadius: "6px",
-              lineHeight: "1.4",
-            }}
-          >
-            💬 {rsvp.message}
-          </div>
-        )}
-      </div>
-      
-      {/* 액션 버튼 영역 */}
-      <div style={{ display: "flex", gap: "8px", marginLeft: "16px" }}>
+          ✏️ 편집
+        </button>
         <button
-          onClick={() => onDeleteRsvp(rsvp.id!, rsvp.guestName!)}
+          onClick={() => onDeleteRsvp(rsvp.id, rsvp.guestName || rsvp.response?.responderName)}
           style={{
-            padding: "6px 12px",
+            padding: "8px 16px",
             backgroundColor: AppleColors.destructive,
             color: "white",
             border: "none",
@@ -203,7 +434,6 @@ const RsvpCard: React.FC<RsvpCardProps> = ({ rsvp, onDeleteRsvp }) => {
             fontWeight: "600",
             cursor: "pointer",
             transition: "all 0.2s",
-            whiteSpace: "nowrap",
           }}
         >
           🗑️ 삭제
@@ -273,6 +503,12 @@ const RsvpListSection: React.FC<RsvpListSectionProps> = ({
   rsvpData,
   rsvpLoading,
   onDeleteRsvp,
+  editingRsvpId,
+  editingRsvpData,
+  onStartEditingRsvp,
+  onCancelEditingRsvp,
+  onUpdateRsvp,
+  onUpdateEditingRsvpData,
 }) => {
   return (
     <div
@@ -373,6 +609,13 @@ const RsvpListSection: React.FC<RsvpListSectionProps> = ({
                   key={rsvp.id}
                   rsvp={rsvp}
                   onDeleteRsvp={onDeleteRsvp}
+                  // 새로 추가할 편집 관련 props들
+                  isEditing={editingRsvpId === rsvp.id}
+                  editingData={editingRsvpId === rsvp.id ? editingRsvpData : null}
+                  onStartEditingRsvp={onStartEditingRsvp}
+                  onCancelEditingRsvp={onCancelEditingRsvp}
+                  onUpdateRsvp={onUpdateRsvp}
+                  onUpdateEditingRsvpData={onUpdateEditingRsvpData}
                 />
               ))}
             </div>
