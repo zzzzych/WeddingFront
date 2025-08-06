@@ -1,31 +1,29 @@
+// src/pages/AdminDashboard.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getAllGroups,
   deleteGroup,
   updateGroup,
-  getAllRsvpsList, // ✅ 새로운 함수로 변경
-  getRsvpList,           // ✅ 새로 추가
-  updateRsvpResponse,    // ✅ 새로 추가
-  deleteRsvpResponse     // ✅ 새로 추가
+  getAllRsvpsList,      // ✅ 수정된 함수명
+  getRsvpList,          // ✅ 새로 추가
+  updateRsvpResponse,   // ✅ 새로 추가
+  deleteRsvpResponse,   // ✅ 새로 추가
+  getAdminList          // ✅ 새로 추가
 } from "../services/invitationService";
 import {
   InvitationGroup,
-  RsvpListResponse, // ✅ 새로 추가
-  SimpleRsvpWithGroupInfo, // ✅ 새로 추가
-  RsvpSummary, // ✅ 새로 추가
+  RsvpListResponse,         // ✅ 새로 추가
   SimpleRsvpWithGroupInfo,  // ✅ 새로 추가
-  UpdateRsvpRequest         // ✅ 새로 추가
+  RsvpSummary,              // ✅ 새로 추가
+  UpdateRsvpRequest,        // ✅ 새로 추가
+  AdminCreateResponse,      // ✅ 새로 추가
+  AdminInfo,                // ✅ 새로 추가
+  AdminListResponse,        // ✅ 새로 추가
+  getAdminRoleLabel         // ✅ 새로 추가
 } from "../types";
 import CreateGroupModal from "../components/CreateGroupModal";
 import CreateAdminModal from "../components/CreateAdminModal";
-import {
-  AdminCreateResponse,
-  AdminInfo,
-  AdminListResponse,
-  getAdminRoleLabel,
-} from "../types";
-import { getAdminList } from "../services/invitationService";
 
 // ==================== 🎨 스타일 설정 ====================
 // 애플 디자인 색상 팔레트
@@ -62,294 +60,214 @@ const AdminDashboard: React.FC = () => {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null); // 편집 중인 그룹 ID
   const [editingGreeting, setEditingGreeting] = useState(""); // 편집 중인 인사말
 
-  // 결혼식 정보 편집 상태
-  const [isEditingWeddingInfo, setIsEditingWeddingInfo] = useState(false); // 결혼식 정보 편집 모드 여부
-
   // RSVP 응답 관련 상태
   const [rsvpData, setRsvpData] = useState<RsvpListResponse | null>(null); // ✅ 전체 RSVP 데이터 (응답 목록 + 통계)
-  const [rsvpLoading, setRsvpLoading] = useState(true); // RSVP 로딩 상태
-  // 기존 상태들 아래에 추가
-  const [rsvpList, setRsvpList] = useState<SimpleRsvpWithGroupInfo[]>([]);
-  const [editingRsvp, setEditingRsvp] = useState<SimpleRsvpWithGroupInfo | null>(null);
-  const [showRsvpList, setShowRsvpList] = useState(false);
-  const [loadingRsvps, setLoadingRsvps] = useState(false);
+  const [rsvpLoading, setRsvpLoading] = useState(false); // RSVP 로딩 상태
+  const [selectedGroupForRsvp, setSelectedGroupForRsvp] = useState<string | null>(null); // 선택된 그룹 ID (RSVP 조회용)
 
   // 관리자 관련 상태
-  const [showCreateAdminModal, setShowCreateAdminModal] =
-    useState<boolean>(false); // 관리자 생성 모달 표시 여부
+  const [showCreateAdminModal, setShowCreateAdminModal] = useState(false); // 관리자 생성 모달 표시 여부
   const [adminList, setAdminList] = useState<AdminInfo[]>([]); // 관리자 목록
-  const [loadingAdmins, setLoadingAdmins] = useState<boolean>(false); // 관리자 목록 로딩 상태
-  const [showAdminList, setShowAdminList] = useState<boolean>(false); // 관리자 목록 표시 여부
+  const [adminLoading, setAdminLoading] = useState(false); // 관리자 로딩 상태
+  const [showAdminList, setShowAdminList] = useState(false); // 관리자 목록 표시 여부
 
-  // 결혼식 기본 정보 상태
-  const [weddingInfo, setWeddingInfo] = useState({
-    groomName: "이지환", // 신랑 이름
-    brideName: "이윤진", // 신부 이름
-    weddingDate: "2025-10-25", // 결혼식 날짜
-    weddingTime: "18:00", // 결혼식 시간
-    weddingLocation: "포포인츠 바이쉐라톤 조선 서울역 19층", // 결혼식 장소
-    address: "서울특별시 용산구 한강대로 366", // 주소
-    // 인사말
-    greetingMessage:
-      "두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n지환, 윤진 결혼합니다.",
-  });
+  // ==================== 🔄 데이터 로딩 함수들 ====================
 
-  // ==================== 🔧 관리자 관련 함수들 ====================
-  // 관리자 목록 조회 함수
-  const fetchAdminList = async () => {
-    try {
-      setLoadingAdmins(true);
-      const response: AdminListResponse = await getAdminList();
-      setAdminList(response.admins);
-      console.log("✅ 관리자 목록 조회 성공:", response);
-    } catch (error: any) {
-      console.error("❌ 관리자 목록 조회 실패:", error);
-      alert(`❌ 관리자 목록을 불러오는데 실패했습니다: ${error.message}`);
-    } finally {
-      setLoadingAdmins(false);
-    }
-  };
-
-  // 관리자 생성 성공 처리 함수
-  const handleCreateAdminSuccess = (newAdmin: AdminCreateResponse) => {
-    console.log("🎉 새 관리자 생성 완료:", newAdmin);
-    // 관리자 목록이 열려있다면 새로고침
-    if (showAdminList) {
-      fetchAdminList();
-    }
-  };
-
-  // 관리자 목록 토글 함수
-  const toggleAdminList = () => {
-    if (!showAdminList) {
-      // 목록을 처음 열 때만 데이터 조회
-      fetchAdminList();
-    }
-    setShowAdminList(!showAdminList);
-  };
-
-  // ==================== 🔄 초기 데이터 로딩 ====================
-  useEffect(() => {
-    fetchGroups(); // 그룹 목록 조회
-    fetchRsvps(); // RSVP 데이터 조회
-  }, []);
-
-  // 그룹 목록 조회 함수
+  /**
+   * 그룹 목록을 서버에서 가져오는 함수
+   */
   const fetchGroups = async () => {
     try {
-      const data = await getAllGroups();
-      setGroups(data);
+      console.log("📋 그룹 목록 조회 시작");
+      const groupsData = await getAllGroups();
+      setGroups(groupsData);
+      console.log("✅ 그룹 목록 조회 완료:", groupsData);
     } catch (error) {
-      console.error("그룹 목록 가져오기 실패:", error);
-    } finally {
-      setLoading(false);
+      console.error("❌ 그룹 조회 실패:", error);
+      alert("그룹 목록을 불러오는데 실패했습니다.");
     }
   };
 
-  // ✅ RSVP 데이터 조회 함수 (새로운 API 사용)
-  const fetchRsvps = async () => {
-    try {
-      setRsvpLoading(true);
-      console.log("🔄 RSVP 데이터 조회 시작...");
+/**
+ * 전체 RSVP 응답 목록과 통계를 가져오는 함수 (수정된 버전)
+ */
+const fetchAllRsvps = async () => {
+  try {
+    setRsvpLoading(true);
+    console.log("📊 전체 RSVP 데이터 조회 시작");
+    const data = await getAllRsvpsList();
+    
+    // ✅ 호환성을 위한 추가 필드들 보완
+    const enhancedSummary = {
+      ...data.summary,
+      totalAttending: data.summary.attendingResponses,  // 호환성
+      totalNotAttending: data.summary.notAttendingResponses,  // 호환성
+      totalPending: 0  // 서버에서 지원하지 않으므로 0으로 설정
+    };
+    
+    setRsvpData({
+      responses: data.responses,
+      summary: enhancedSummary
+    });
+    console.log("✅ RSVP 데이터 조회 완료:", data);
+  } catch (error) {
+    console.error("❌ RSVP 데이터 조회 실패:", error);
+    alert("RSVP 데이터를 불러오는데 실패했습니다.");
+  } finally {
+    setRsvpLoading(false);
+  }
+};
 
-      // 새로운 API 호출 - 개별 응답 목록과 통계를 함께 가져옴
-      const data = await getAllRsvpsList();
-
-      console.log("✅ RSVP 데이터 조회 성공:", data);
-      console.log(
-        `📊 통계: 총 ${data.summary.totalResponses}개 응답, ${data.summary.attendingResponses}명 참석`
-      );
-      console.log(`👥 개별 응답: ${data.responses.length}개`);
-
-      setRsvpData(data);
-    } catch (error) {
-      console.error("❌ RSVP 데이터 가져오기 실패:", error);
-      setRsvpData(null);
-    } finally {
-      setRsvpLoading(false);
+  /**
+ * 관리자 목록을 가져오는 함수 (타입 오류 수정)
+ */
+const fetchAdminList = async () => {
+  try {
+    setAdminLoading(true);
+    console.log("👥 관리자 목록 조회 시작");
+    const data = await getAdminList();
+    setAdminList(data.admins || []);
+    console.log("✅ 관리자 목록 조회 완료:", data);
+  } catch (error: any) {  // ✅ error: any로 타입 명시
+    console.error("❌ 관리자 목록 조회 실패:", error);
+    // 권한이 없는 경우 에러 메시지 표시하지 않음
+    if (!error?.message?.includes('권한')) {  // ✅ 옵셔널 체이닝 사용
+      alert("관리자 목록을 불러오는데 실패했습니다.");
     }
-  };
+  } finally {
+    setAdminLoading(false);
+  }
+};
 
-  // RSVP 목록 조회 함수
-  const fetchRsvpList = async () => {
-    try {
-      setLoadingRsvps(true);
-      console.log("📋 RSVP 목록 조회 시작...");
-      
-      const rsvpData = await getRsvpList();
-      console.log("📋 RSVP 목록 데이터:", rsvpData);
-      
-      setRsvpList(rsvpData);
-    } catch (error) {
-      console.error("RSVP 목록 조회 실패:", error);
-      alert("RSVP 목록을 불러오는데 실패했습니다.");
-    } finally {
-      setLoadingRsvps(false);
-    }
-  };
+  // ==================== 🔄 컴포넌트 초기화 ====================
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      setLoading(true);
+      try {
+        // 병렬로 데이터 로딩
+        await Promise.all([
+          fetchGroups(),
+          fetchAllRsvps()
+        ]);
+      } catch (error) {
+        console.error("❌ 대시보드 초기화 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // RSVP 목록 토글 함수
-  const toggleRsvpList = async () => {
-    if (!showRsvpList) {
-      await fetchRsvpList(); // 처음 열 때만 데이터 로드
-    }
-    setShowRsvpList(!showRsvpList);
-  };
+    initializeDashboard();
+  }, []);
 
-  // RSVP 응답 수정 함수
-  const handleUpdateRsvp = async (
-    rsvpId: string, 
-    updateData: UpdateRsvpRequest
-  ) => {
-    try {
-      console.log("✏️ RSVP 응답 수정 시도:", rsvpId, updateData);
-      
-      await updateRsvpResponse(rsvpId, updateData);
-      await fetchRsvpList(); // 목록 새로고침
-      setEditingRsvp(null); // 편집 모드 종료
-      
-      alert("✅ 응답이 성공적으로 수정되었습니다!");
-    } catch (error: any) {
-      console.error("RSVP 응답 수정 실패:", error);
-      alert(`❌ 응답 수정에 실패했습니다: ${error.message}`);
-    }
-  };
+  // ==================== 🗑️ 그룹 삭제 관련 함수들 ====================
 
-  // RSVP 응답 삭제 함수
-  const handleDeleteRsvp = async (rsvp: SimpleRsvpWithGroupInfo) => {
+  /**
+   * 그룹 삭제 처리 함수 (일반 삭제)
+   * @param groupId - 삭제할 그룹 ID
+   * @param groupName - 삭제할 그룹 이름 (확인용)
+   */
+  const handleDeleteGroup = async (groupId: string, groupName: string) => {
+    // 삭제 확인
     const confirmDelete = window.confirm(
-      `⚠️ 응답 삭제 확인\n\n` +
-      `응답자: ${rsvp.response.responderName}\n` +
-      `그룹: ${rsvp.groupInfo.groupName}\n` +
-      `참석 여부: ${rsvp.response.isAttending ? "참석" : "불참"}\n\n` +
-      `이 응답을 삭제하시겠습니까?\n` +
-      `주의: 이 작업은 되돌릴 수 없습니다!`
+      `정말로 "${groupName}" 그룹을 삭제하시겠습니까?\n\n⚠️ 주의: 이 작업은 되돌릴 수 없습니다.`
     );
 
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+      return;
+    }
 
     try {
-      console.log("🗑️ RSVP 응답 삭제 시도:", rsvp.response.id);
-      
-      if (!rsvp.response.id) {
-        throw new Error("응답 ID가 없습니다.");
-      }
-      
-      await deleteRsvpResponse(rsvp.response.id);
-      await fetchRsvpList(); // 목록 새로고침
-      
-      alert("✅ 응답이 성공적으로 삭제되었습니다!");
+      console.log(`🗑️ 그룹 삭제 시도: ${groupId}`);
+      await deleteGroup(groupId, false); // 일반 삭제
+      await fetchGroups(); // 그룹 목록 새로고침
+      await fetchAllRsvps(); // RSVP 데이터도 새로고침
+      alert("✅ 그룹이 성공적으로 삭제되었습니다.");
     } catch (error: any) {
-      console.error("RSVP 응답 삭제 실패:", error);
-      alert(`❌ 응답 삭제에 실패했습니다: ${error.message}`);
+      console.error("❌ 그룹 삭제 실패:", error);
+      
+      // 409 에러 (응답이 있는 그룹)인 경우 강제 삭제 옵션 제공
+      if (error.message && error.message.includes("응답이 있는")) {
+        const forceDelete = window.confirm(
+          `❌ ${error.message}\n\n정말로 강제 삭제하시겠습니까?\n\n⚠️ 경고: 모든 응답 데이터가 함께 삭제됩니다!`
+        );
+        
+        if (forceDelete) {
+          await handleForceDeleteGroup(groupId, groupName);
+        }
+      } else {
+        alert(`❌ 그룹 삭제에 실패했습니다.\n\n${error.message}`);
+      }
     }
   };
 
-  // 편집 모드 시작 함수
-  const startEditingRsvp = (rsvp: SimpleRsvpWithGroupInfo) => {
-    setEditingRsvp(rsvp);
-  };
-
-  // 편집 모드 취소 함수
-  const cancelEditingRsvp = () => {
-    setEditingRsvp(null);
-  };
-  // ==================== 🗑️ 그룹 삭제 함수 ====================
-  const handleDeleteGroup = async (groupId: string) => {
+  /**
+   * 그룹 강제 삭제 처리 함수
+   * @param groupId - 삭제할 그룹 ID
+   * @param groupName - 삭제할 그룹 이름 (확인용)
+   */
+  const handleForceDeleteGroup = async (groupId: string, groupName: string) => {
     try {
-      // 1차 삭제 시도
-      const confirmDelete = window.confirm(
-        "정말로 이 그룹을 삭제하시겠습니까?"
-      );
-      if (!confirmDelete) return;
-
-      console.log("🗑️ 일반 삭제 시도:", groupId);
-      await deleteGroup(groupId, false); // 일반 삭제 시도
-      await fetchGroups();
-      alert("그룹이 삭제되었습니다.");
+      console.log(`💥 그룹 강제 삭제 시도: ${groupId}`);
+      await deleteGroup(groupId, true); // 강제 삭제
+      await fetchGroups(); // 그룹 목록 새로고침
+      await fetchAllRsvps(); // RSVP 데이터도 새로고침
+      alert("✅ 그룹과 모든 관련 데이터가 삭제되었습니다.");
     } catch (error: any) {
-      console.error("그룹 삭제 실패:", error);
-
-      // 409 Conflict 에러 또는 응답이 있는 그룹인 경우
-      if (
-        error.message &&
-        (error.message.includes("응답이 있는") ||
-          error.message.includes("응답이") ||
-          error.message.includes("force=true"))
-      ) {
-        // 응답 수 추출 (에러 메시지에서)
-        const responseCount =
-          error.message.match(/(\d+)개의 응답/)?.[1] || "여러";
-
-        const forceConfirm = window.confirm(
-          `⚠️ 강제 삭제 확인\n\n` +
-            `이 그룹에는 ${responseCount}개의 응답이 있습니다.\n` +
-            `응답 데이터와 함께 그룹을 강제로 삭제하시겠습니까?\n\n` +
-            `주의: 이 작업은 되돌릴 수 없습니다!\n` +
-            `- 그룹 정보 삭제\n` +
-            `- 모든 응답 데이터 삭제`
-        );
-
-        if (forceConfirm) {
-          try {
-            console.log("🔥 강제 삭제 시도:", groupId);
-            await deleteGroup(groupId, true); // 강제 삭제
-            await fetchGroups();
-            alert(
-              `✅ 성공!\n그룹과 ${responseCount}개의 응답이 모두 삭제되었습니다.`
-            );
-          } catch (forceError: any) {
-            console.error("강제 삭제 실패:", forceError);
-            alert(
-              `❌ 강제 삭제 실패\n${
-                forceError.message || "알 수 없는 오류"
-              }\n\n관리자에게 문의하세요.`
-            );
-          }
-        }
-      } else {
-        // 기타 에러
-        alert(
-          `❌ 삭제 실패\n${error.message || "알 수 없는 오류가 발생했습니다."}`
-        );
-      }
+      console.error("❌ 강제 삭제 실패:", error);
+      alert(`❌ 강제 삭제에 실패했습니다.\n\n${error.message}`);
     }
   };
 
   // ==================== ✏️ 그룹 정보 업데이트 함수들 ====================
-  // 인사말 업데이트 함수
+
+  /**
+   * 인사말 업데이트 함수
+   * @param groupId - 수정할 그룹 ID
+   * @param newGreeting - 새로운 인사말
+   */
   const handleUpdateGreeting = async (groupId: string, newGreeting: string) => {
     try {
+      console.log(`✏️ 인사말 업데이트: ${groupId}`);
       await updateGroup(groupId, { greetingMessage: newGreeting });
       await fetchGroups();
       setEditingGroupId(null);
-      alert("인사말이 업데이트되었습니다.");
+      alert("✅ 인사말이 업데이트되었습니다.");
     } catch (error) {
-      console.error("인사말 업데이트 실패:", error);
-      alert("인사말 업데이트에 실패했습니다.");
+      console.error("❌ 인사말 업데이트 실패:", error);
+      alert("❌ 인사말 업데이트에 실패했습니다.");
     }
   };
 
-  // 그룹명 업데이트 함수
+  /**
+   * 그룹명 업데이트 함수
+   * @param groupId - 수정할 그룹 ID
+   * @param newName - 새로운 그룹명
+   */
   const handleUpdateGroupName = async (groupId: string, newName: string) => {
     try {
+      console.log(`✏️ 그룹명 업데이트: ${groupId}`);
       await updateGroup(groupId, { groupName: newName });
       await fetchGroups();
-      alert("그룹 이름이 업데이트되었습니다.");
+      alert("✅ 그룹 이름이 업데이트되었습니다.");
     } catch (error) {
-      console.error("그룹 이름 업데이트 실패:", error);
-      alert("그룹 이름 업데이트에 실패했습니다.");
+      console.error("❌ 그룹 이름 업데이트 실패:", error);
+      alert("❌ 그룹 이름 업데이트에 실패했습니다.");
     }
   };
 
-  // URL 코드 업데이트 함수
+  /**
+   * URL 코드 업데이트 함수
+   * @param groupId - 수정할 그룹 ID
+   * @param newCode - 새로운 URL 코드
+   */
   const handleUpdateGroupCode = async (groupId: string, newCode: string) => {
     try {
+      console.log(`✏️ URL 코드 업데이트: ${groupId}`);
       await updateGroup(groupId, { uniqueCode: newCode });
       await fetchGroups();
       alert("✅ URL 코드가 업데이트되었습니다!");
     } catch (error: any) {
-      console.error("URL 코드 업데이트 실패:", error);
+      console.error("❌ URL 코드 업데이트 실패:", error);
       if (error.message && error.message.includes("이미 존재")) {
         alert("❌ 이미 사용 중인 URL 코드입니다.\n다른 코드를 사용해주세요.");
       } else {
@@ -359,7 +277,13 @@ const AdminDashboard: React.FC = () => {
   };
 
   // ==================== ⚙️ 그룹 기능 설정 관련 함수들 ====================
-  // 그룹 기능 설정 값 가져오기 함수
+
+  /**
+   * 그룹 기능 설정 값 가져오기 함수
+   * @param group - 그룹 객체
+   * @param featureKey - 기능 키
+   * @returns boolean - 기능 활성화 여부
+   */
   const getFeatureValue = (
     group: InvitationGroup,
     featureKey: string
@@ -405,7 +329,12 @@ const AdminDashboard: React.FC = () => {
     return groupDefaults[featureKey as keyof typeof groupDefaults] || false;
   };
 
-  // 기능 설정 토글 처리 함수
+  /**
+   * 기능 설정 토글 처리 함수
+   * @param groupId - 그룹 ID
+   * @param featureKey - 기능 키
+   * @param enabled - 활성화 여부
+   */
   const handleFeatureToggle = async (
     groupId: string,
     featureKey: string,
@@ -425,19 +354,146 @@ const AdminDashboard: React.FC = () => {
         `✅ ${featureKey} 설정이 ${enabled ? "활성화" : "비활성화"}되었습니다.`
       );
     } catch (error: any) {
-      console.error("기능 설정 업데이트 실패:", error);
+      console.error("❌ 기능 설정 업데이트 실패:", error);
       alert(`❌ 설정 변경에 실패했습니다: ${error.message}`);
     }
   };
 
+  // ==================== 📊 RSVP 관련 함수들 ====================
+
+ /**
+ * 특정 그룹의 RSVP 응답 조회 (수정된 버전)
+ * @param groupId - 그룹 ID
+ */
+const handleViewGroupRsvps = async (groupId: string) => {
+  try {
+    setRsvpLoading(true);
+    setSelectedGroupForRsvp(groupId);
+    console.log(`📋 그룹 ${groupId}의 RSVP 조회`);
+    
+    const responses = await getRsvpList(groupId);
+    
+    // ✅ 서버 응답을 올바른 형태로 변환
+    setRsvpData({
+      responses: responses,
+      summary: {
+        totalResponses: responses.length,
+        attendingResponses: responses.filter(r => r.willAttend === true).length,  // ✅ attendingResponses 사용
+        notAttendingResponses: responses.filter(r => r.willAttend === false).length,  // ✅ notAttendingResponses 사용
+        totalAttendingCount: responses.filter(r => r.willAttend === true).reduce((sum, r) => sum + (r.companions || 0) + 1, 0),
+        totalAdultCount: responses.filter(r => r.willAttend === true).reduce((sum, r) => sum + (r.companions || 0) + 1, 0),
+        totalChildrenCount: 0,  // 현재 데이터에서 구분이 없으므로 0
+        // ✅ 호환성을 위한 추가 필드들
+        totalAttending: responses.filter(r => r.willAttend === true).length,
+        totalNotAttending: responses.filter(r => r.willAttend === false).length,
+        totalPending: responses.filter(r => r.willAttend === null).length
+      }
+    });
+  } catch (error) {
+    console.error("❌ 그룹 RSVP 조회 실패:", error);
+    alert("RSVP 데이터를 불러오는데 실패했습니다.");
+  } finally {
+    setRsvpLoading(false);
+  }
+};
+
+  /**
+   * RSVP 응답 수정
+   * @param rsvpId - 수정할 RSVP ID
+   * @param updateData - 수정할 데이터
+   */
+  const handleUpdateRsvp = async (rsvpId: string, updateData: UpdateRsvpRequest) => {
+    try {
+      console.log(`✏️ RSVP 응답 수정: ${rsvpId}`);
+      await updateRsvpResponse(rsvpId, updateData);
+      
+      // 현재 선택된 그룹이 있으면 해당 그룹의 RSVP 재조회, 없으면 전체 조회
+      if (selectedGroupForRsvp) {
+        await handleViewGroupRsvps(selectedGroupForRsvp);
+      } else {
+        await fetchAllRsvps();
+      }
+      
+      alert("✅ RSVP 응답이 수정되었습니다.");
+    } catch (error: any) {
+      console.error("❌ RSVP 응답 수정 실패:", error);
+      alert(`❌ RSVP 응답 수정에 실패했습니다: ${error.message}`);
+    }
+  };
+
+  /**
+   * RSVP 응답 삭제
+   * @param rsvpId - 삭제할 RSVP ID
+   * @param guestName - 게스트 이름 (확인용)
+   */
+  const handleDeleteRsvp = async (rsvpId: string, guestName: string) => {
+    const confirmDelete = window.confirm(
+      `정말로 "${guestName}"님의 RSVP 응답을 삭제하시겠습니까?`
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    try {
+      console.log(`🗑️ RSVP 응답 삭제: ${rsvpId}`);
+      await deleteRsvpResponse(rsvpId);
+      
+      // 현재 선택된 그룹이 있으면 해당 그룹의 RSVP 재조회, 없으면 전체 조회
+      if (selectedGroupForRsvp) {
+        await handleViewGroupRsvps(selectedGroupForRsvp);
+      } else {
+        await fetchAllRsvps();
+      }
+      
+      alert("✅ RSVP 응답이 삭제되었습니다.");
+    } catch (error: any) {
+      console.error("❌ RSVP 응답 삭제 실패:", error);
+      alert(`❌ RSVP 응답 삭제에 실패했습니다: ${error.message}`);
+    }
+  };
+
+  // ==================== 👥 관리자 관련 함수들 ====================
+
+  /**
+   * 관리자 목록 토글 함수
+   */
+  const toggleAdminList = () => {
+    if (!showAdminList) {
+      // 목록을 처음 열 때만 데이터 조회
+      fetchAdminList();
+    }
+    setShowAdminList(!showAdminList);
+  };
+
+  /**
+   * 관리자 생성 성공 처리 함수
+   * @param newAdmin - 새로 생성된 관리자 정보
+   */
+  const handleCreateAdminSuccess = (newAdmin: AdminCreateResponse) => {
+    console.log("🎉 새 관리자 생성 완료:", newAdmin);
+    // 관리자 목록이 열려있다면 새로고침
+    if (showAdminList) {
+      fetchAdminList();
+    }
+  };
+
   // ==================== 🔧 유틸리티 함수들 ====================
-  // 인사말 편집 시작 함수
+
+  /**
+   * 인사말 편집 시작 함수
+   * @param group - 그룹 객체
+   */
   const startEditingGreeting = (group: InvitationGroup) => {
     setEditingGroupId(group.id || null);
     setEditingGreeting(group.greetingMessage || "");
   };
 
-  // 그룹 타입 표시 텍스트 변환 함수
+  /**
+   * 그룹 타입 표시 텍스트 변환 함수
+   * @param type - 그룹 타입
+   * @returns string - 표시용 텍스트
+   */
   const getGroupTypeDisplay = (type: string) => {
     const typeMap: { [key: string]: string } = {
       WEDDING_GUEST: "🎎 결혼식 초대",
@@ -447,16 +503,35 @@ const AdminDashboard: React.FC = () => {
     return typeMap[type] || type;
   };
 
-  // 전체 통계 계산 함수
+  /**
+   * 전체 통계 계산 함수
+   * @returns object - 통계 데이터
+   */
   const getTotalStats = () => {
+    const summary = rsvpData?.summary;
     return {
       totalGroups: groups.length,
-      totalGuests: 0, // 임시로 0으로 설정 (해당 필드가 없으므로)
-      totalResponses: 0, // 임시로 0으로 설정
+      totalResponses: summary?.totalResponses || 0,
+      totalAttending: summary?.totalAttending || 0,
+      totalNotAttending: summary?.totalNotAttending || 0,
+      totalPending: summary?.totalPending || 0,
     };
   };
 
-  // 로그아웃 처리 함수
+  /**
+   * 참석 상태 텍스트 변환 함수
+   * @param willAttend - 참석 여부
+   * @returns string - 상태 텍스트
+   */
+  const getAttendanceStatus = (willAttend: boolean | null): string => {
+    if (willAttend === true) return "참석";
+    if (willAttend === false) return "불참";
+    return "미응답";
+  };
+
+  /**
+   * 로그아웃 처리 함수
+   */
   const handleLogout = () => {
     // 로컬스토리지에서 토큰과 사용자 정보 삭제
     localStorage.removeItem("adminToken");
@@ -515,19 +590,19 @@ const AdminDashboard: React.FC = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            marginBottom: "40px",
           }}
         >
-          {/* 헤더 제목 영역 */}
           <div>
             <h1
               style={{
                 fontSize: "32px",
-                fontWeight: "600",
+                fontWeight: "bold",
                 color: AppleColors.text,
                 margin: "0 0 8px 0",
               }}
             >
-              관리자 대시보드
+              🎎 결혼식 초대장 관리자 대시보드
             </h1>
             <p
               style={{
@@ -536,118 +611,76 @@ const AdminDashboard: React.FC = () => {
                 margin: 0,
               }}
             >
-              청첩장 그룹 관리 및 통계
+              그룹 관리, RSVP 응답 확인 및 관리자 설정
             </p>
           </div>
-
-          {/* 헤더 버튼 그룹 */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {/* ✅ RSVP 목록 버튼 - 새로 추가 */}
-            <button
-              onClick={toggleRsvpList}
-              disabled={loadingRsvps}
-              style={{
-                padding: "12px 20px",
-                backgroundColor: showRsvpList ? AppleColors.primary : "white",
-                color: showRsvpList ? "white" : AppleColors.primary,
-                border: `2px solid ${AppleColors.primary}`,
-                borderRadius: "10px",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: loadingRsvps ? "not-allowed" : "pointer",
-                opacity: loadingRsvps ? 0.7 : 1,
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              {loadingRsvps ? (
-                <>
-                  <div
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      border: "2px solid currentColor",
-                      borderTop: "2px solid transparent",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
-                  로딩 중...
-                </>
-              ) : (
-                <>💌 응답 목록 {showRsvpList ? "숨기기" : "보기"}</>
-              )}
-            </button>
-
-            {/* 새 관리자 생성 버튼 */}
-            <button
-              onClick={() => setShowCreateAdminModal(true)}
-              style={{
-                padding: "12px 20px",
-                backgroundColor: AppleColors.success,
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "#059669";
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = AppleColors.success;
-              }}
-            >
-              ➕ 새 관리자 생성
-            </button>
-
-            {/* 새 그룹 생성 버튼 */}
+          <div style={{ display: "flex", gap: "12px" }}>
             <button
               onClick={() => setShowCreateModal(true)}
               style={{
-                padding: "12px 20px",
+                padding: "12px 24px",
                 backgroundColor: AppleColors.primary,
                 color: "white",
                 border: "none",
-                borderRadius: "10px",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              ➕ 새 그룹 생성
-            </button>
-
-            {/* 로그아웃 버튼 */}
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: "12px 20px",
-                backgroundColor: AppleColors.destructive,
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                fontSize: "14px",
+                borderRadius: "8px",
+                fontSize: "16px",
                 fontWeight: "600",
                 cursor: "pointer",
                 transition: "background-color 0.2s",
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "#dc2626";
+                e.currentTarget.style.backgroundColor = AppleColors.primaryHover;
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = AppleColors.destructive;
+                e.currentTarget.style.backgroundColor = AppleColors.primary;
+              }}
+            >
+              + 새 그룹 생성
+            </button>
+            <button
+              onClick={() => setShowCreateAdminModal(true)}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: AppleColors.secondary,
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
+              }}
+            >
+              + 관리자 추가
+            </button>
+            <button
+              onClick={toggleAdminList}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: AppleColors.secondaryButton,
+                color: AppleColors.text,
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
+              }}
+            >
+              {showAdminList ? "관리자 목록 숨기기" : "관리자 목록 보기"}
+            </button>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: AppleColors.destructive,
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
               }}
             >
               로그아웃
@@ -655,232 +688,558 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ==================== 💌 RSVP 응답 목록 섹션 ==================== */}
-        {showRsvpList && (
+        {/* ==================== 📊 통계 카드들 ==================== */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: "20px",
+            marginBottom: "40px",
+          }}
+        >
+          {/* 총 그룹 수 */}
           <div
             style={{
               backgroundColor: AppleColors.cardBackground,
-              borderRadius: "16px",
-              padding: "32px",
-              marginTop: "24px",
-              marginBottom: "24px",
+              padding: "24px",
+              borderRadius: "12px",
               border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "24px",
-                  fontWeight: "600",
-                  color: AppleColors.text,
-                  marginBottom: "8px",
-                }}
-              >
-                💌 참석 응답 목록
-              </h2>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: AppleColors.secondaryText,
-                  margin: 0,
-                }}
-              >
-                총 {rsvpList.length}개의 응답이 있습니다
-              </p>
+            <div
+              style={{
+                fontSize: "14px",
+                color: AppleColors.secondaryText,
+                marginBottom: "8px",
+              }}
+            >
+              총 그룹 수
             </div>
-
-            {loadingRsvps ? (
-              <div style={{ textAlign: "center", padding: "40px" }}>
-                <div
-                  style={{
-                    fontSize: "16px",
-                    color: AppleColors.secondaryText,
-                  }}
-                >
-                  응답 목록을 불러오는 중...
-                </div>
-              </div>
-            ) : rsvpList.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "40px" }}>
-                <div
-                  style={{
-                    fontSize: "16px",
-                    color: AppleColors.secondaryText,
-                  }}
-                >
-                  아직 응답이 없습니다
-                </div>
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gap: "16px",
-                }}
-              >
-                {rsvpList.map((rsvpItem) => (
-                  <div
-                    key={rsvpItem.response.id}
-                    style={{
-                      backgroundColor: "white",
-                      border: `1px solid ${AppleColors.border}`,
-                      borderRadius: "12px",
-                      padding: "20px",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    {/* 응답 아이템 내용은 다음 단계에서 추가 */}
-                    <div style={{ fontSize: "14px", color: AppleColors.text }}>
-                      {rsvpItem.response.responderName} - {rsvpItem.groupInfo.groupName}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div
+              style={{
+                fontSize: "28px",
+                fontWeight: "bold",
+                color: AppleColors.primary,
+              }}
+            >
+              {stats.totalGroups}
+            </div>
           </div>
-        )}
+
+          {/* 총 응답 수 */}
+          <div
+            style={{
+              backgroundColor: AppleColors.cardBackground,
+              padding: "24px",
+              borderRadius: "12px",
+              border: `1px solid ${AppleColors.border}`,
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "14px",
+                color: AppleColors.secondaryText,
+                marginBottom: "8px",
+              }}
+            >
+              총 응답 수
+            </div>
+            <div
+              style={{
+                fontSize: "28px",
+                fontWeight: "bold",
+                color: AppleColors.success,
+              }}
+            >
+              {stats.totalResponses}
+            </div>
+          </div>
+
+          {/* 참석 예정 */}
+          <div
+            style={{
+              backgroundColor: AppleColors.cardBackground,
+              padding: "24px",
+              borderRadius: "12px",
+              border: `1px solid ${AppleColors.border}`,
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "14px",
+                color: AppleColors.secondaryText,
+                marginBottom: "8px",
+              }}
+            >
+              참석 예정
+            </div>
+            <div
+              style={{
+                fontSize: "28px",
+                fontWeight: "bold",
+                color: AppleColors.success,
+              }}
+            >
+              {stats.totalAttending}
+            </div>
+          </div>
+
+          {/* 불참 */}
+          <div
+            style={{
+              backgroundColor: AppleColors.cardBackground,
+              padding: "24px",
+              borderRadius: "12px",
+              border: `1px solid ${AppleColors.border}`,
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "14px",
+                color: AppleColors.secondaryText,
+                marginBottom: "8px",
+              }}
+            >
+              불참
+            </div>
+            <div
+              style={{
+                fontSize: "28px",
+                fontWeight: "bold",
+                color: AppleColors.destructive,
+              }}
+            >
+              {stats.totalNotAttending}
+            </div>
+          </div>
+        </div>
 
         {/* ==================== 👥 관리자 목록 섹션 ==================== */}
         {showAdminList && (
           <div
             style={{
               backgroundColor: AppleColors.cardBackground,
-              borderRadius: "16px",
-              padding: "32px",
-              marginTop: "24px",
-              marginBottom: "24px",
+              borderRadius: "12px",
               border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+              marginBottom: "40px",
+              overflow: "hidden",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <div style={{ marginBottom: "24px" }}>
+            <div
+              style={{
+                padding: "24px",
+                borderBottom: `1px solid ${AppleColors.border}`,
+              }}
+            >
               <h2
                 style={{
-                  fontSize: "24px",
+                  fontSize: "20px",
                   fontWeight: "600",
                   color: AppleColors.text,
-                  marginBottom: "8px",
+                  margin: 0,
                 }}
               >
                 👥 관리자 목록
               </h2>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: AppleColors.secondaryText,
-                  margin: 0,
-                }}
-              >
-                총 {adminList.length}명의 관리자가 등록되어 있습니다
-              </p>
             </div>
 
-            {loadingAdmins ? (
-              <div style={{ textAlign: "center", padding: "40px" }}>
+            <div style={{ padding: "24px" }}>
+              {adminLoading ? (
                 <div
                   style={{
-                    fontSize: "16px",
+                    textAlign: "center",
+                    padding: "40px",
                     color: AppleColors.secondaryText,
                   }}
                 >
                   관리자 목록을 불러오는 중...
                 </div>
-              </div>
-            ) : adminList.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "40px" }}>
+              ) : adminList.length === 0 ? (
                 <div
                   style={{
-                    fontSize: "16px",
+                    textAlign: "center",
+                    padding: "40px",
                     color: AppleColors.secondaryText,
                   }}
                 >
-                  등록된 관리자가 없습니다
+                  등록된 관리자가 없습니다.
                 </div>
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gap: "16px",
-                }}
-              >
-                {adminList.map((admin) => (
-                  <div
-                    key={admin.id}
-                    style={{
-                      backgroundColor: "white",
-                      border: `1px solid ${AppleColors.border}`,
-                      borderRadius: "12px",
-                      padding: "20px",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {adminList.map((admin) => (
                     <div
+                      key={admin.id}
                       style={{
+                        border: `1px solid ${AppleColors.border}`,
+                        borderRadius: "8px",
+                        padding: "16px",
+                        backgroundColor: AppleColors.inputBackground,
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                       }}
                     >
                       <div>
-                        <h3
-                          style={{
-                            fontSize: "18px",
-                            fontWeight: "600",
-                            color: AppleColors.text,
-                            marginBottom: "4px",
-                          }}
-                        >
-                          {admin.username}
-                        </h3>
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
                             gap: "12px",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "16px",
+                              fontWeight: "600",
+                              color: AppleColors.text,
+                            }}
+                          >
+                            {admin.username}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "14px",
+                              color: AppleColors.secondaryText,
+                              backgroundColor: AppleColors.cardBackground,
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {getAdminRoleLabel(admin.role)}
+                          </span>
+                        </div>
+                        <div
+                          style={{
                             fontSize: "14px",
                             color: AppleColors.secondaryText,
                           }}
                         >
-                          <span>🎭 {getAdminRoleLabel(admin.role)}</span>
-                          <span>•</span>
-                          <span>
-                            📅{" "}
-                            {new Date(admin.createdAt).toLocaleDateString(
-                              "ko-KR"
-                            )}
+                          생성일: {new Date(admin.createdAt).toLocaleDateString('ko-KR')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== 📋 그룹 목록 섹션 ==================== */}
+        <div
+          style={{
+            backgroundColor: AppleColors.cardBackground,
+            borderRadius: "12px",
+            border: `1px solid ${AppleColors.border}`,
+            marginBottom: "40px",
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <div
+            style={{
+              padding: "24px",
+              borderBottom: `1px solid ${AppleColors.border}`,
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "20px",
+                fontWeight: "600",
+                color: AppleColors.text,
+                margin: 0,
+              }}
+            >
+              📋 그룹 목록
+            </h2>
+          </div>
+
+          <div style={{ padding: "24px" }}>
+            {groups.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "40px",
+                  color: AppleColors.secondaryText,
+                }}
+              >
+                생성된 그룹이 없습니다.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {groups.map((group) => (
+                  <div
+                    key={group.id}
+                    style={{
+                      border: `1px solid ${AppleColors.border}`,
+                      borderRadius: "8px",
+                      padding: "20px",
+                      backgroundColor: AppleColors.inputBackground,
+                    }}
+                  >
+                    {/* 그룹 기본 정보 */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          <h3
+                            style={{
+                              fontSize: "18px",
+                              fontWeight: "600",
+                              color: AppleColors.text,
+                              margin: 0,
+                            }}
+                          >
+                            {group.groupName}
+                          </h3>
+                          <span
+                            style={{
+                              fontSize: "14px",
+                              color: AppleColors.secondaryText,
+                              backgroundColor: AppleColors.cardBackground,
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {getGroupTypeDisplay(group.groupType)}
                           </span>
-                          {admin.lastLoginAt && (
-                            <>
-                              <span>•</span>
-                              <span>
-                                🕐 마지막 로그인:{" "}
-                                {new Date(admin.lastLoginAt).toLocaleDateString(
-                                  "ko-KR"
-                                )}
-                              </span>
-                            </>
-                          )}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            color: AppleColors.secondaryText,
+                            marginBottom: "8px",
+                          }}
+                        >
+                          URL 코드: <strong>{group.uniqueCode}</strong>
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            color: AppleColors.secondaryText,
+                          }}
+                        >
+                          초대장 URL:{" "}
+                          <a
+                            href={`https://leelee.kr/${group.uniqueCode}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: AppleColors.primary,
+                              textDecoration: "none",
+                            }}
+                          >
+                            https://leelee.kr/{group.uniqueCode}
+                          </a>
                         </div>
                       </div>
 
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={() => handleViewGroupRsvps(group.id!)}
+                          style={{
+                            padding: "8px 16px",
+                            backgroundColor: AppleColors.primary,
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          RSVP 보기
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteGroup(group.id!, group.groupName)
+                          }
+                          style={{
+                            padding: "8px 16px",
+                            backgroundColor: AppleColors.destructive,
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 인사말 섹션 */}
+                    <div style={{ marginBottom: "16px" }}>
                       <div
                         style={{
-                          padding: "6px 12px",
-                          backgroundColor:
-                            admin.role === "super_admin"
-                              ? AppleColors.destructive
-                              : admin.role === "admin"
-                              ? AppleColors.primary
-                              : AppleColors.warning,
-                          color: "white",
-                          borderRadius: "20px",
-                          fontSize: "12px",
+                          fontSize: "14px",
                           fontWeight: "600",
+                          color: AppleColors.text,
+                          marginBottom: "8px",
                         }}
                       >
-                        {getAdminRoleLabel(admin.role)}
+                        인사말:
+                      </div>
+                      {editingGroupId === group.id ? (
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <textarea
+                            value={editingGreeting}
+                            onChange={(e) => setEditingGreeting(e.target.value)}
+                            style={{
+                              flex: 1,
+                              padding: "8px",
+                              border: `1px solid ${AppleColors.border}`,
+                              borderRadius: "6px",
+                              fontSize: "14px",
+                              minHeight: "60px",
+                              fontFamily: systemFont,
+                            }}
+                          />
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <button
+                              onClick={() =>
+                                handleUpdateGreeting(group.id!, editingGreeting)
+                              }
+                              style={{
+                                padding: "6px 12px",
+                                backgroundColor: AppleColors.success,
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                fontSize: "12px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              저장
+                            </button>
+                            <button
+                              onClick={() => setEditingGroupId(null)}
+                              style={{
+                                padding: "6px 12px",
+                                backgroundColor: AppleColors.secondaryButton,
+                                color: AppleColors.text,
+                                border: "none",
+                                borderRadius: "6px",
+                                fontSize: "12px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              취소
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: "14px",
+                              color: AppleColors.secondaryText,
+                              lineHeight: "1.5",
+                              flex: 1,
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {group.greetingMessage || "인사말이 설정되지 않았습니다."}
+                          </div>
+                          <button
+                            onClick={() => startEditingGreeting(group)}
+                            style={{
+                              padding: "6px 12px",
+                              backgroundColor: AppleColors.secondaryButton,
+                              color: AppleColors.text,
+                              border: "none",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                              marginLeft: "8px",
+                            }}
+                          >
+                            편집
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 그룹 기능 설정 */}
+                    <div>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          color: AppleColors.text,
+                          marginBottom: "12px",
+                        }}
+                      >
+                        기능 설정:
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                          gap: "8px",
+                        }}
+                      >
+                        {[
+                          { key: "showRsvpForm", label: "RSVP 폼 표시" },
+                          { key: "showAccountInfo", label: "계좌 정보 표시" },
+                          { key: "showShareButton", label: "공유 버튼 표시" },
+                          { key: "showVenueInfo", label: "장소 정보 표시" },
+                          { key: "showPhotoGallery", label: "사진 갤러리 표시" },
+                          { key: "showCeremonyProgram", label: "식순 표시" },
+                        ].map((feature) => (
+                          <label
+                            key={feature.key}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              fontSize: "14px",
+                              color: AppleColors.text,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={getFeatureValue(group, feature.key)}
+                              onChange={(e) =>
+                                handleFeatureToggle(
+                                  group.id!,
+                                  feature.key,
+                                  e.target.checked
+                                )
+                              }
+                              style={{ cursor: "pointer" }}
+                            />
+                            {feature.label}
+                          </label>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -888,1268 +1247,92 @@ const AdminDashboard: React.FC = () => {
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        {/* ==================== 💒 결혼식 기본 정보 섹션 ==================== */}
+        {/* ==================== 📊 RSVP 응답 섹션 ==================== */}
         <div
           style={{
             backgroundColor: AppleColors.cardBackground,
-            borderRadius: "16px",
-            padding: "24px",
-            marginBottom: "24px",
+            borderRadius: "12px",
             border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-            transition: "all 0.3s ease",
+            marginBottom: "40px",
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
           }}
         >
           <div
             style={{
+              padding: "24px",
+              borderBottom: `1px solid ${AppleColors.border}`,
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "20px",
             }}
           >
-            <h3
+            <h2
               style={{
                 fontSize: "20px",
                 fontWeight: "600",
                 color: AppleColors.text,
-                margin: "0",
-                fontFamily: systemFont,
+                margin: 0,
               }}
             >
-              💒 결혼식 기본 정보
-            </h3>
-            <button
-              onClick={() => setIsEditingWeddingInfo(!isEditingWeddingInfo)}
-              style={{
-                backgroundColor: isEditingWeddingInfo
-                  ? AppleColors.destructive
-                  : AppleColors.primary,
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                fontFamily: systemFont,
-                boxShadow: "0 2px 8px rgba(0, 123, 255, 0.3)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(0, 123, 255, 0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 2px 8px rgba(0, 123, 255, 0.3)";
-              }}
-            >
-              {isEditingWeddingInfo ? "취소" : "편집"}
-            </button>
+              📊 RSVP 응답 관리
+            </h2>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => {
+                  setSelectedGroupForRsvp(null);
+                  fetchAllRsvps();
+                }}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: AppleColors.primary,
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                전체 보기
+              </button>
+            </div>
           </div>
 
-          {isEditingWeddingInfo ? (
-            // 편집 모드 - 결혼식 정보 수정 폼
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "20px",
-              }}
-            >
-              {/* 신랑 이름 입력 */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  신랑 이름
-                </label>
-                <input
-                  type="text"
-                  value={weddingInfo.groomName}
-                  onChange={(e) =>
-                    setWeddingInfo({
-                      ...weddingInfo,
-                      groomName: e.target.value,
-                    })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 신부 이름 입력 */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  신부 이름
-                </label>
-                <input
-                  type="text"
-                  value={weddingInfo.brideName}
-                  onChange={(e) =>
-                    setWeddingInfo({
-                      ...weddingInfo,
-                      brideName: e.target.value,
-                    })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 결혼식 날짜 입력 */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  결혼식 날짜
-                </label>
-                <input
-                  type="date"
-                  value={weddingInfo.weddingDate}
-                  onChange={(e) =>
-                    setWeddingInfo({
-                      ...weddingInfo,
-                      weddingDate: e.target.value,
-                    })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 결혼식 시간 입력 */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  결혼식 시간
-                </label>
-                <input
-                  type="time"
-                  value={weddingInfo.weddingTime}
-                  onChange={(e) =>
-                    setWeddingInfo({
-                      ...weddingInfo,
-                      weddingTime: e.target.value,
-                    })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 결혼식 장소 입력 */}
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  결혼식 장소
-                </label>
-                <input
-                  type="text"
-                  value={weddingInfo.weddingLocation}
-                  onChange={(e) =>
-                    setWeddingInfo({
-                      ...weddingInfo,
-                      weddingLocation: e.target.value,
-                    })
-                  }
-                  placeholder="예: 그랜드 하얏트 서울 그랜드볼룸"
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 주소 입력 */}
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  주소
-                </label>
-                <input
-                  type="text"
-                  value={weddingInfo.address}
-                  onChange={(e) =>
-                    setWeddingInfo({ ...weddingInfo, address: e.target.value })
-                  }
-                  placeholder="예: 서울특별시 용산구 소월로 322"
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 인사말 입력 */}
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: AppleColors.secondaryText,
-                    fontFamily: systemFont,
-                  }}
-                >
-                  인사말
-                </label>
-                <textarea
-                  value={weddingInfo.greetingMessage}
-                  onChange={(e) =>
-                    setWeddingInfo({
-                      ...weddingInfo,
-                      greetingMessage: e.target.value,
-                    })
-                  }
-                  rows={4}
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    border: `1.5px solid ${AppleColors.border}`,
-                    borderRadius: "10px",
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    backgroundColor: AppleColors.inputBackground,
-                    color: AppleColors.text,
-                    outline: "none",
-                    transition: "all 0.2s ease",
-                    resize: "vertical",
-                    minHeight: "100px",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = AppleColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${AppleColors.primary}33`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = AppleColors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
-                />
-              </div>
-
-              {/* 저장/취소 버튼 */}
+          <div style={{ padding: "24px" }}>
+            {rsvpLoading ? (
               <div
                 style={{
-                  gridColumn: "1 / -1",
-                  display: "flex",
-                  gap: "12px",
-                  justifyContent: "flex-end",
-                  marginTop: "8px",
-                }}
-              >
-                <button
-                  onClick={() => setIsEditingWeddingInfo(false)}
-                  style={{
-                    backgroundColor: AppleColors.secondaryButton,
-                    color: AppleColors.text,
-                    border: "none",
-                    borderRadius: "10px",
-                    padding: "12px 24px",
-                    fontSize: "16px",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontFamily: systemFont,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      AppleColors.secondaryButtonHover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      AppleColors.secondaryButton;
-                  }}
-                >
-                  취소
-                </button>
-                <button
-                  onClick={() => {
-                    // 저장 로직 (향후 API 연동 시 구현)
-                    console.log("결혼식 정보 저장:", weddingInfo);
-                    setIsEditingWeddingInfo(false);
-                  }}
-                  style={{
-                    backgroundColor: AppleColors.primary,
-                    color: "white",
-                    border: "none",
-                    borderRadius: "10px",
-                    padding: "12px 24px",
-                    fontSize: "16px",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontFamily: systemFont,
-                    boxShadow: "0 2px 8px rgba(0, 123, 255, 0.3)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 12px rgba(0, 123, 255, 0.4)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 2px 8px rgba(0, 123, 255, 0.3)";
-                  }}
-                >
-                  저장
-                </button>
-              </div>
-            </div>
-          ) : (
-            // 조회 모드 - 결혼식 정보 표시
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "20px",
-              }}
-            >
-              {/* 결혼식 기본 정보 카드들 */}
-              {[
-                { label: "신랑", value: weddingInfo.groomName, icon: "🤵" },
-                { label: "신부", value: weddingInfo.brideName, icon: "👰" },
-                { label: "날짜", value: weddingInfo.weddingDate, icon: "📅" },
-                { label: "시간", value: weddingInfo.weddingTime, icon: "🕐" },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    backgroundColor: AppleColors.inputBackground,
-                    padding: "16px",
-                    borderRadius: "12px",
-                    border: `1px solid ${AppleColors.border}`,
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      color: AppleColors.secondaryText,
-                      marginBottom: "4px",
-                      fontWeight: "500",
-                      fontFamily: systemFont,
-                    }}
-                  >
-                    {item.icon} {item.label}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "16px",
-                      color: AppleColors.text,
-                      fontWeight: "500",
-                      fontFamily: systemFont,
-                    }}
-                  >
-                    {item.value || "설정되지 않음"}
-                  </div>
-                </div>
-              ))}
-
-              {/* 장소 정보 - 전체 너비 */}
-              <div
-                style={{
-                  gridColumn: "1 / -1",
-                  backgroundColor: AppleColors.inputBackground,
-                  padding: "16px",
-                  borderRadius: "12px",
-                  border: `1px solid ${AppleColors.border}`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "14px",
-                    color: AppleColors.secondaryText,
-                    marginBottom: "4px",
-                    fontWeight: "500",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  🏛️ 결혼식 장소
-                </div>
-                <div
-                  style={{
-                    fontSize: "16px",
-                    color: AppleColors.text,
-                    fontWeight: "500",
-                    fontFamily: systemFont,
-                    marginBottom: "8px",
-                  }}
-                >
-                  {weddingInfo.weddingLocation || "설정되지 않음"}
-                </div>
-                {weddingInfo.address && (
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      color: AppleColors.secondaryText,
-                      fontFamily: systemFont,
-                    }}
-                  >
-                    📍 {weddingInfo.address}
-                  </div>
-                )}
-              </div>
-
-              {/* 인사말 - 전체 너비 */}
-              <div
-                style={{
-                  gridColumn: "1 / -1",
-                  backgroundColor: AppleColors.inputBackground,
-                  padding: "16px",
-                  borderRadius: "12px",
-                  border: `1px solid ${AppleColors.border}`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "14px",
-                    color: AppleColors.secondaryText,
-                    marginBottom: "8px",
-                    fontWeight: "500",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  💌 인사말
-                </div>
-                <div
-                  style={{
-                    fontSize: "15px",
-                    color: AppleColors.text,
-                    lineHeight: "1.5",
-                    fontFamily: systemFont,
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {weddingInfo.greetingMessage || "설정되지 않음"}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ==================== 👥 그룹 관리 섹션 ==================== */}
-        <div
-          style={{
-            backgroundColor: AppleColors.cardBackground,
-            borderRadius: "16px",
-            padding: "24px",
-            marginBottom: "24px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "20px",
-              fontWeight: "600",
-              color: AppleColors.text,
-              margin: "0 0 20px 0",
-              fontFamily: systemFont,
-            }}
-          >
-            👥 그룹 관리
-          </h3>
-
-          {groups.length === 0 ? (
-            // 그룹이 없을 때 표시
-            <div
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                color: AppleColors.secondaryText,
-                fontSize: "16px",
-                fontFamily: systemFont,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "48px",
-                  marginBottom: "16px",
-                  opacity: 0.6,
-                }}
-              >
-                📭
-              </div>
-              <div>아직 생성된 그룹이 없습니다.</div>
-              <div style={{ marginTop: "8px", fontSize: "14px" }}>
-                상단의 "새 그룹 생성" 버튼을 클릭해서 첫 번째 그룹을
-                만들어보세요!
-              </div>
-            </div>
-          ) : (
-            // 그룹 목록 표시
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-                gap: "20px",
-              }}
-            >
-              {groups.map((group) => (
-                <div
-                  key={group.id}
-                  style={{
-                    backgroundColor: AppleColors.inputBackground,
-                    borderRadius: "12px",
-                    padding: "20px",
-                    border: `1px solid ${AppleColors.border}`,
-                    transition: "all 0.2s ease",
-                    position: "relative",
-                  }}
-                >
-                  {/* 그룹 헤더 */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <input
-                        type="text"
-                        defaultValue={group.groupName}
-                        onBlur={(e) => {
-                          if (e.target.value !== group.groupName && group.id) {
-                            handleUpdateGroupName(group.id, e.target.value);
-                          }
-                        }}
-                        style={{
-                          fontSize: "18px",
-                          fontWeight: "600",
-                          color: AppleColors.text,
-                          backgroundColor: "transparent",
-                          border: "none",
-                          outline: "none",
-                          width: "100%",
-                          fontFamily: systemFont,
-                          padding: "4px 0",
-                        }}
-                      />
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          color: AppleColors.secondaryText,
-                          marginTop: "4px",
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        {getGroupTypeDisplay(group.groupType)}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => group.id && handleDeleteGroup(group.id)}
-                      style={{
-                        backgroundColor: AppleColors.destructive,
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        padding: "6px 8px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease",
-                        fontFamily: systemFont,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "scale(1.05)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "scale(1)";
-                      }}
-                    >
-                      삭제
-                    </button>
-                  </div>
-
-                  {/* 그룹 통계 정보 */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "12px",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: AppleColors.cardBackground,
-                        padding: "12px",
-                        borderRadius: "8px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "20px",
-                          fontWeight: "600",
-                          color: AppleColors.primary,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        0
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: AppleColors.secondaryText,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        예상 하객
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        backgroundColor: AppleColors.cardBackground,
-                        padding: "12px",
-                        borderRadius: "8px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "20px",
-                          fontWeight: "600",
-                          color: AppleColors.success,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        0
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: AppleColors.secondaryText,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        실제 응답
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 그룹 고유 링크 */}
-                  <div style={{ marginBottom: "16px" }}>
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: AppleColors.text,
-                        marginBottom: "4px",
-                        fontFamily: systemFont,
-                      }}
-                    >
-                      🔗 고유 링크
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: AppleColors.primary,
-                        fontFamily: "Monaco, Consolas, monospace",
-                        wordBreak: "break-all",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      https://leelee.kr/invitation/{group.uniqueCode}
-                    </div>
-
-                    {/* URL 관리 버튼들 */}
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        alignItems: "center",
-                      }}
-                    >
-                      <button
-                        onClick={() => {
-                          const url = `https://leelee.kr/invitation/${group.uniqueCode}`;
-                          navigator.clipboard
-                            .writeText(url)
-                            .then(() => {
-                              alert("✅ URL이 클립보드에 복사되었습니다!");
-                            })
-                            .catch(() => {
-                              alert(
-                                "❌ 복사에 실패했습니다. 브라우저가 지원하지 않는 기능입니다."
-                              );
-                            });
-                        }}
-                        style={{
-                          backgroundColor: AppleColors.primary,
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          padding: "6px 12px",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          fontFamily: systemFont,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#0066CC";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor =
-                            AppleColors.primary;
-                        }}
-                      >
-                        📋 URL 복사
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          const newCode = prompt(
-                            "새로운 URL 코드를 입력하세요:\n(영문, 숫자, 하이픈만 사용 가능, 3-20자)",
-                            group.uniqueCode
-                          );
-
-                          if (
-                            newCode &&
-                            newCode !== group.uniqueCode &&
-                            group.id
-                          ) {
-                            // URL 코드 유효성 검사
-                            const isValid = /^[a-zA-Z0-9-]{3,20}$/.test(
-                              newCode
-                            );
-                            if (isValid) {
-                              handleUpdateGroupCode(group.id, newCode);
-                            } else {
-                              alert(
-                                "❌ 잘못된 형식입니다.\n영문, 숫자, 하이픈만 사용하여 3-20자로 입력해주세요."
-                              );
-                            }
-                          }
-                        }}
-                        style={{
-                          backgroundColor: AppleColors.secondary,
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          padding: "6px 12px",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          fontFamily: systemFont,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#FF9500";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor =
-                            AppleColors.secondary;
-                        }}
-                      >
-                        ✏️ URL 편집
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 인사말 편집 섹션 */}
-                  <div style={{ marginBottom: "16px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: AppleColors.text,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        💌 인사말
-                      </span>
-                      <button
-                        onClick={() => startEditingGreeting(group)}
-                        style={{
-                          backgroundColor: AppleColors.primary,
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          padding: "4px 8px",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        편집
-                      </button>
-                    </div>
-
-                    {editingGroupId === group.id ? (
-                      // 인사말 편집 모드
-                      <div>
-                        <textarea
-                          value={editingGreeting}
-                          onChange={(e) => setEditingGreeting(e.target.value)}
-                          style={{
-                            width: "100%",
-                            height: "80px",
-                            padding: "8px",
-                            border: `1px solid ${AppleColors.border}`,
-                            borderRadius: "6px",
-                            fontSize: "14px",
-                            fontFamily: systemFont,
-                            backgroundColor: AppleColors.cardBackground,
-                            color: AppleColors.text,
-                            outline: "none",
-                            resize: "vertical",
-                          }}
-                        />
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "8px",
-                            marginTop: "8px",
-                          }}
-                        >
-                          <button
-                            onClick={() =>
-                              group.id &&
-                              handleUpdateGreeting(group.id, editingGreeting)
-                            }
-                            style={{
-                              backgroundColor: AppleColors.success,
-                              color: "white",
-                              border: "none",
-                              borderRadius: "6px",
-                              padding: "6px 12px",
-                              fontSize: "12px",
-                              cursor: "pointer",
-                              fontFamily: systemFont,
-                            }}
-                          >
-                            저장
-                          </button>
-                          <button
-                            onClick={() => setEditingGroupId(null)}
-                            style={{
-                              backgroundColor: AppleColors.secondaryButton,
-                              color: AppleColors.text,
-                              border: "none",
-                              borderRadius: "6px",
-                              padding: "6px 12px",
-                              fontSize: "12px",
-                              cursor: "pointer",
-                              fontFamily: systemFont,
-                            }}
-                          >
-                            취소
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      // 인사말 표시 모드
-                      <div
-                        style={{
-                          backgroundColor: AppleColors.cardBackground,
-                          padding: "10px",
-                          borderRadius: "6px",
-                          fontSize: "13px",
-                          color: AppleColors.text,
-                          lineHeight: "1.4",
-                          fontFamily: systemFont,
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {group.greetingMessage ||
-                          "인사말이 설정되지 않았습니다."}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 그룹 기능 설정 섹션 */}
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "12px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: AppleColors.text,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        ⚙️ 기능 설정
-                      </span>
-                    </div>
-
-                    {/* 기능 설정 체크박스들 */}
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(140px, 1fr))",
-                        gap: "8px",
-                        backgroundColor: AppleColors.inputBackground,
-                        padding: "12px",
-                        borderRadius: "8px",
-                        border: `1px solid ${AppleColors.border}`,
-                      }}
-                    >
-                      {[
-                        {
-                          key: "showRsvpForm",
-                          label: "📝 참석응답",
-                          icon: "📝",
-                        },
-                        {
-                          key: "showAccountInfo",
-                          label: "💳 계좌정보",
-                          icon: "💳",
-                        },
-                        {
-                          key: "showShareButton",
-                          label: "📤 공유버튼",
-                          icon: "📤",
-                        },
-                        {
-                          key: "showVenueInfo",
-                          label: "📍 오시는길",
-                          icon: "📍",
-                        },
-                        {
-                          key: "showPhotoGallery",
-                          label: "📸 포토갤러리",
-                          icon: "📸",
-                        },
-                        {
-                          key: "showCeremonyProgram",
-                          label: "📋 본식순서",
-                          icon: "📋",
-                        },
-                      ].map((feature) => (
-                        <label
-                          key={feature.key}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "12px",
-                            cursor: "pointer",
-                            padding: "4px",
-                            borderRadius: "4px",
-                            transition: "all 0.2s ease",
-                            fontFamily: systemFont,
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={getFeatureValue(group, feature.key)}
-                            onChange={(e) =>
-                              handleFeatureToggle(
-                                group.id!,
-                                feature.key,
-                                e.target.checked
-                              )
-                            }
-                            style={{
-                              cursor: "pointer",
-                            }}
-                          />
-                          <span style={{ color: AppleColors.text }}>
-                            {feature.label}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ==================== 📋 RSVP 응답 현황 섹션 ==================== */}
-        <div
-          style={{
-            backgroundColor: AppleColors.cardBackground,
-            borderRadius: "16px",
-            padding: "24px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "20px",
-              fontWeight: "600",
-              color: AppleColors.text,
-              margin: "0 0 20px 0",
-              fontFamily: systemFont,
-            }}
-          >
-            📋 RSVP 응답 현황
-          </h3>
-
-          {rsvpLoading ? (
-            // RSVP 로딩 상태
-            <div
-              style={{
-                backgroundColor: AppleColors.inputBackground,
-                borderRadius: "12px",
-                padding: "20px",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "16px",
+                  textAlign: "center",
+                  padding: "40px",
                   color: AppleColors.secondaryText,
-                  fontFamily: systemFont,
                 }}
               >
                 RSVP 데이터를 불러오는 중...
               </div>
-            </div>
-          ) : !rsvpData || rsvpData.responses.length === 0 ? (
-            // RSVP 데이터가 없을 때
-            <div
-              style={{
-                backgroundColor: AppleColors.inputBackground,
-                borderRadius: "12px",
-                padding: "20px",
-                textAlign: "center",
-              }}
-            >
+            ) : !rsvpData || rsvpData.responses.length === 0 ? (
               <div
                 style={{
-                  fontSize: "48px",
-                  marginBottom: "16px",
-                  opacity: 0.6,
-                }}
-              >
-                📊
-              </div>
-              <div
-                style={{
-                  fontSize: "16px",
+                  textAlign: "center",
+                  padding: "40px",
                   color: AppleColors.secondaryText,
-                  fontFamily: systemFont,
                 }}
               >
-                RSVP 응답 데이터가 아직 없습니다.
+                RSVP 응답이 없습니다.
               </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: AppleColors.secondaryText,
-                  marginTop: "8px",
-                  fontFamily: systemFont,
-                }}
-              >
-                하객들이 응답을 시작하면 여기에 표시됩니다.
-              </div>
-            </div>
-          ) : (
-            // ✅ 새로운 RSVP 응답 목록과 통계 표시
-            <div>
-              {/* 통계 정보 먼저 표시 */}
-              <div
-                style={{
-                  backgroundColor: AppleColors.inputBackground,
-                  borderRadius: "12px",
-                  padding: "16px",
-                  marginBottom: "20px",
-                  border: `1px solid ${AppleColors.border}`,
-                }}
-              >
-                <h4
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "600",
-                    color: AppleColors.text,
-                    margin: "0 0 12px 0",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  📊 응답 통계
-                </h4>
+            ) : (
+              <div>
+                {/* RSVP 요약 통계 */}
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                    gap: "12px",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                    gap: "16px",
+                    marginBottom: "24px",
+                    padding: "16px",
+                    backgroundColor: AppleColors.inputBackground,
+                    borderRadius: "8px",
                   }}
                 >
                   <div style={{ textAlign: "center" }}>
@@ -2157,8 +1340,7 @@ const AdminDashboard: React.FC = () => {
                       style={{
                         fontSize: "24px",
                         fontWeight: "bold",
-                        color: AppleColors.text,
-                        fontFamily: systemFont,
+                        color: AppleColors.primary,
                       }}
                     >
                       {rsvpData.summary.totalResponses}
@@ -2167,7 +1349,6 @@ const AdminDashboard: React.FC = () => {
                       style={{
                         fontSize: "12px",
                         color: AppleColors.secondaryText,
-                        fontFamily: systemFont,
                       }}
                     >
                       총 응답
@@ -2175,41 +1356,37 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: "bold",
-                        color: AppleColors.success,
-                        fontFamily: systemFont,
-                      }}
-                    >
-                      {rsvpData.summary.attendingResponses}
-                    </div>
+  style={{
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: AppleColors.success,
+  }}
+>
+  {rsvpData.summary.attendingResponses}  {/* ✅ attendingResponses 사용 */}
+</div>
                     <div
                       style={{
                         fontSize: "12px",
                         color: AppleColors.secondaryText,
-                        fontFamily: systemFont,
                       }}
                     >
                       참석
                     </div>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: "bold",
-                        color: AppleColors.destructive,
-                        fontFamily: systemFont,
-                      }}
-                    >
-                      {rsvpData.summary.notAttendingResponses}
-                    </div>
+                   <div
+  style={{
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: AppleColors.destructive,
+  }}
+>
+  {rsvpData.summary.notAttendingResponses}  {/* ✅ notAttendingResponses 사용 */}
+</div>
                     <div
                       style={{
                         fontSize: "12px",
                         color: AppleColors.secondaryText,
-                        fontFamily: systemFont,
                       }}
                     >
                       불참
@@ -2217,117 +1394,133 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: "bold",
-                        color: AppleColors.primary,
-                        fontFamily: systemFont,
-                      }}
-                    >
-                      {rsvpData.summary.totalAttendingCount}
-                    </div>
+  style={{
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: AppleColors.warning,
+  }}
+>
+  {rsvpData.summary.totalPending || 0}  {/* ✅ totalPending 또는 0 */}
+</div>
                     <div
                       style={{
                         fontSize: "12px",
                         color: AppleColors.secondaryText,
-                        fontFamily: systemFont,
                       }}
                     >
-                      총 참석인원
+                      미응답
                     </div>
                   </div>
                 </div>
-                <div
-                  style={{
-                    marginTop: "12px",
-                    fontSize: "14px",
-                    color: AppleColors.secondaryText,
-                    textAlign: "center",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  성인 {rsvpData.summary.totalAdultCount}명, 자녀{" "}
-                  {rsvpData.summary.totalChildrenCount}명
-                </div>
-              </div>
 
-              {/* 개별 응답자 목록 */}
-              <div>
-                <h4
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "600",
-                    color: AppleColors.text,
-                    margin: "0 0 16px 0",
-                    fontFamily: systemFont,
-                  }}
-                >
-                  👥 개별 응답 목록
-                </h4>
-                {rsvpData.responses.map((rsvpWithGroup, index) => (
-                  <div
-                    key={rsvpWithGroup.response.id || `rsvp-${index}`}
-                    style={{
-                      backgroundColor: AppleColors.inputBackground,
-                      borderRadius: "8px",
-                      padding: "12px",
-                      marginBottom: "8px",
-                      border: `1px solid ${AppleColors.border}`,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: AppleColors.text,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        {rsvpWithGroup.response.responderName} -{" "}
-                        {rsvpWithGroup.response.isAttending ? "참석" : "불참"}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: AppleColors.secondaryText,
-                          fontFamily: systemFont,
-                          backgroundColor: AppleColors.cardBackground,
-                          padding: "2px 8px",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        {rsvpWithGroup.groupInfo.groupName}
-                      </div>
-                    </div>
-                    {rsvpWithGroup.response.isAttending && (
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: AppleColors.secondaryText,
-                          fontFamily: systemFont,
-                        }}
-                      >
-                        성인 {rsvpWithGroup.response.adultCount}명, 자녀{" "}
-                        {rsvpWithGroup.response.childrenCount}명
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {/* RSVP 응답 목록 */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {rsvpData.responses.map((rsvp) => (
+  <div
+    key={rsvp.id}  {/* ✅ rsvp.id 사용 가능 */}
+    style={{
+      border: `1px solid ${AppleColors.border}`,
+      borderRadius: "8px",
+      padding: "16px",
+      backgroundColor: AppleColors.cardBackground,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <div style={{ flex: 1 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "4px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "16px",
+            fontWeight: "600",
+            color: AppleColors.text,
+          }}
+        >
+          {rsvp.guestName}  {/* ✅ rsvp.guestName 사용 가능 */}
+        </span>
+        <span
+          style={{
+            fontSize: "14px",
+            color: AppleColors.secondaryText,
+            backgroundColor: AppleColors.inputBackground,
+            padding: "2px 8px",
+            borderRadius: "4px",
+          }}
+        >
+          {rsvp.groupName}  {/* ✅ rsvp.groupName 사용 가능 */}
+        </span>
+        <span
+          style={{
+            fontSize: "14px",
+            fontWeight: "600",
+            color:
+              rsvp.willAttend === true  // ✅ rsvp.willAttend 사용 가능
+                ? AppleColors.success
+                : rsvp.willAttend === false
+                ? AppleColors.destructive
+                : AppleColors.warning,
+          }}
+        >
+          {getAttendanceStatus(rsvp.willAttend)}  {/* ✅ rsvp.willAttend 사용 가능 */}
+        </span>
+      </div>
+      <div
+        style={{
+          fontSize: "14px",
+          color: AppleColors.secondaryText,
+        }}
+      >
+        전화번호: {rsvp.phoneNumber || "없음"} | 동행자: {rsvp.companions || 0}명  {/* ✅ 모든 속성 사용 가능 */}
+      </div>
+      {rsvp.message && (  {/* ✅ rsvp.message 사용 가능 */}
+        <div
+          style={{
+            fontSize: "14px",
+            color: AppleColors.text,
+            marginTop: "4px",
+            fontStyle: "italic",
+          }}
+        >
+          💬 {rsvp.message}  {/* ✅ rsvp.message 사용 가능 */}
+        </div>
+      )}
+    </div>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <button
+        onClick={() =>
+          handleDeleteRsvp(rsvp.id!, rsvp.guestName)  {/* ✅ 모든 속성 사용 가능 */}
+        }
+        style={{
+          padding: "6px 12px",
+          backgroundColor: AppleColors.destructive,
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          fontSize: "12px",
+          cursor: "pointer",
+        }}
+      >
+        삭제
+      </button>
+    </div>
+  </div>
+))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ==================== 🎭 모달 컴포넌트들 ==================== */}
+      {/* ==================== 🔧 모달들 ==================== */}
       {/* 그룹 생성 모달 */}
       {showCreateModal && (
         <CreateGroupModal
@@ -2335,25 +1528,19 @@ const AdminDashboard: React.FC = () => {
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => {
             setShowCreateModal(false);
-            fetchGroups(); // 그룹 목록 새로고침
+            fetchGroups();
           }}
         />
       )}
 
       {/* 관리자 생성 모달 */}
-      <CreateAdminModal
-        isOpen={showCreateAdminModal}
-        onClose={() => setShowCreateAdminModal(false)}
-        onSuccess={handleCreateAdminSuccess}
-      />
-
-      {/* ==================== 🎨 CSS 애니메이션 스타일 ==================== */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+      {showCreateAdminModal && (
+        <CreateAdminModal
+          isOpen={showCreateAdminModal}
+          onClose={() => setShowCreateAdminModal(false)}
+          onSuccess={handleCreateAdminSuccess}
+        />
+      )}
     </div>
   );
 };

@@ -78,6 +78,16 @@ export interface CreateGroupRequest {
   greetingMessage: string;        // 그룹별 인사말
 }
 
+// ✅ 그룹 생성 응답 타입 추가
+export interface CreateGroupResponse {
+  id: string;                     // 생성된 그룹 ID
+  groupName: string;              // 그룹 이름
+  groupType: string;              // 그룹 타입
+  uniqueCode: string;             // 고유 코드
+  greetingMessage: string;        // 인사말
+  message: string;                // 생성 완료 메시지
+}
+
 // 그룹 업데이트 요청 타입 (완전한 정의)
 export interface UpdateGroupRequest {
   groupName?: string;             // 수정할 그룹 이름 (선택사항)
@@ -98,7 +108,7 @@ export interface UpdateGroupGreetingRequest {
   greetingMessage: string;        // 수정할 인사말
 }
 
-// ==================== 💌 RSVP 관련 타입 (기존) ====================
+// ==================== 📊 RSVP 관련 타입 (서버와 일치하도록 수정) ====================
 
 // 기존 RSVP 응답 타입 (AdminDashboard에서 사용 중)
 export interface RsvpResponse {
@@ -122,11 +132,11 @@ export interface RsvpRequest {
 
 // ==================== 📊 RSVP 관련 타입 (새로 추가) ====================
 
-// RSVP 통계 정보 타입 (서버의 RsvpSummary와 일치)
+// RSVP 통계 정보 타입
 export interface RsvpSummary {
   totalResponses: number;         // 전체 응답 수 (참석 + 불참)
-  attendingResponses: number;     // 참석 응답 수
-  notAttendingResponses: number;  // 불참 응답 수
+  attendingResponses: number;     // 참석 응답 수 (totalAttending → attendingResponses)
+  notAttendingResponses: number;  // 불참 응답 수 (totalNotAttending → notAttendingResponses)
   totalAttendingCount: number;    // 총 참석 예정 인원 (성인 + 자녀)
   totalAdultCount: number;        // 참석 예정 성인 인원
   totalChildrenCount: number;     // 참석 예정 자녀 인원
@@ -143,24 +153,79 @@ export interface SimpleGroupInfo {
 // 간단한 RSVP 응답 타입 (서버의 SimpleRsvpResponse와 일치)
 export interface SimpleRsvpResponse {
   id?: string;                    // 응답 고유 ID
-  responderName: string;          // 응답자 이름
-  isAttending: boolean;           // 참석 여부
-  adultCount: number;             // 성인 참석 인원 수
-  childrenCount: number;          // 자녀 참석 인원 수
+  responderName: string;          // 응답자 이름 (guestName → responderName)
+  isAttending: boolean;           // 참석 여부 (willAttend → isAttending)
+  adultCount: number;             // 성인 참석 인원 수 (companions → adultCount)
+  childrenCount: number;          // 자녀 참석 인원 수 (새로 추가)
   submittedAt?: string;           // 응답 제출 일시
   updatedAt?: string;             // 응답 수정 일시
+  
+  // ✅ 컴포넌트 호환성을 위해 추가 (옵셔널)
+  phoneNumber?: string;           // 전화번호
+  message?: string;               // 메시지
+}
+
+// ✅ RSVP 제출 응답 타입
+export interface RsvpSubmitResponse {
+  id: string;                     // 생성된 응답 ID
+  message: string;                // 제출 완료 메시지
+  response: SimpleRsvpResponse;   // 제출된 응답 데이터
 }
 
 // 그룹 정보가 포함된 RSVP 응답 타입 (서버의 SimpleRsvpWithGroupInfo와 일치)
 export interface SimpleRsvpWithGroupInfo {
   response: SimpleRsvpResponse;   // 응답 정보
   groupInfo: SimpleGroupInfo;     // 그룹 정보
+  
+  // ✅ 컴포넌트 호환성을 위한 플랫 구조 접근자들 (계산된 속성)
+  get id(): string | undefined {
+    return this.response.id;
+  }
+  get guestName(): string {
+    return this.response.responderName;
+  }
+  get willAttend(): boolean {
+    return this.response.isAttending;
+  }
+  get phoneNumber(): string | undefined {
+    return this.response.phoneNumber;
+  }
+  get companions(): number {
+    return this.response.adultCount + this.response.childrenCount - 1; // 본인 제외
+  }
+  get message(): string | undefined {
+    return this.response.message;
+  }
+  get groupName(): string {
+    return this.groupInfo.groupName;
+  }
 }
 
 // 개별 응답 목록과 통계가 포함된 전체 응답 데이터 (서버의 RsvpListResponse와 일치)
 export interface RsvpListResponse {
   responses: SimpleRsvpWithGroupInfo[];  // 개별 응답 목록 (그룹 정보 포함)
   summary: RsvpSummary;                  // 전체 응답 통계 정보
+}
+
+// ✅ 초대장 코드로 조회 응답 타입
+export interface InvitationByCodeResponse {
+  greetingMessage: string;        // 그룹별 인사말
+  groomName: string;              // 신랑 이름
+  brideName: string;              // 신부 이름
+  weddingDate: string;            // 결혼식 날짜
+  weddingLocation: string;        // 통합된 웨딩홀 정보
+  groupType: string;              // 그룹 타입
+  groupName: string;              // 그룹 이름
+  accountInfo: string[];          // 계좌 정보 배열
+  ceremonyProgram: string;        // 예식 순서
+  features: {                     // 기능 플래그들
+    showVenueInfo: boolean;
+    showShareButton: boolean;
+    showCeremonyProgram: boolean;
+    showRsvpForm: boolean;
+    showAccountInfo: boolean;
+    showPhotoGallery: boolean;
+  };
 }
 
 // ==================== 👤 관리자 관련 타입 ====================
@@ -176,6 +241,20 @@ export interface LoginResponse {
   token: string;                  // JWT 토큰
   expiresAt: string;              // 토큰 만료 일시 (Date를 JSON으로 직렬화하면 string이 됨)
   username: string;               // 로그인한 관리자 사용자명
+}
+
+// ✅ 관리자 로그인 요청 타입
+export interface AdminLoginRequest {
+  username: string;               // 관리자 사용자명
+  password: string;               // 관리자 비밀번호
+}
+
+// ✅ 관리자 로그인 응답 타입
+export interface AdminLoginResponse {
+  token: string;                  // JWT 토큰
+  expiresAt: string;              // 토큰 만료 일시
+  username: string;               // 로그인한 관리자 사용자명
+  role: string;                   // 관리자 역할
 }
 
 // ✅ 관리자 생성 관련 타입들 추가
