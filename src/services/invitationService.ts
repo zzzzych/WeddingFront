@@ -284,43 +284,108 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
       throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
     }
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps`, {
+    // 개별 응답 목록과 통계를 모두 가져오기 위해 다른 엔드포인트 시도
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/list`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // 인증 헤더 추가
+        'Authorization': `Bearer ${token}`,
       },
     });
 
+    // 만약 /api/admin/rsvps/list가 없다면 기존 엔드포인트를 사용하되 다른 방식으로 처리
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ RSVP API 에러 응답:', response.status, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('🔍 RSVP API 원본 응답 데이터:', data);
-    
-    // 응답 데이터가 없는 경우 기본값 반환
-    if (!data || (!data.responses && !data.summary)) {
-      console.log('⚠️ RSVP 데이터가 없음, 기본값 반환');
-      return {
-        responses: [],
-        summary: {
-          totalResponses: 0,
-          attendingResponses: 0,
-          notAttendingResponses: 0,
-          totalAttendingCount: 0,
-          totalAdultCount: 0,
-          totalChildrenCount: 0
+      console.log('⚠️ /api/admin/rsvps/list 엔드포인트가 없음, 대안 방식 사용');
+      
+      // 1. 먼저 통계 정보 가져오기
+      const summaryResponse = await fetch(`${API_BASE_URL}/api/admin/rsvps`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!summaryResponse.ok) {
+        throw new Error(`통계 조회 실패: ${summaryResponse.status}`);
+      }
+      
+      const summaryData = await summaryResponse.json();
+      console.log('📊 통계 데이터:', summaryData);
+      
+      // 2. 모든 그룹의 응답을 가져오기
+      const groupsResponse = await fetch(`${API_BASE_URL}/api/admin/groups`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!groupsResponse.ok) {
+        throw new Error(`그룹 목록 조회 실패: ${groupsResponse.status}`);
+      }
+      
+      const groupsData = await groupsResponse.json();
+      console.log('👥 그룹 데이터:', groupsData);
+      
+      // 3. 각 그룹의 응답을 수집
+      const allResponses = [];
+      const groups = groupsData.groups || groupsData;
+      
+      for (const group of groups) {
+        try {
+          const groupRsvpResponse = await fetch(`${API_BASE_URL}/api/admin/groups/${group.id}/rsvps`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (groupRsvpResponse.ok) {
+            const groupRsvpData = await groupRsvpResponse.json();
+            console.log(`📝 그룹 ${group.groupName} 응답:`, groupRsvpData);
+            
+            // 각 응답에 그룹 정보 추가
+            const responsesWithGroup = (groupRsvpData.responses || groupRsvpData || []).map((response: any) => ({
+              response: response,
+              groupInfo: {
+                groupName: group.groupName,
+                uniqueCode: group.uniqueCode,
+                id: group.id
+              },
+              // 호환성을 위한 플랫 구조 속성들
+              id: response.id,
+              guestName: response.responderName,
+              willAttend: response.isAttending,
+              phoneNumber: response.phoneNumber,
+              companions: Math.max(0, (response.adultCount || 0) + (response.childrenCount || 0) - 1),
+              message: response.message,
+              groupName: group.groupName
+            }));
+            
+            allResponses.push(...responsesWithGroup);
+          }
+        } catch (error) {
+          console.warn(`⚠️ 그룹 ${group.groupName} 응답 조회 실패:`, error);
         }
+      }
+      
+      console.log('📋 전체 수집된 응답:', allResponses);
+      
+      return {
+        responses: allResponses,
+        summary: summaryData
       };
     }
+
+    // /api/admin/rsvps/list가 성공한 경우
+    const data = await response.json();
+    console.log('🔍 RSVP 목록 API 응답:', data);
     
     // 응답 데이터 변환
     const responses = (data.responses || []).map((item: any) => {
-      console.log('🔄 개별 응답 변환:', item);
-      
       const response = item.response || item;
       const groupInfo = item.groupInfo || { groupName: '알 수 없는 그룹', uniqueCode: '' };
       
@@ -338,19 +403,17 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
       };
     });
 
-    // 통계 데이터 변환
-    const summary = {
-      totalResponses: data.summary?.totalResponses || 0,
-      attendingResponses: data.summary?.attendingResponses || 0,
-      notAttendingResponses: data.summary?.notAttendingResponses || 0,
-      totalAttendingCount: data.summary?.totalAttendingCount || 0,
-      totalAdultCount: data.summary?.totalAdultCount || 0,
-      totalChildrenCount: data.summary?.totalChildrenCount || 0,
+    return {
+      responses: responses,
+      summary: data.summary || {
+        totalResponses: 0,
+        attendingResponses: 0,
+        notAttendingResponses: 0,
+        totalAttendingCount: 0,
+        totalAdultCount: 0,
+        totalChildrenCount: 0
+      }
     };
-    
-    console.log('✅ 변환된 RSVP 데이터:', { responses, summary });
-    
-    return { responses, summary };
     
   } catch (error) {
     console.error('❌ RSVP 데이터 조회 실패:', error);

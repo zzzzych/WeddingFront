@@ -1,8 +1,8 @@
 // src/pages/admin/GroupListSection.tsx - Part 1
 // 그룹 목록을 표시하고 관리하는 섹션 컴포넌트
 
-import React from 'react';
-import { InvitationGroup, RsvpListResponse } from '../../types';
+import React from "react";
+import { InvitationGroup, RsvpListResponse } from "../../types";
 
 // ==================== 🎨 스타일 설정 ====================
 
@@ -10,17 +10,17 @@ import { InvitationGroup, RsvpListResponse } from '../../types';
  * 애플 디자인 시스템 색상 팔레트
  */
 const AppleColors = {
-  cardBackground: "#ffffff",       // 카드 배경색
-  text: "#1d1d1f",                // 주요 텍스트 색상
-  secondaryText: "#86868b",        // 보조 텍스트 색상
-  primary: "#007aff",              // 주요 액센트 색상
-  secondary: "#5856d6",            // 보조 액센트 색상
-  success: "#34c759",              // 성공 상태 색상
-  warning: "#ff9500",              // 경고 상태 색상
-  destructive: "#ff3b30",          // 삭제/위험 상태 색상
-  border: "#d2d2d7",               // 테두리 색상
-  inputBackground: "#f2f2f7",      // 입력 필드 배경색
-  secondaryButton: "#f2f2f7",      // 보조 버튼 배경색
+  cardBackground: "#ffffff", // 카드 배경색
+  text: "#1d1d1f", // 주요 텍스트 색상
+  secondaryText: "#86868b", // 보조 텍스트 색상
+  primary: "#007aff", // 주요 액센트 색상
+  secondary: "#5856d6", // 보조 액센트 색상
+  success: "#34c759", // 성공 상태 색상
+  warning: "#ff9500", // 경고 상태 색상
+  destructive: "#ff3b30", // 삭제/위험 상태 색상
+  border: "#d2d2d7", // 테두리 색상
+  inputBackground: "#f2f2f7", // 입력 필드 배경색
+  secondaryButton: "#f2f2f7", // 보조 버튼 배경색
 };
 
 /**
@@ -35,17 +35,17 @@ const systemFont =
  * GroupListSection 컴포넌트 Props 타입
  */
 interface GroupListSectionProps {
-  groups: InvitationGroup[];                    // 그룹 목록 데이터
-  rsvpData: RsvpListResponse | null;            // RSVP 데이터 (통계용)
-  editingGroupId: string | null;                // 현재 편집 중인 그룹 ID
-  editingGreeting: string;                      // 편집 중인 인사말
-  onShowCreateModal: () => void;                // 그룹 생성 모달 표시 함수
+  groups: InvitationGroup[]; // 그룹 목록 데이터
+  rsvpData: RsvpListResponse | null; // RSVP 데이터 (통계용)
+  editingGroupId: string | null; // 현재 편집 중인 그룹 ID
+  editingGreeting: string; // 편집 중인 인사말
+  onShowCreateModal: () => void; // 그룹 생성 모달 표시 함수
   onStartEditingGreeting: (group: InvitationGroup) => void; // 인사말 편집 시작
   onUpdateGreeting: (groupId: string, newGreeting: string) => void; // 인사말 업데이트
   onUpdateGroupName: (groupId: string, newName: string) => void; // 그룹명 업데이트
   onUpdateGroupCode: (groupId: string, newCode: string) => void; // URL 코드 업데이트
   onDeleteGroup: (groupId: string, groupName: string) => void; // 그룹 삭제
-  onCancelEditing: () => void;                  // 편집 취소
+  onCancelEditing: () => void; // 편집 취소
   onEditingGreetingChange: (value: string) => void; // 편집 중인 인사말 변경
 }
 
@@ -53,10 +53,10 @@ interface GroupListSectionProps {
  * 개별 그룹 카드 Props 타입
  */
 interface GroupCardProps {
-  group: InvitationGroup;                       // 그룹 데이터
-  rsvpData: RsvpListResponse | null;            // RSVP 데이터
-  isEditing: boolean;                           // 편집 모드 여부
-  editingGreeting: string;                      // 편집 중인 인사말
+  group: InvitationGroup; // 그룹 데이터
+  rsvpData: RsvpListResponse | null; // RSVP 데이터
+  isEditing: boolean; // 편집 모드 여부
+  editingGreeting: string; // 편집 중인 인사말
   onStartEditingGreeting: (group: InvitationGroup) => void;
   onUpdateGreeting: (groupId: string, newGreeting: string) => void;
   onUpdateGroupName: (groupId: string, newName: string) => void;
@@ -83,16 +83,21 @@ const getGroupTypeDisplay = (type: string) => {
 /**
  * 그룹별 RSVP 통계 계산 함수
  */
-const getGroupStats = (groupName: string, rsvpData: RsvpListResponse | null) => {
+const getGroupStats = (
+  groupName: string,
+  rsvpData: RsvpListResponse | null
+) => {
   if (!rsvpData) {
     return { totalResponses: 0, attending: 0, notAttending: 0 };
   }
 
-  const groupResponses = rsvpData.responses.filter(r => r.groupName === groupName);
+  const groupResponses = rsvpData.responses.filter(
+    (r) => r.groupName === groupName
+  );
   return {
     totalResponses: groupResponses.length,
-    attending: groupResponses.filter(r => r.willAttend === true).length,
-    notAttending: groupResponses.filter(r => r.willAttend === false).length,
+    attending: groupResponses.filter((r) => r.willAttend === true).length,
+    notAttending: groupResponses.filter((r) => r.willAttend === false).length,
   };
 };
 
@@ -269,7 +274,14 @@ const GroupCard: React.FC<GroupCardProps> = ({
         </div>
 
         {/* 액션 버튼들 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginLeft: "16px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            marginLeft: "16px",
+          }}
+        >
           <button
             onClick={() => onStartEditingGreeting(group)}
             style={{
@@ -289,7 +301,10 @@ const GroupCard: React.FC<GroupCardProps> = ({
           </button>
           <button
             onClick={() => {
-              const newName = prompt("새로운 그룹 이름을 입력하세요:", group.groupName);
+              const newName = prompt(
+                "새로운 그룹 이름을 입력하세요:",
+                group.groupName
+              );
               if (newName && newName.trim()) {
                 onUpdateGroupName(group.id!, newName.trim());
               }
@@ -311,7 +326,10 @@ const GroupCard: React.FC<GroupCardProps> = ({
           </button>
           <button
             onClick={() => {
-              const newCode = prompt("새로운 URL 코드를 입력하세요:", group.uniqueCode);
+              const newCode = prompt(
+                "새로운 URL 코드를 입력하세요:",
+                group.uniqueCode
+              );
               if (newCode && newCode.trim()) {
                 onUpdateGroupCode(group.id!, newCode.trim());
               }
@@ -331,42 +349,44 @@ const GroupCard: React.FC<GroupCardProps> = ({
           >
             🔗 URL 변경
           </button>
-          // 기존 "🔗 URL 변경" 버튼 다음에 추가
-<button
-  onClick={() => {
-    const fullUrl = `${window.location.origin}/invitation/${group.uniqueCode}`;
-    navigator.clipboard.writeText(fullUrl).then(() => {
-      // 성공 피드백
-      const button = document.activeElement as HTMLButtonElement;
-      const originalText = button.textContent;
-      button.textContent = "✅ 복사됨!";
-      button.style.backgroundColor = "#4CAF50";
-      
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.style.backgroundColor = "#007AFF";
-      }, 2000);
-    }).catch((err) => {
-      console.error('URL 복사 실패:', err);
-      alert('URL 복사에 실패했습니다.');
-    });
-  }}
-  style={{
-    padding: "8px 16px",
-    backgroundColor: "#007AFF", // Apple Blue
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-    transition: "all 0.2s",
-    marginLeft: "8px", // 다른 버튼과 간격
-  }}
->
-  📋 URL 복사
-</button>
+          <button
+            onClick={() => {
+              const fullUrl = `${window.location.origin}/invitation/${group.uniqueCode}`;
+              navigator.clipboard
+                .writeText(fullUrl)
+                .then(() => {
+                  // 성공 피드백
+                  const button = document.activeElement as HTMLButtonElement;
+                  const originalText = button.textContent;
+                  button.textContent = "✅ 복사됨!";
+                  button.style.backgroundColor = "#4CAF50";
+
+                  setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = "#007AFF";
+                  }, 2000);
+                })
+                .catch((err) => {
+                  console.error("URL 복사 실패:", err);
+                  alert("URL 복사에 실패했습니다.");
+                });
+            }}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#007AFF", // Apple Blue
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: "600",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all 0.2s",
+              marginLeft: "8px", // 다른 버튼과 간격
+            }}
+          >
+            📋 URL 복사
+          </button>
           <button
             onClick={() => onDeleteGroup(group.id!, group.groupName)}
             style={{
@@ -400,26 +420,62 @@ const GroupCard: React.FC<GroupCardProps> = ({
         }}
       >
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "2px" }}>
+          <div
+            style={{
+              fontSize: "12px",
+              color: AppleColors.secondaryText,
+              marginBottom: "2px",
+            }}
+          >
             총 응답
           </div>
-          <div style={{ fontSize: "16px", fontWeight: "600", color: AppleColors.text }}>
+          <div
+            style={{
+              fontSize: "16px",
+              fontWeight: "600",
+              color: AppleColors.text,
+            }}
+          >
             {stats.totalResponses}
           </div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "2px" }}>
+          <div
+            style={{
+              fontSize: "12px",
+              color: AppleColors.secondaryText,
+              marginBottom: "2px",
+            }}
+          >
             참석
           </div>
-          <div style={{ fontSize: "16px", fontWeight: "600", color: AppleColors.success }}>
+          <div
+            style={{
+              fontSize: "16px",
+              fontWeight: "600",
+              color: AppleColors.success,
+            }}
+          >
             {stats.attending}
           </div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "2px" }}>
+          <div
+            style={{
+              fontSize: "12px",
+              color: AppleColors.secondaryText,
+              marginBottom: "2px",
+            }}
+          >
             불참
           </div>
-          <div style={{ fontSize: "16px", fontWeight: "600", color: AppleColors.destructive }}>
+          <div
+            style={{
+              fontSize: "16px",
+              fontWeight: "600",
+              color: AppleColors.destructive,
+            }}
+          >
             {stats.notAttending}
           </div>
         </div>
@@ -433,7 +489,9 @@ const GroupCard: React.FC<GroupCardProps> = ({
 /**
  * 그룹이 없을 때 표시하는 컴포넌트
  */
-const EmptyGroupList: React.FC<{ onShowCreateModal: () => void }> = ({ onShowCreateModal }) => (
+const EmptyGroupList: React.FC<{ onShowCreateModal: () => void }> = ({
+  onShowCreateModal,
+}) => (
   <div
     style={{
       textAlign: "center",
@@ -442,7 +500,14 @@ const EmptyGroupList: React.FC<{ onShowCreateModal: () => void }> = ({ onShowCre
     }}
   >
     <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
-    <div style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", color: AppleColors.text }}>
+    <div
+      style={{
+        fontSize: "18px",
+        fontWeight: "600",
+        marginBottom: "8px",
+        color: AppleColors.text,
+      }}
+    >
       아직 생성된 그룹이 없습니다
     </div>
     <div style={{ fontSize: "14px", marginBottom: "24px" }}>
@@ -536,7 +601,7 @@ const GroupListSection: React.FC<GroupListSectionProps> = ({
             </span>
           )}
         </h2>
-        
+
         {groups.length > 0 && (
           <button
             onClick={onShowCreateModal}
@@ -562,7 +627,9 @@ const GroupListSection: React.FC<GroupListSectionProps> = ({
         {groups.length === 0 ? (
           <EmptyGroupList onShowCreateModal={onShowCreateModal} />
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
             {groups.map((group) => (
               <GroupCard
                 key={group.id}
