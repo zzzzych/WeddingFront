@@ -110,25 +110,68 @@ export const useAdminDashboard = () => {
   };
 
   /**
-   * 관리자 목록을 가져오는 함수
-   */
-  const fetchAdminList = async () => {
-    try {
-      setAdminLoading(true);
-      console.log("👥 관리자 목록 조회 시작");
-      const data = await getAdminList();
-      setAdminList(data.admins || []);
-      console.log("✅ 관리자 목록 조회 완료:", data);
-    } catch (error: any) {
-      console.error("❌ 관리자 목록 조회 실패:", error);
-      // 권한이 없는 경우 에러 메시지 표시하지 않음
-      if (!error?.message?.includes('권한')) {
-        alert("관리자 목록을 불러오는데 실패했습니다.");
-      }
-    } finally {
-      setAdminLoading(false);
+ * 관리자 목록을 서버에서 가져오는 함수
+ */
+const fetchAdminList = async () => {
+  try {
+    console.log('📋 관리자 목록 조회 시작');
+    
+    // 토큰 유효성 사전 체크
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      console.error('❌ 인증 토큰이 없음');
+      alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+      // 로그인 페이지로 리디렉션 로직 추가 가능
+      return;
     }
-  };
+    
+    // API 호출
+    const response = await getAdminList();
+    
+    console.log('✅ 관리자 목록 조회 성공:', response);
+    
+    // 응답 데이터 구조에 따라 처리
+    if (response.admins && Array.isArray(response.admins)) {
+      setAdminList(response.admins);
+    } else if (Array.isArray(response)) {
+      setAdminList(response);
+    } else {
+      console.warn('⚠️ 예상과 다른 응답 구조:', response);
+      setAdminList([]);
+    }
+    
+  } catch (error: any) {
+    console.error('❌ 관리자 목록 조회 실패:', error);
+    
+    // 에러 타입별 처리
+    if (error.message && (
+      error.message.includes('토큰이 만료되었습니다') || 
+      error.message.includes('인증이 만료되었습니다') ||
+      error.message.includes('다시 로그인해주세요')
+    )) {
+      // 토큰 만료 에러
+      alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+      
+      // 로컬 스토리지 정리 (혹시 누락된 경우를 대비)
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      
+      // 로그인 페이지로 리디렉션하거나 로그인 상태 초기화
+      // 예: window.location.href = '/admin/login';
+      
+    } else if (error.message && error.message.includes('네트워크')) {
+      // 네트워크 에러
+      alert('네트워크 연결을 확인해주세요.');
+      
+    } else {
+      // 기타 에러
+      alert('관리자 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
+    
+    // 에러 발생 시 빈 배열로 초기화
+    setAdminList([]);
+  }
+};
 
   // ==================== 🔄 컴포넌트 초기화 ====================
 
