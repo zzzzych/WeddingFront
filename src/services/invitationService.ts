@@ -277,36 +277,69 @@ export const deleteGroup = async (groupId: string, force: boolean = false): Prom
 export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
   try {
     console.log('📊 전체 RSVP 데이터 조회 시작');
+    
+    // 인증 토큰 확인
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+    
     const response = await fetch(`${API_BASE_URL}/api/admin/rsvps`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 인증 헤더 추가
       },
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ RSVP API 에러 응답:', response.status, errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('🔍 RSVP API 응답:', data);
+    console.log('🔍 RSVP API 원본 응답 데이터:', data);
     
-    // 서버 데이터를 클라이언트 호환 형태로 변환
-    const transformedResponses = (data.responses || []).map((item: any) => ({
-      response: item.response,
-      groupInfo: item.groupInfo,
-      // 호환성을 위한 플랫 구조 속성들
-      id: item.response.id,
-      guestName: item.response.responderName,
-      willAttend: item.response.isAttending,
-      phoneNumber: item.response.phoneNumber,
-      companions: (item.response.adultCount + item.response.childrenCount) - 1,
-      message: item.response.message,
-      groupName: item.groupInfo.groupName
-    }));
+    // 응답 데이터가 없는 경우 기본값 반환
+    if (!data || (!data.responses && !data.summary)) {
+      console.log('⚠️ RSVP 데이터가 없음, 기본값 반환');
+      return {
+        responses: [],
+        summary: {
+          totalResponses: 0,
+          attendingResponses: 0,
+          notAttendingResponses: 0,
+          totalAttendingCount: 0,
+          totalAdultCount: 0,
+          totalChildrenCount: 0
+        }
+      };
+    }
+    
+    // 응답 데이터 변환
+    const responses = (data.responses || []).map((item: any) => {
+      console.log('🔄 개별 응답 변환:', item);
+      
+      const response = item.response || item;
+      const groupInfo = item.groupInfo || { groupName: '알 수 없는 그룹', uniqueCode: '' };
+      
+      return {
+        response: response,
+        groupInfo: groupInfo,
+        // 호환성을 위한 플랫 구조 속성들
+        id: response.id,
+        guestName: response.responderName,
+        willAttend: response.isAttending,
+        phoneNumber: response.phoneNumber,
+        companions: Math.max(0, (response.adultCount || 0) + (response.childrenCount || 0) - 1),
+        message: response.message,
+        groupName: groupInfo.groupName
+      };
+    });
 
-    // RsvpSummary를 클라이언트 호환 형태로 변환
-    const transformedSummary = {
+    // 통계 데이터 변환
+    const summary = {
       totalResponses: data.summary?.totalResponses || 0,
       attendingResponses: data.summary?.attendingResponses || 0,
       notAttendingResponses: data.summary?.notAttendingResponses || 0,
@@ -315,10 +348,10 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
       totalChildrenCount: data.summary?.totalChildrenCount || 0,
     };
     
-    return {
-      responses: transformedResponses,
-      summary: transformedSummary
-    };
+    console.log('✅ 변환된 RSVP 데이터:', { responses, summary });
+    
+    return { responses, summary };
+    
   } catch (error) {
     console.error('❌ RSVP 데이터 조회 실패:', error);
     throw error;

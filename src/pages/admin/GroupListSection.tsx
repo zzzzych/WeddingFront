@@ -331,6 +331,42 @@ const GroupCard: React.FC<GroupCardProps> = ({
           >
             🔗 URL 변경
           </button>
+          // 기존 "🔗 URL 변경" 버튼 다음에 추가
+<button
+  onClick={() => {
+    const fullUrl = `${window.location.origin}/invitation/${group.uniqueCode}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      // 성공 피드백
+      const button = document.activeElement as HTMLButtonElement;
+      const originalText = button.textContent;
+      button.textContent = "✅ 복사됨!";
+      button.style.backgroundColor = "#4CAF50";
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.backgroundColor = "#007AFF";
+      }, 2000);
+    }).catch((err) => {
+      console.error('URL 복사 실패:', err);
+      alert('URL 복사에 실패했습니다.');
+    });
+  }}
+  style={{
+    padding: "8px 16px",
+    backgroundColor: "#007AFF", // Apple Blue
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: "600",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    transition: "all 0.2s",
+    marginLeft: "8px", // 다른 버튼과 간격
+  }}
+>
+  📋 URL 복사
+</button>
           <button
             onClick={() => onDeleteGroup(group.id!, group.groupName)}
             style={{
