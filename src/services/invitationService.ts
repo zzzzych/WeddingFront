@@ -1,31 +1,43 @@
 // src/services/invitationService.ts
+// 청첩장 프로젝트의 모든 API 호출을 관리하는 서비스 파일
+// 주요 기능: 그룹 관리, RSVP 처리, 관리자 인증, 청첩장 조회
+
 import {
+  // 그룹 관련 타입들
   CreateGroupRequest,
-  CreateGroupResponse,  // ✅ 새로 추가
+  CreateGroupResponse,
   InvitationGroup,
   UpdateGroupRequest,
+  
+  // 관리자 관련 타입들
   CreateAdminRequest,
   AdminCreateResponse,
   AdminListResponse,
+  AdminCredentials,
+  LoginResponse,
+  
+  // RSVP 관련 타입들
   RsvpListResponse,
   SimpleRsvpWithGroupInfo,
   UpdateRsvpRequest,
-  RsvpRequest,  // ✅ 새로 추가
-  RsvpSubmitResponse,  // ✅ 새로 추가
-  AdminLoginRequest,  // ✅ 새로 추가
-  AdminLoginResponse,  // ✅ 새로 추가
-  InvitationByCodeResponse  // ✅ 새로 추가
+  RsvpRequest,
+  RsvpSubmitResponse,
+  
+  // 청첩장 관련 타입들
+  InvitationAPIResponse,
+  InvitationByCodeResponse
 } from '../types';
 
-// API 기본 URL 설정
+// ==================== 🔧 환경 설정 ====================
+// API 기본 URL 설정 (환경 변수 우선, 없으면 개발 서버 URL 사용)
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-// ==================== 🔧 공통 API 헬퍼 함수들 ====================
+// ==================== 🛠️ 공통 API 헬퍼 함수들 ====================
 
 /**
  * GET 요청을 위한 공통 함수
- * @param endpoint - API 엔드포인트
- * @param options - 추가 옵션 (헤더 등)
+ * @param endpoint - API 엔드포인트 (예: '/api/groups')
+ * @param options - 추가 옵션 (헤더, 인증 등)
  * @returns Promise<any> - API 응답 데이터
  */
 const apiGet = async (endpoint: string, options: any = {}): Promise<any> => {
@@ -50,7 +62,7 @@ const apiGet = async (endpoint: string, options: any = {}): Promise<any> => {
  * POST 요청을 위한 공통 함수
  * @param endpoint - API 엔드포인트
  * @param data - 전송할 데이터
- * @param options - 추가 옵션 (헤더 등)
+ * @param options - 추가 옵션 (헤더, 인증 등)
  * @returns Promise<any> - API 응답 데이터
  */
 const apiPost = async (endpoint: string, data: any, options: any = {}): Promise<any> => {
@@ -72,11 +84,68 @@ const apiPost = async (endpoint: string, data: any, options: any = {}): Promise<
   return response.json();
 };
 
-// ==================== 🎯 그룹 관련 API 함수들 ====================
+/**
+ * PUT 요청을 위한 공통 함수
+ * @param endpoint - API 엔드포인트
+ * @param data - 전송할 데이터
+ * @param options - 추가 옵션
+ * @returns Promise<any> - API 응답 데이터
+ */
+const apiPut = async (endpoint: string, data: any, options: any = {}): Promise<any> => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    body: JSON.stringify(data),
+    ...options,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.reason || `HTTP ${response.status} 에러가 발생했습니다.`);
+  }
+
+  return response.json();
+};
 
 /**
- * 새 그룹 생성 (수정된 버전 - 올바른 반환 타입)
- * @param groupData - 생성할 그룹 데이터
+ * DELETE 요청을 위한 공통 함수
+ * @param endpoint - API 엔드포인트
+ * @param options - 추가 옵션
+ * @returns Promise<any> - API 응답 데이터 (또는 void)
+ */
+const apiDelete = async (endpoint: string, options: any = {}): Promise<any> => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  // 204 No Content는 성공을 의미하므로 별도 처리
+  if (response.status === 204) {
+    return;
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.reason || `HTTP ${response.status} 에러가 발생했습니다.`);
+  }
+
+  // 응답 본문이 있는 경우에만 JSON 파싱
+  const text = await response.text();
+  return text ? JSON.parse(text) : undefined;
+};
+
+// ==================== 🎯 그룹 관리 API 함수들 ====================
+
+/**
+ * 새 그룹 생성
+ * @param groupData - 생성할 그룹 데이터 (이름, 타입, 인사말 등)
  * @returns Promise<CreateGroupResponse> - 생성된 그룹 정보
  */
 export const createGroup = async (groupData: CreateGroupRequest): Promise<CreateGroupResponse> => {
@@ -93,7 +162,7 @@ export const createGroup = async (groupData: CreateGroupRequest): Promise<Create
 
 /**
  * 모든 그룹 목록 조회
- * @returns Promise<InvitationGroup[]> - 그룹 목록
+ * @returns Promise<InvitationGroup[]> - 전체 그룹 목록
  */
 export const getAllGroups = async (): Promise<InvitationGroup[]> => {
   try {
@@ -108,53 +177,28 @@ export const getAllGroups = async (): Promise<InvitationGroup[]> => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    console.log('🔍 Groups API 응답:', data);
-    
-    // 단순 배열로 처리
-    if (Array.isArray(data)) {
-      return data;
-    }
-    
-    // 기존 구조 지원 (data.groups가 있는 경우)
-    if (data.groups && Array.isArray(data.groups)) {
-      return data.groups;
-    }
-    
-    console.warn('⚠️ 예상하지 못한 응답 형식:', data);
-    return [];
+    console.log('✅ 그룹 목록 조회 완료:', data);
+    return data;
   } catch (error) {
-    console.error('❌ 그룹 조회 실패:', error);
+    console.error('❌ 그룹 목록 조회 실패:', error);
     throw error;
   }
 };
 
 /**
- * 그룹 정보 수정
+ * 특정 그룹 정보 수정
  * @param groupId - 수정할 그룹 ID
- * @param updateData - 수정할 데이터
+ * @param updateData - 수정할 데이터 (부분 업데이트 가능)
  * @returns Promise<InvitationGroup> - 수정된 그룹 정보
  */
 export const updateGroup = async (groupId: string, updateData: UpdateGroupRequest): Promise<InvitationGroup> => {
   try {
-    console.log(`🔧 그룹 수정 요청: ${groupId}`, updateData);
-    const response = await fetch(`${API_BASE_URL}/api/admin/groups/${groupId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updateData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.reason || '그룹 수정에 실패했습니다.');
-    }
-
-    const result = await response.json();
-    console.log('✅ 그룹 수정 성공:', result);
-    return result;
+    console.log(`🔄 그룹 수정 요청: ${groupId}`, updateData);
+    const response = await apiPut(`/api/admin/groups/${groupId}`, updateData);
+    console.log('✅ 그룹 수정 성공:', response);
+    return response;
   } catch (error) {
     console.error('❌ 그룹 수정 실패:', error);
     throw error;
@@ -162,42 +206,35 @@ export const updateGroup = async (groupId: string, updateData: UpdateGroupReques
 };
 
 /**
- * 그룹 삭제 (강제 삭제 옵션 포함)
+ * 그룹 삭제 (일반 삭제 또는 강제 삭제)
  * @param groupId - 삭제할 그룹 ID
- * @param forceDelete - 강제 삭제 여부 (기본값: false)
+ * @param force - 강제 삭제 여부 (true: RSVP 응답이 있어도 삭제)
  * @returns Promise<void>
  */
-export const deleteGroup = async (
-  groupId: string, 
-  forceDelete: boolean = false
-): Promise<void> => {
+export const deleteGroup = async (groupId: string, force: boolean = false): Promise<void> => {
   try {
-    // 강제 삭제 옵션이 있으면 쿼리 파라미터 추가
-    const queryParams = forceDelete ? '?force=true' : '';
+    console.log(`🗑️ 그룹 삭제 시도: ${groupId} (강제: ${force})`);
     
-    console.log(`🗑️ 그룹 삭제 시도: ${groupId}, 강제삭제: ${forceDelete}`);
+    const endpoint = force 
+      ? `/api/admin/groups/${groupId}?force=true` 
+      : `/api/admin/groups/${groupId}`;
     
-    const response = await fetch(
-      `${API_BASE_URL}/api/admin/groups/${groupId}${queryParams}`, 
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    console.log('🔍 DELETE 응답 상태:', response.status);
-
-    // 204 No Content는 성공을 의미
+    // 204 No Content는 삭제 성공
     if (response.status === 204) {
       console.log('✅ 그룹 삭제 성공');
       return;
     }
 
-    // 409 Conflict - 응답이 있는 그룹
+    // 409 Conflict는 응답이 있는 그룹 (강제 삭제 필요)
     if (response.status === 409) {
-      let errorMessage = '응답이 있는 그룹은 강제 삭제가 필요합니다.';
+      let errorMessage = '이 그룹에는 RSVP 응답이 있어서 삭제할 수 없습니다.';
       try {
         const errorData = await response.json();
         errorMessage = errorData.reason || errorData.error || errorMessage;
@@ -207,7 +244,7 @@ export const deleteGroup = async (
       throw new Error(errorMessage);
     }
 
-    // 기타 에러
+    // 기타 에러 처리
     let errorMessage = '그룹 삭제에 실패했습니다.';
     try {
       const errorData = await response.json();
@@ -231,11 +268,10 @@ export const deleteGroup = async (
   }
 };
 
-// ==================== 📊 RSVP 관련 API 함수들 ====================
-
+// ==================== 📊 RSVP 관리 API 함수들 ====================
 
 /**
- * 전체 RSVP 응답 목록과 통계 조회 (수정된 버전)
+ * 전체 RSVP 응답 목록과 통계 조회
  * @returns Promise<RsvpListResponse> - RSVP 응답 목록과 통계
  */
 export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
@@ -255,7 +291,7 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
     const data = await response.json();
     console.log('🔍 RSVP API 응답:', data);
     
-    // ✅ 서버 데이터를 클라이언트 호환 형태로 변환
+    // 서버 데이터를 클라이언트 호환 형태로 변환
     const transformedResponses = (data.responses || []).map((item: any) => ({
       response: item.response,
       groupInfo: item.groupInfo,
@@ -269,20 +305,16 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
       groupName: item.groupInfo.groupName
     }));
 
-    // ✅ RsvpSummary를 클라이언트 호환 형태로 변환
+    // RsvpSummary를 클라이언트 호환 형태로 변환
     const transformedSummary = {
       totalResponses: data.summary?.totalResponses || 0,
-      totalAttending: data.summary?.attendingResponses || 0,  // attendingResponses → totalAttending
-      totalNotAttending: data.summary?.notAttendingResponses || 0,  // notAttendingResponses → totalNotAttending
-      totalPending: 0,  // 서버에 없는 필드이므로 0으로 설정
       attendingResponses: data.summary?.attendingResponses || 0,
       notAttendingResponses: data.summary?.notAttendingResponses || 0,
       totalAttendingCount: data.summary?.totalAttendingCount || 0,
       totalAdultCount: data.summary?.totalAdultCount || 0,
-      totalChildrenCount: data.summary?.totalChildrenCount || 0
+      totalChildrenCount: data.summary?.totalChildrenCount || 0,
     };
     
-    // RsvpListResponse 형태로 반환
     return {
       responses: transformedResponses,
       summary: transformedSummary
@@ -294,97 +326,34 @@ export const getAllRsvpsList = async (): Promise<RsvpListResponse> => {
 };
 
 /**
- * 특정 그룹의 RSVP 응답 목록 조회 (수정된 버전)
- * @param groupId - 그룹 ID
+ * 특정 그룹의 RSVP 응답 목록 조회
+ * @param groupId - 조회할 그룹 ID
  * @returns Promise<SimpleRsvpWithGroupInfo[]> - 해당 그룹의 RSVP 응답 목록
  */
 export const getRsvpList = async (groupId: string): Promise<SimpleRsvpWithGroupInfo[]> => {
   try {
     console.log(`📋 그룹 ${groupId}의 RSVP 목록 조회`);
-    const response = await fetch(`${API_BASE_URL}/api/admin/groups/${groupId}/rsvps`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('🔍 그룹별 RSVP API 응답:', data);
-    
-    // 배열 형태로 반환
-    if (Array.isArray(data)) {
-      // ✅ 서버 데이터를 클라이언트 호환 형태로 변환
-      return data.map((item: any) => ({
-        response: item.response,
-        groupInfo: item.groupInfo,
-        // 호환성을 위한 플랫 구조 속성들
-        id: item.response.id,
-        guestName: item.response.responderName,
-        willAttend: item.response.isAttending,
-        phoneNumber: item.response.phoneNumber,
-        companions: (item.response.adultCount + item.response.childrenCount) - 1,
-        message: item.response.message,
-        groupName: item.groupInfo.groupName
-      }));
-    }
-    
-    if (data.responses && Array.isArray(data.responses)) {
-      return data.responses.map((item: any) => ({
-        response: item.response,
-        groupInfo: item.groupInfo,
-        // 호환성을 위한 플랫 구조 속성들
-        id: item.response.id,
-        guestName: item.response.responderName,
-        willAttend: item.response.isAttending,
-        phoneNumber: item.response.phoneNumber,
-        companions: (item.response.adultCount + item.response.childrenCount) - 1,
-        message: item.response.message,
-        groupName: item.groupInfo.groupName
-      }));
-    }
-
-    console.warn('⚠️ 예상하지 못한 RSVP 응답 형식:', data);
-    return [];
+    const response = await apiGet(`/api/admin/groups/${groupId}/rsvps`);
+    console.log('✅ 그룹별 RSVP 목록 조회 성공:', response);
+    return response;
   } catch (error) {
-    console.error('❌ 그룹별 RSVP 조회 실패:', error);
+    console.error('❌ 그룹별 RSVP 목록 조회 실패:', error);
     throw error;
   }
 };
-
 
 /**
  * RSVP 응답 수정 (관리자용)
  * @param rsvpId - 수정할 RSVP ID
  * @param updateData - 수정할 데이터
- * @returns Promise<SimpleRsvpWithGroupInfo> - 수정된 RSVP 정보
+ * @returns Promise<any> - 수정된 RSVP 응답
  */
-export const updateRsvpResponse = async (
-  rsvpId: string, 
-  updateData: UpdateRsvpRequest
-): Promise<SimpleRsvpWithGroupInfo> => {
+export const updateRsvpResponse = async (rsvpId: string, updateData: UpdateRsvpRequest): Promise<any> => {
   try {
-    console.log(`🔧 RSVP 응답 수정: ${rsvpId}`, updateData);
-    
-    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/${rsvpId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updateData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.reason || 'RSVP 응답 수정에 실패했습니다.');
-    }
-
-    const result = await response.json();
-    console.log('✅ RSVP 응답 수정 성공:', result);
-    return result;
+    console.log(`🔄 RSVP 응답 수정: ${rsvpId}`, updateData);
+    const response = await apiPut(`/api/admin/rsvps/${rsvpId}`, updateData);
+    console.log('✅ RSVP 응답 수정 성공:', response);
+    return response;
   } catch (error) {
     console.error('❌ RSVP 응답 수정 실패:', error);
     throw error;
@@ -399,31 +368,32 @@ export const updateRsvpResponse = async (
 export const deleteRsvpResponse = async (rsvpId: string): Promise<void> => {
   try {
     console.log(`🗑️ RSVP 응답 삭제 시도: ${rsvpId}`);
-    
-    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/${rsvpId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // 204 No Content는 성공을 의미
-    if (response.status === 204) {
-      console.log('✅ RSVP 응답 삭제 성공');
-      return;
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.reason || 'RSVP 응답 삭제에 실패했습니다.');
-    }
+    await apiDelete(`/api/admin/rsvps/${rsvpId}`);
+    console.log('✅ RSVP 응답 삭제 성공');
   } catch (error) {
     console.error('❌ RSVP 응답 삭제 실패:', error);
     throw error;
   }
 };
 
-// ==================== 👤 관리자 관련 API 함수들 ====================
+/**
+ * 일반 사용자가 RSVP 응답 제출
+ * @param rsvpData - 제출할 RSVP 응답 데이터
+ * @returns Promise<RsvpSubmitResponse> - 제출 결과
+ */
+export const submitRsvp = async (rsvpData: RsvpRequest): Promise<RsvpSubmitResponse> => {
+  try {
+    console.log('✉️ RSVP 응답 제출 시작:', rsvpData);
+    const response = await apiPost('/api/rsvp', rsvpData);
+    console.log('✅ RSVP 응답 제출 완료:', response);
+    return response;
+  } catch (error) {
+    console.error('❌ RSVP 응답 제출 실패:', error);
+    throw error;
+  }
+};
+
+// ==================== 👤 관리자 관리 API 함수들 ====================
 
 /**
  * 새 관리자 생성 (기존 관리자만 가능)
@@ -482,7 +452,24 @@ export const getAdminList = async (): Promise<AdminListResponse> => {
   }
 };
 
-// ==================== 🔐 인증 관련 헬퍼 함수들 ====================
+// ==================== 🔐 인증 관련 API 함수들 ====================
+
+/**
+ * 관리자 로그인
+ * @param credentials - 로그인 자격 증명 (사용자명, 비밀번호)
+ * @returns Promise<LoginResponse> - 로그인 결과 (토큰 및 사용자 정보)
+ */
+export const adminLogin = async (credentials: AdminCredentials): Promise<LoginResponse> => {
+  try {
+    console.log('🔐 관리자 로그인 시도');
+    const response = await apiPost('/api/admin/login', credentials);
+    console.log('✅ 관리자 로그인 성공');
+    return response;
+  } catch (error) {
+    console.error('❌ 관리자 로그인 실패:', error);
+    throw error;
+  }
+};
 
 /**
  * 토큰 유효성 검사 헬퍼 함수
@@ -513,9 +500,9 @@ export const isTokenValid = (): boolean => {
  * 인증된 API 요청을 위한 헬퍼 함수
  * @param endpoint - API 엔드포인트
  * @param options - 요청 옵션
- * @returns Promise<any> - API 응답 데이터
+ * @returns Promise<Response> - fetch 응답 객체
  */
-export const authenticatedRequest = async (endpoint: string, options: any = {}) => {
+export const authenticatedRequest = async (endpoint: string, options: any = {}): Promise<Response> => {
   const token = localStorage.getItem('adminToken');
   
   if (!token) {
@@ -541,3 +528,102 @@ export const authenticatedRequest = async (endpoint: string, options: any = {}) 
     headers,
   });
 };
+
+// ==================== 📋 청첩장 조회 API 함수들 ====================
+
+/**
+ * 고유 코드로 청첩장 정보 조회 (일반 사용자용)
+ * @param uniqueCode - 청첩장 고유 접근 코드
+ * @returns Promise<InvitationByCodeResponse> - 청첩장 정보
+ */
+export const getInvitationByCode = async (uniqueCode: string): Promise<InvitationByCodeResponse> => {
+  try {
+    console.log(`📋 청첩장 정보 조회 시작: ${uniqueCode}`);
+    const response = await apiGet(`/api/invitation/${uniqueCode}`);
+    console.log('✅ 청첩장 정보 조회 완료:', response);
+    return response;
+  } catch (error) {
+    console.error('❌ 청첩장 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 기본 청첩장 정보 조회 (홈페이지용)
+ * @returns Promise<InvitationAPIResponse> - 기본 청첩장 정보
+ */
+export const getWeddingInfo = async (): Promise<InvitationAPIResponse> => {
+  try {
+    console.log('🏠 기본 청첩장 정보 조회 시작');
+    const response = await apiGet('/api/wedding-info');
+    console.log('✅ 기본 청첩장 정보 조회 완료:', response);
+    return response;
+  } catch (error) {
+    console.error('❌ 기본 청첩장 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+// ==================== 🌟 추가 유틸리티 함수들 ====================
+
+/**
+ * API 연결 상태 확인
+ * @returns Promise<boolean> - 서버 연결 가능 여부
+ */
+export const checkApiHealth = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/health`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('❌ API 헬스체크 실패:', error);
+    return false;
+  }
+};
+
+/**
+ * 에러 메시지 표준화 함수
+ * @param error - 원본 에러 객체
+ * @returns string - 사용자 친화적 에러 메시지
+ */
+export const getErrorMessage = (error: any): string => {
+  if (typeof error === 'string') {
+    return error;
+  }
+  
+  if (error?.message) {
+    return error.message;
+  }
+  
+  if (error?.reason) {
+    return error.reason;
+  }
+  
+  return '알 수 없는 오류가 발생했습니다.';
+};
+
+// ==================== 📝 개발자 참고 사항 ====================
+/*
+주요 API 엔드포인트:
+- GET /api/wedding-info: 기본 청첩장 정보
+- GET /api/invitation/{uniqueCode}: 특정 그룹 청첩장 정보
+- POST /api/rsvp: RSVP 응답 제출
+
+관리자 API:
+- POST /api/admin/login: 관리자 로그인
+- GET /api/admin/groups: 그룹 목록 조회
+- POST /api/admin/groups: 새 그룹 생성
+- PUT /api/admin/groups/{id}: 그룹 수정
+- DELETE /api/admin/groups/{id}: 그룹 삭제
+- GET /api/admin/rsvps: 전체 RSVP 목록
+- DELETE /api/admin/rsvps/{id}: RSVP 응답 삭제
+
+인증:
+- 모든 관리자 API는 JWT 토큰 필요
+- 토큰은 localStorage에 'adminToken' 키로 저장
+- 토큰 만료 시간은 'adminUser' 객체의 expiresAt 필드로 관리
+*/
