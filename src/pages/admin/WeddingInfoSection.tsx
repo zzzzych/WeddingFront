@@ -83,9 +83,18 @@ const WeddingInfoSection: React.FC = () => {
         accountInfo: data.accountInfo
       });
     } catch (error: any) {
-      console.error('결혼식 정보 로딩 실패:', error);
-      setError('결혼식 정보를 불러오는데 실패했습니다.');
-    } finally {
+        console.error('결혼식 정보 로딩 실패:', error);
+        
+        // 데이터가 없는 경우 (404 에러) 처리
+        if (error.message.includes('404') || error.message.includes('찾을 수 없습니다')) {
+            console.log('📝 결혼식 정보가 없어서 편집 모드로 전환합니다.');
+            setWeddingInfo(null);
+            setIsEditing(true); // 자동으로 편집 모드 활성화
+            setError('결혼식 정보가 없습니다. 새로 입력해주세요.');
+        } else {
+            setError('결혼식 정보를 불러오는데 실패했습니다.');
+        }
+    }finally {
       setIsLoading(false);
     }
   };
@@ -216,137 +225,144 @@ const WeddingInfoSection: React.FC = () => {
     );
   }
 
-  return (
-    <div style={{
-      backgroundColor: AppleColors.cardBackground,
-      borderRadius: '12px',
-      padding: '24px',
-      marginBottom: '24px',
-      border: `1px solid ${AppleColors.border}`,
-      fontFamily: systemFont
+  // 기존 return 문의 내용을 모두 삭제하고 아래 코드로 교체하세요:
+return (
+  <div style={{ 
+    fontFamily: systemFont,
+    backgroundColor: AppleColors.cardBackground,
+    borderRadius: '12px',
+    padding: '24px',
+    border: `1px solid ${AppleColors.border}`,
+    marginBottom: '24px'
+  }}>
+    {/* 헤더 섹션 */}
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center',
+      marginBottom: '24px'
     }}>
-      {/* 섹션 헤더 */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '24px'
+      <h2 style={{ 
+        margin: 0,
+        fontSize: '22px',
+        fontWeight: '600',
+        color: AppleColors.text
       }}>
-        <div>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: AppleColors.text,
-            margin: '0 0 8px 0'
-          }}>
-            🎭 결혼식 기본 정보
-          </h2>
-          <p style={{
-            fontSize: '16px',
-            color: AppleColors.secondaryText,
-            margin: 0
-          }}>
-            청첩장에 표시되는 기본 정보를 관리합니다
-          </p>
-        </div>
-
-        {/* 액션 버튼들 */}
-        <div style={{ display: 'flex', gap: '12px' }}>
-          {!isEditing ? (
-            <button
-              onClick={handleStartEdit}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: AppleColors.primary,
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                fontFamily: systemFont
-              }}
-            >
-              정보 수정
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={handleCancelEdit}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: AppleColors.secondaryButton,
-                  color: AppleColors.text,
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  fontFamily: systemFont
-                }}
-              >
-                취소
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: isSaving ? AppleColors.secondaryText : AppleColors.success,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  cursor: isSaving ? 'not-allowed' : 'pointer',
-                  fontFamily: systemFont
-                }}
-              >
-                {isSaving ? '저장 중...' : '저장'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* 성공/에러 메시지 */}
-      {successMessage && (
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: `${AppleColors.success}20`,
-          color: AppleColors.success,
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: `1px solid ${AppleColors.success}40`
-        }}>
-          {successMessage}
-        </div>
-      )}
-
-      {error && (
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: `${AppleColors.destructive}20`,
-          color: AppleColors.destructive,
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: `1px solid ${AppleColors.destructive}40`
-        }}>
-          {error}
-        </div>
-      )}
-
-      {/* 메인 컨텐츠 */}
-      {isEditing ? (
-        <WeddingInfoForm
-          formData={formData}
-          onFormChange={handleFormChange}
-        />
-      ) : (
-        <WeddingInfoDisplay weddingInfo={weddingInfo} />
+        🎭 결혼식 기본 정보
+      </h2>
+      
+      {/* 데이터가 있고 편집 모드가 아닐 때만 편집 버튼 표시 */}
+      {weddingInfo && !isEditing && (
+        <button
+          onClick={() => setIsEditing(true)}
+          style={{
+            backgroundColor: AppleColors.primary,
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            fontFamily: systemFont
+          }}
+        >
+          ✏️ 편집
+        </button>
       )}
     </div>
-  );
+
+    {/* 로딩 상태 */}
+    {isLoading && (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '40px',
+        color: AppleColors.secondaryText
+      }}>
+        <div>📊 결혼식 정보를 불러오는 중...</div>
+      </div>
+    )}
+
+    {/* 에러 메시지 */}
+    {error && (
+      <div style={{
+        backgroundColor: '#fff2f0',
+        border: `1px solid ${AppleColors.destructive}`,
+        borderRadius: '8px',
+        padding: '16px',
+        marginBottom: '16px',
+        color: AppleColors.destructive,
+        fontSize: '14px'
+      }}>
+        ⚠️ {error}
+      </div>
+    )}
+
+    {/* 성공 메시지 */}
+    {successMessage && (
+      <div style={{
+        backgroundColor: '#f0f9ff',
+        border: `1px solid ${AppleColors.success}`,
+        borderRadius: '8px',
+        padding: '16px',
+        marginBottom: '16px',
+        color: AppleColors.success,
+        fontSize: '14px'
+      }}>
+        ✅ {successMessage}
+      </div>
+    )}
+
+    {/* 메인 콘텐츠 */}
+    {!isLoading && (
+      <>
+        {/* 데이터가 없거나 편집 모드일 때 - 폼 표시 */}
+        {(!weddingInfo || isEditing) && (
+          <div>
+            {!weddingInfo && (
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                border: `1px solid ${AppleColors.border}`,
+                borderRadius: '8px',
+                padding: '20px',
+                marginBottom: '20px',
+                textAlign: 'center'
+              }}>
+                <div style={{ 
+                  fontSize: '18px', 
+                  fontWeight: '500',
+                  color: AppleColors.text,
+                  marginBottom: '8px'
+                }}>
+                  📝 결혼식 정보 입력이 필요합니다
+                </div>
+                <div style={{ 
+                  fontSize: '14px',
+                  color: AppleColors.secondaryText
+                }}>
+                  아래 폼을 작성해서 결혼식 기본 정보를 등록해주세요.
+                </div>
+              </div>
+            )}
+            
+            <WeddingInfoForm
+              formData={formData}
+              setFormData={setFormData}
+              onSave={handleSave}
+              onCancel={weddingInfo ? () => setIsEditing(false) : undefined}
+              isSaving={isSaving}
+            />
+          </div>
+        )}
+
+        {/* 데이터가 있고 편집 모드가 아닐 때 - 정보 표시 */}
+        {weddingInfo && !isEditing && (
+          <WeddingInfoDisplay weddingInfo={weddingInfo} />
+        )}
+      </>
+    )}
+  </div>
+);
 };
 
 export default WeddingInfoSection;
