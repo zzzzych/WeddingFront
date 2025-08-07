@@ -587,24 +587,41 @@ export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): 
   try {
     console.log('🔄 결혼식 기본 정보 전체 수정:', weddingData);
     
-    // 🆕 날짜 형식 검증 및 변환
+    // 🆕 데이터 검증 및 처리
     const processedData = {
       ...weddingData,
       // Date 객체를 ISO 8601 문자열로 변환
       weddingDate: typeof weddingData.weddingDate === 'string' 
         ? new Date(weddingData.weddingDate).toISOString()
         : weddingData.weddingDate,
-      // 빈 문자열을 null로 변환 (선택적 필드들)
+      
+      // 🚨 필수 필드는 빈 문자열이어도 유지 (null로 변환하지 않음)
+      groomName: weddingData.groomName || '', // 빈 문자열 허용
+      brideName: weddingData.brideName || '', // 빈 문자열 허용
+      venueName: weddingData.venueName || '', // 빈 문자열 허용
+      venueAddress: weddingData.venueAddress || '', // 빈 문자열 허용
+      greetingMessage: weddingData.greetingMessage || '', // 빈 문자열 허용
+      ceremonyProgram: weddingData.ceremonyProgram || '', // 빈 문자열 허용
+      
+      // ✅ 선택적 필드만 빈 문자열을 null로 변환
       kakaoMapUrl: weddingData.kakaoMapUrl?.trim() || null,
       naverMapUrl: weddingData.naverMapUrl?.trim() || null,
       parkingInfo: weddingData.parkingInfo?.trim() || null,
       transportInfo: weddingData.transportInfo?.trim() || null,
-      greetingMessage: weddingData.greetingMessage?.trim() || '',
+      
       // 빈 계좌 정보 제거
       accountInfo: weddingData.accountInfo.filter(info => info.trim() !== '')
     };
 
     console.log('📝 처리된 데이터:', processedData);
+    
+    // 🆕 필수 데이터 검증
+    const requiredFields = ['groomName', 'brideName', 'venueName', 'venueAddress'];
+    const missingFields = requiredFields.filter(field => !processedData[field as keyof typeof processedData]);
+    
+    if (missingFields.length > 0) {
+      throw new Error(`다음 필수 항목을 입력해주세요: ${missingFields.join(', ')}`);
+    }
     
     // 인증된 PUT 요청
     const token = localStorage.getItem('adminToken');
@@ -634,6 +651,14 @@ export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): 
       const errorMessage = errorData?.reason || '요청 데이터에 문제가 있습니다.';
       console.error('❌ 400 Bad Request 상세:', errorData);
       throw new Error(`데이터 검증 실패: ${errorMessage}`);
+    }
+
+    // 500 에러 상세 정보 처리
+    if (response.status === 500) {
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.reason || 'Something went wrong.';
+      console.error('❌ 500 Internal Server Error 상세:', errorData);
+      throw new Error(`서버 에러: ${errorMessage}`);
     }
 
     // 기타 HTTP 에러 처리
