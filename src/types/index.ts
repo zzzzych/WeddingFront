@@ -92,6 +92,43 @@ export interface WeddingInfo {
 }
 
 /**
+ * 결혼식 기본 정보 전체 수정 요청 타입 (서버의 WeddingInfoUpdateRequest와 일치)
+ */
+export interface WeddingInfoUpdateRequest {
+  groomName: string;              // 신랑 이름
+  brideName: string;              // 신부 이름
+  weddingDate: string;            // 결혼식 날짜 (ISO 문자열 형태)
+  venueName: string;              // 웨딩홀 이름
+  venueAddress: string;           // 웨딩홀 주소
+  kakaoMapUrl?: string;           // 카카오맵 URL (선택사항)
+  naverMapUrl?: string;           // 네이버맵 URL (선택사항)
+  parkingInfo?: string;           // 주차 정보 (선택사항)
+  transportInfo?: string;         // 교통 정보 (선택사항)
+  greetingMessage: string;        // 기본 인사말
+  ceremonyProgram: string;        // 예식 순서
+  accountInfo: string[];          // 계좌 정보 배열
+}
+
+/**
+ * 결혼식 기본 정보 부분 수정 요청 타입 (서버의 WeddingInfoPatchRequest와 일치)
+ * 모든 필드가 선택사항이므로 원하는 필드만 수정 가능
+ */
+export interface WeddingInfoPatchRequest {
+  groomName?: string;             // 신랑 이름 (선택사항)
+  brideName?: string;             // 신부 이름 (선택사항)
+  weddingDate?: string;           // 결혼식 날짜 (선택사항)
+  venueName?: string;             // 웨딩홀 이름 (선택사항)
+  venueAddress?: string;          // 웨딩홀 주소 (선택사항)
+  kakaoMapUrl?: string;           // 카카오맵 URL (선택사항)
+  naverMapUrl?: string;           // 네이버맵 URL (선택사항)
+  parkingInfo?: string;           // 주차 정보 (선택사항)
+  transportInfo?: string;         // 교통 정보 (선택사항)
+  greetingMessage?: string;       // 기본 인사말 (선택사항)
+  ceremonyProgram?: string;       // 예식 순서 (선택사항)
+  accountInfo?: string[];         // 계좌 정보 배열 (선택사항)
+}
+
+/**
  * 기존 컴포넌트용 InvitationResponse 타입 (호환성 유지)
  * HomePage, InvitationPage에서 사용
  */

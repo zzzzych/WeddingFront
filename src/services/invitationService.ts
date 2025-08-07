@@ -25,7 +25,12 @@ import {
   
   // 청첩장 관련 타입들
   InvitationAPIResponse,
-  InvitationByCodeResponse
+  InvitationByCodeResponse,
+  
+  // 결혼식 정보 관련 타입들 (새로 추가)
+  WeddingInfo,
+  WeddingInfoUpdateRequest,
+  WeddingInfoPatchRequest
 } from '../types';
 
 // ==================== 🔧 환경 설정 ====================
@@ -526,6 +531,135 @@ export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Pro
     return response;
   } catch (error) {
     console.error('❌ RSVP 응답 제출 실패:', error);
+    throw error;
+  }
+};
+
+// ==================== 🎭 결혼식 기본 정보 관리 API 함수들 ====================
+
+/**
+ * 결혼식 기본 정보 조회 (관리자용)
+ * @returns Promise<WeddingInfo> - 결혼식 기본 정보
+ */
+export const getWeddingInfoAdmin = async (): Promise<WeddingInfo> => {
+  try {
+    console.log('🎭 결혼식 기본 정보 조회 시작 (관리자)');
+    
+    // 인증된 GET 요청
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/wedding-info`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ 결혼식 기본 정보 조회 완료:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ 결혼식 기본 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 결혼식 기본 정보 전체 수정 (관리자용)
+ * @param weddingData - 수정할 결혼식 정보 전체 데이터
+ * @returns Promise<WeddingInfo> - 수정된 결혼식 정보
+ */
+export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): Promise<WeddingInfo> => {
+  try {
+    console.log('🔄 결혼식 기본 정보 전체 수정:', weddingData);
+    
+    // 인증된 PUT 요청
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/wedding-info`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(weddingData),
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ 결혼식 기본 정보 수정 성공:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ 결혼식 기본 정보 수정 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 결혼식 기본 정보 부분 수정 (관리자용)
+ * @param patchData - 수정할 결혼식 정보 부분 데이터
+ * @returns Promise<WeddingInfo> - 수정된 결혼식 정보
+ */
+export const patchWeddingInfo = async (patchData: WeddingInfoPatchRequest): Promise<WeddingInfo> => {
+  try {
+    console.log('🔧 결혼식 기본 정보 부분 수정:', patchData);
+    
+    // 인증된 PATCH 요청
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/wedding-info`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(patchData),
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ 결혼식 기본 정보 부분 수정 성공:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ 결혼식 기본 정보 부분 수정 실패:', error);
     throw error;
   }
 };

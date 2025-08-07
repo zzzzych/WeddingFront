@@ -6,6 +6,7 @@ import { useAdminDashboard } from "./admin/hooks/useAdminDashboard";
 import AdminDashboardLayout from "./admin/AdminDashboardLayout";
 import StatsCards from "./admin/StatsCards";
 import AdminListSection from "./admin/AdminListSection";
+import WeddingInfoSection from "./admin/WeddingInfoSection";  // 이 줄 추가
 import GroupListSection from "./admin/GroupListSection";
 import RsvpListSection from "./admin/RsvpListSection";
 import CreateGroupModal from "../components/CreateGroupModal";
@@ -94,6 +95,9 @@ const AdminDashboard: React.FC = () => {
         adminList={adminList}
         adminLoading={adminLoading}
       />
+
+      {/* ==================== 🎭 결혼식 기본 정보 섹션 ==================== */}
+      <WeddingInfoSection />
 
       {/* ==================== 📋 그룹 목록 섹션 ==================== */}
       <GroupListSection
