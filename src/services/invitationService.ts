@@ -590,9 +590,9 @@ export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): 
     // 🆕 데이터 검증 및 처리
     const processedData = {
       ...weddingData,
-      // Date 객체를 ISO 8601 문자열로 변환
+      // 🔧 날짜를 fractional seconds 없는 ISO 8601 형식으로 변환
       weddingDate: typeof weddingData.weddingDate === 'string' 
-        ? new Date(weddingData.weddingDate).toISOString()
+        ? new Date(weddingData.weddingDate).toISOString().replace(/\.\d{3}Z$/, 'Z')
         : weddingData.weddingDate,
       
       // 🚨 필수 필드는 빈 문자열이어도 유지 (null로 변환하지 않음)
@@ -614,6 +614,7 @@ export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): 
     };
 
     console.log('📝 처리된 데이터:', processedData);
+    console.log('📅 변환된 날짜:', processedData.weddingDate);
     
     // 🆕 필수 데이터 검증
     const requiredFields = ['groomName', 'brideName', 'venueName', 'venueAddress'];
