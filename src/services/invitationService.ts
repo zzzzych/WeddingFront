@@ -587,6 +587,25 @@ export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): 
   try {
     console.log('🔄 결혼식 기본 정보 전체 수정:', weddingData);
     
+    // 🆕 날짜 형식 검증 및 변환
+    const processedData = {
+      ...weddingData,
+      // Date 객체를 ISO 8601 문자열로 변환
+      weddingDate: typeof weddingData.weddingDate === 'string' 
+        ? new Date(weddingData.weddingDate).toISOString()
+        : weddingData.weddingDate,
+      // 빈 문자열을 null로 변환 (선택적 필드들)
+      kakaoMapUrl: weddingData.kakaoMapUrl?.trim() || null,
+      naverMapUrl: weddingData.naverMapUrl?.trim() || null,
+      parkingInfo: weddingData.parkingInfo?.trim() || null,
+      transportInfo: weddingData.transportInfo?.trim() || null,
+      greetingMessage: weddingData.greetingMessage?.trim() || '',
+      // 빈 계좌 정보 제거
+      accountInfo: weddingData.accountInfo.filter(info => info.trim() !== '')
+    };
+
+    console.log('📝 처리된 데이터:', processedData);
+    
     // 인증된 PUT 요청
     const token = localStorage.getItem('adminToken');
     if (!token) {
@@ -599,17 +618,29 @@ export const updateWeddingInfo = async (weddingData: WeddingInfoUpdateRequest): 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(weddingData),
+      body: JSON.stringify(processedData),
     });
 
+    // 인증 만료 처리
     if (response.status === 401) {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
       throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
     }
 
+    // 400 에러 상세 정보 처리
+    if (response.status === 400) {
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.reason || '요청 데이터에 문제가 있습니다.';
+      console.error('❌ 400 Bad Request 상세:', errorData);
+      throw new Error(`데이터 검증 실패: ${errorMessage}`);
+    }
+
+    // 기타 HTTP 에러 처리
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const errorData = await response.json().catch(() => null);
+      const errorMessage = errorData?.reason || response.statusText;
+      throw new Error(`HTTP ${response.status}: ${errorMessage}`);
     }
 
     const data = await response.json();
