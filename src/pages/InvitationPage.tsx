@@ -27,13 +27,22 @@ const AppleColors = {
 const systemFont =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif';
 
-// 🆕 날짜/시간 포맷팅 유틸리티 함수 추가
+// 🆕 날짜/시간 포맷팅 유틸리티 함수 (디버깅 버전)
 const formatWeddingDateTime = (dateTimeString: string) => {
+  // 🔍 디버깅: 받은 데이터 확인
+  console.log('🔍 받은 날짜 데이터:', dateTimeString);
+  console.log('🔍 데이터 타입:', typeof dateTimeString);
+  
   try {
     const weddingDate = new Date(dateTimeString);
     
+    // 🔍 디버깅: 파싱된 날짜 확인
+    console.log('🔍 파싱된 날짜:', weddingDate);
+    console.log('🔍 날짜 유효성:', !isNaN(weddingDate.getTime()));
+    
     // 유효한 날짜인지 확인
     if (isNaN(weddingDate.getTime())) {
+      console.error('❌ 잘못된 날짜 형식:', dateTimeString);
       throw new Error("Invalid date");
     }
     
@@ -52,10 +61,12 @@ const formatWeddingDateTime = (dateTimeString: string) => {
       weekday: "long",
     });
     
-    return `${dateStr} ${timeStr}`;
+    const result = `${dateStr} ${timeStr}`;
+    console.log('✅ 최종 포맷된 결과:', result);
+    return result;
   } catch (error) {
     // 에러 시 기본값 반환
-    console.warn("날짜 파싱 실패:", dateTimeString, error);
+    console.warn("❌ 날짜 파싱 실패:", dateTimeString, error);
     return "2025년 10월 25일 토요일 오후 6시";
   }
 };
@@ -466,8 +477,10 @@ const InvitationPage: React.FC = () => {
       {/* 헤더 섹션 (HomePage와 동일한 그라데이션 스타일) */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${AppleColors.gradient.start} 0%, ${AppleColors.gradient.middle} 50%, ${AppleColors.gradient.end} 100%)`,
-          color: "white",
+          // background: `linear-gradient(135deg, ${AppleColors.gradient.start} 0%, ${AppleColors.gradient.middle} 50%, ${AppleColors.gradient.end} 100%)`,
+          background: `#ffffff`,
+          // color: "white",
+          color: "#222",
           textAlign: "center",
           padding: "80px 20px 60px",
           position: "relative",
