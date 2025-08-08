@@ -398,8 +398,8 @@ const loadInvitationData = async () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             padding: "40px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+            // border: `1px solid ${AppleColors.border}`,
+            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             maxWidth: "400px",
             width: "100%",
           }}
@@ -478,7 +478,7 @@ const loadInvitationData = async () => {
             maxWidth: "90%",
             textAlign: "center",
             zIndex: 1000,
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.15)",
+            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.15)",
             fontFamily: systemFont,
             fontWeight: "500",
           }}
@@ -577,8 +577,8 @@ const loadInvitationData = async () => {
             borderRadius: "20px",
             padding: "40px",
             marginBottom: "60px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+            // border: `1px solid ${AppleColors.border}`,
+            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
@@ -616,8 +616,8 @@ const loadInvitationData = async () => {
             borderRadius: "20px",
             padding: "40px",
             marginBottom: "60px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+            // border: `1px solid ${AppleColors.border}`,
+            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
             transition: "all 1s ease 0.6s",
@@ -649,7 +649,7 @@ const loadInvitationData = async () => {
                     height: "350px",
                     borderRadius: "16px",
                     overflow: "hidden",
-                    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+                    // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                     backgroundColor: "#f8f9fa",
                   }}
                 >
@@ -812,10 +812,10 @@ const loadInvitationData = async () => {
                                 : "3px solid transparent",
                             transition: "all 0.3s ease",
                             flexShrink: 0,
-                            boxShadow:
-                              index === mobileCurrentIndex
-                                ? "0 4px 12px rgba(0, 123, 255, 0.3)"
-                                : "none",
+                            // boxShadow:
+                            //   index === mobileCurrentIndex
+                            //     ? "0 4px 12px rgba(0, 123, 255, 0.3)"
+                            //     : "none",
                           }}
                         >
                           <img
@@ -853,19 +853,19 @@ const loadInvitationData = async () => {
                       borderRadius: "16px",
                       overflow: "hidden",
                       cursor: "pointer",
-                      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+                      // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                       transition: "transform 0.3s ease, box-shadow 0.3s ease",
                       backgroundColor: "#f8f9fa",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-8px)";
-                      e.currentTarget.style.boxShadow =
-                        "0 12px 32px rgba(0, 0, 0, 0.15)";
+                      // e.currentTarget.style.boxShadow =
+                      //   "0 12px 32px rgba(0, 0, 0, 0.15)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow =
-                        "0 4px 16px rgba(0, 0, 0, 0.1)";
+                      // e.currentTarget.style.boxShadow =
+                      //   "0 4px 16px rgba(0, 0, 0, 0.1)";
                     }}
                   >
                     <img
@@ -935,8 +935,8 @@ const loadInvitationData = async () => {
             borderRadius: "20px",
             padding: "40px",
             marginBottom: "60px",
-            border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+            // border: `1px solid ${AppleColors.border}`,
+            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
             transition: "all 1s ease 0.9s",
@@ -965,8 +965,8 @@ const loadInvitationData = async () => {
               borderRadius: "20px",
               padding: "40px",
               marginBottom: "60px",
-              border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // border: `1px solid ${AppleColors.border}`,
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 1.2s",
@@ -1000,8 +1000,8 @@ const loadInvitationData = async () => {
               borderRadius: "20px",
               padding: "40px",
               marginBottom: "60px",
-              border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // border: `1px solid ${AppleColors.border}`,
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 1.5s",
@@ -1042,8 +1042,8 @@ const loadInvitationData = async () => {
               borderRadius: "20px",
               padding: "40px",
               marginBottom: "60px",
-              border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // border: `1px solid ${AppleColors.border}`,
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 1.8s",
@@ -1074,7 +1074,7 @@ const loadInvitationData = async () => {
                     backgroundColor: AppleColors.background,
                     padding: "20px",
                     borderRadius: "12px",
-                    border: `1px solid ${AppleColors.border}`,
+                    // border: `1px solid ${AppleColors.border}`,
                     fontSize: "16px",
                     fontFamily: systemFont,
                     textAlign: "center",
@@ -1096,8 +1096,8 @@ const loadInvitationData = async () => {
               borderRadius: "20px",
               padding: "40px",
               marginBottom: "60px",
-              border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // border: `1px solid ${AppleColors.border}`,
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               textAlign: "center",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
@@ -1260,7 +1260,7 @@ const loadInvitationData = async () => {
                 maxHeight: "100%",
                 objectFit: "contain",
                 borderRadius: "12px",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+                // boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
               }}
             />
 

@@ -217,7 +217,7 @@ const HomePage: React.FC = () => {
             style={{
               width: "40px",
               height: "40px",
-              border: `3px solid ${AppleColors.border}`,
+              // border: `3px solid ${AppleColors.border}`,
               borderTop: `3px solid ${AppleColors.primary}`,
               borderRadius: "50%",
               animation: "spin 1s linear infinite",
@@ -681,7 +681,7 @@ const HomePage: React.FC = () => {
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
               padding: "60px 40px",
-              border: `1px solid ${AppleColors.border}`,
+              // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               textAlign: "center",
               opacity: isLoaded ? 1 : 0,
