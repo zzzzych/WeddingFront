@@ -6,6 +6,7 @@ import RsvpForm from "../components/RsvpForm";
 import VenueInfo from "../components/VenueInfo";
 import ShareButton from "../components/ShareButton";
 
+
 // Apple 디자인 시스템 색상 팔레트 (HomePage.tsx와 동일)
 const AppleColors = {
   primary: "#007AFF",
@@ -120,97 +121,126 @@ const InvitationPage: React.FC = () => {
 // InvitationPage.tsx에서 기존 useEffect 부분을 다음 코드로 교체
 
 useEffect(() => {
-  const loadInvitationData = async () => {
-    if (!uniqueCode) {
-      console.error("고유 코드가 없습니다.");
-      setError("잘못된 접근입니다.");
-      setLoading(false);
-      return;
+  // 2. useEffect 내의 loadInvitationData 함수를 다음 코드로 완전히 교체:
+
+const loadInvitationData = async () => {
+  if (!uniqueCode) {
+    console.error("고유 코드가 없습니다.");
+    setError("잘못된 접근입니다.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    // 🆕 invitationService의 타입 안전한 API 함수 사용
+    console.log(`📋 청첩장 데이터 로딩 시작: ${uniqueCode}`);
+    const serverData = await getInvitationByCode(uniqueCode);
+    
+    console.log("✅ 서버에서 받은 데이터:", serverData);
+
+    // InvitationPage.tsx의 loadInvitationData 함수 내에서 
+// "console.log("✅ 서버에서 받은 데이터:", serverData);" 다음에 추가:
+
+    // 🔍 상세 디버깅: wedding_infos 테이블 데이터 확인
+    console.group("📊 Wedding Info 데이터 분석");
+    console.log("👤 신랑 이름:", serverData.groomName);
+    console.log("👰 신부 이름:", serverData.brideName);
+    console.log("📅 결혼식 날짜:", serverData.weddingDate);
+    console.log("🏛️ 결혼식 장소:", serverData.weddingLocation);
+    console.log("💬 인사말:", serverData.greetingMessage);
+    console.log("📋 예식 순서:", serverData.ceremonyProgram);
+    console.log("💳 계좌 정보:", serverData.accountInfo);
+    console.groupEnd();
+
+    // 🔍 상세 디버깅: 그룹 정보 확인
+    console.group("👥 Group Info 데이터 분석");
+    console.log("🏷️ 그룹 이름:", serverData.groupName);
+    console.log("🎯 그룹 타입:", serverData.groupType);
+    console.groupEnd();
+
+    // 🔍 상세 디버깅: 기능 플래그 확인
+    console.group("⚙️ Features 설정 분석");
+    console.log("📝 RSVP 폼 표시:", serverData.features?.showRsvpForm);
+    console.log("💰 계좌 정보 표시:", serverData.features?.showAccountInfo);
+    console.log("📤 공유 버튼 표시:", serverData.features?.showShareButton);
+    console.log("📋 예식 순서 표시:", serverData.features?.showCeremonyProgram);
+    console.groupEnd();
+
+    // 🔍 서버 응답의 전체 구조 확인
+    console.group("🗂️ 서버 응답 전체 구조");
+    console.log("📋 모든 키:", Object.keys(serverData));
+    console.log("🔍 features 객체:", serverData.features);
+    console.groupEnd();
+
+    // 🆕 InvitationByCodeResponse 타입에 맞춘 정확한 데이터 변환
+    // 🆕 타입 안전한 데이터 변환 (InvitationByCodeResponse → InvitationResponse)
+    const transformedData: InvitationResponse = {
+      weddingInfo: {
+        // 기본 결혼식 정보 (wedding_infos 테이블 데이터)
+        groomName: serverData.groomName || "신랑",
+        brideName: serverData.brideName || "신부", 
+        weddingDate: serverData.weddingDate || "2025-10-25T18:00:00",
+        weddingLocation: serverData.weddingLocation || "웨딩홀 정보 없음",
+        greetingMessage: serverData.greetingMessage || "결혼합니다.",
+        ceremonyProgram: serverData.ceremonyProgram || "예식 순서 정보 없음",
+        accountInfo: serverData.accountInfo || [],
+        
+        // 🔧 상세 장소 정보 (현재 서버 응답에 없는 필드들은 기본값 사용)
+        // 추후 서버에서 이 필드들이 추가되면 serverData에서 가져올 예정
+        venueName: (serverData as any).venueName || serverData.weddingLocation || "웨딩홀 정보 없음",
+        venueAddress: (serverData as any).venueAddress || "주소 정보 없음", 
+        kakaoMapUrl: (serverData as any).kakaoMapUrl || null,
+        naverMapUrl: (serverData as any).naverMapUrl || null,
+        parkingInfo: (serverData as any).parkingInfo || "주차 정보 없음",
+        transportInfo: (serverData as any).transportInfo || "교통 정보 없음",
+      },
+      groupInfo: {
+        // 그룹별 정보 (invitation_groups 테이블 데이터)
+        groupName: serverData.groupName || "소중한 분들",
+        // 🔧 문자열 타입을 GroupType enum으로 안전하게 변환
+        groupType: (serverData.groupType as GroupType) || GroupType.WEDDING_GUEST,
+        greetingMessage: serverData.greetingMessage || "함께해주셔서 감사합니다.",
+      },
+      // 🆕 서버의 features 객체에서 기능 플래그들 정확히 매핑
+      showRsvpForm: serverData.features?.showRsvpForm ?? true,
+      showAccountInfo: serverData.features?.showAccountInfo ?? false,
+      showShareButton: serverData.features?.showShareButton ?? false, 
+      showCeremonyProgram: serverData.features?.showCeremonyProgram ?? true,
+    };
+
+    console.log("🔄 변환 완료된 데이터:", transformedData);
+    setInvitationData(transformedData);
+    setError(null);
+
+    // 🆕 이미지 데이터 로딩 (향후 서버 API 연동 예정)
+    const photoList = [];
+    for (let i = 1; i <= 8; i++) {
+      photoList.push({
+        id: `wedding-${i}`,
+        url: `/images/wedding-${i}.jpeg`,
+        alt: `웨딩 사진 ${i}`,
+      });
     }
+    setPhotos(photoList);
 
-    try {
-      setLoading(true);
-      setError(null);
+  } catch (err) {
+    console.error("❌ 청첩장 데이터 로드 실패:", err);
+    
+    // 🔧 invitationService에서 처리된 에러 메시지 사용
+    const errorMessage = err instanceof Error ? err.message : "청첩장 정보를 불러올 수 없습니다.";
+    setError(errorMessage);
+    
+    // ❌ 에러 시에는 기본값 설정하지 않음 (정확한 에러 표시)
+    setInvitationData(null);
+    setPhotos([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      // 🆕 특정 그룹 청첩장 정보 조회 API 호출
-      console.log(`청첩장 데이터 로딩 시작: ${uniqueCode}`);
-      const response = await fetch(`/api/invitation/${uniqueCode}`);
-      
-      if (!response.ok) {
-        // 404 에러인 경우 더 구체적인 메시지
-        if (response.status === 404) {
-          throw new Error("해당 청첩장을 찾을 수 없습니다. 링크를 다시 확인해주세요.");
-        }
-        throw new Error(`서버 오류: ${response.status}`);
-      }
-
-      const serverData = await response.json();
-      console.log("서버에서 받은 데이터:", serverData);
-
-      // 🆕 실제 서버 응답 구조에 맞춘 데이터 변환
-      // InvitationPage.tsx의 useEffect 내 데이터 변환 부분을 다음 코드로 교체
-
-      // 🆕 서버 응답 타입에 맞춘 데이터 변환 (InvitationByCodeResponse → InvitationResponse)
-      const transformedData: InvitationResponse = {
-        weddingInfo: {
-          // 기본 결혼식 정보 (서버에서 직접 반환)
-          groomName: serverData.groomName || "신랑",
-          brideName: serverData.brideName || "신부", 
-          weddingDate: serverData.weddingDate || "2025-10-25T18:00:00",
-          weddingLocation: serverData.weddingLocation || "웨딩홀 정보 없음",
-          greetingMessage: serverData.greetingMessage || "결혼합니다.",
-          ceremonyProgram: serverData.ceremonyProgram || "예식 순서 정보 없음",
-          accountInfo: serverData.accountInfo || [],
-          
-          // 🔧 상세 장소 정보는 weddingLocation에서 파싱하거나 별도 필드 사용
-          // (현재 서버에서 통합된 weddingLocation만 제공하므로 이를 분리 처리)
-          venueName: serverData.venueName || serverData.weddingLocation || "웨딩홀 정보 없음",
-          venueAddress: serverData.venueAddress || "주소 정보 없음", 
-          kakaoMapUrl: serverData.kakaoMapUrl || null,
-          naverMapUrl: serverData.naverMapUrl || null,
-          parkingInfo: serverData.parkingInfo || "주차 정보 없음",
-          transportInfo: serverData.transportInfo || "교통 정보 없음",
-        },
-        groupInfo: {
-          // 그룹별 정보 (서버에서 직접 반환)
-          groupName: serverData.groupName || "소중한 분들",
-          groupType: serverData.groupType || GroupType.WEDDING_GUEST,
-          greetingMessage: serverData.greetingMessage || "함께해주셔서 감사합니다.",
-        },
-        // 🆕 서버의 features 객체에서 기능 플래그들 매핑
-        showRsvpForm: serverData.features?.showRsvpForm ?? true,
-        showAccountInfo: serverData.features?.showAccountInfo ?? false,
-        showShareButton: serverData.features?.showShareButton ?? false, 
-        showCeremonyProgram: serverData.features?.showCeremonyProgram ?? true,
-      };
-
-      console.log("🔄 변환된 데이터:", transformedData);
-      setInvitationData(transformedData);
-      setError(null);
-
-      
-      // 🆕 이미지 데이터 로딩 (향후 서버 API 연동 예정)
-      const photoList = [];
-      for (let i = 1; i <= 8; i++) {
-        photoList.push({
-          id: `wedding-${i}`,
-          url: `/images/wedding-${i}.jpeg`,
-          alt: `웨딩 사진 ${i}`,
-        });
-      }
-      setPhotos(photoList);
-
-    } catch (err) {
-      console.error("청첩장 데이터 로드 실패:", err);
-      const errorMessage = err instanceof Error ? err.message : "청첩장 정보를 불러올 수 없습니다.";
-      setError(errorMessage);
-      
-      // 🚫 에러 시에는 기본값 설정하지 않음 (사용자에게 정확한 에러 표시)
-      setInvitationData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   loadInvitationData();
 }, [uniqueCode]); // uniqueCode가 변경될 때마다 데이터 다시 로딩

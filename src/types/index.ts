@@ -48,7 +48,7 @@ export interface InvitationAPIResponse {
 }
 
 /**
- * 고유 코드로 조회한 청첩장 응답 타입
+ * 고유 코드로 조회한 청첩장 응답 타입 (업데이트됨)
  * 특정 그룹 청첩장 조회 시 사용 (/api/invitation/{code})
  */
 export interface InvitationByCodeResponse {
@@ -61,6 +61,15 @@ export interface InvitationByCodeResponse {
   groupName: string;              // 그룹 이름
   accountInfo: string[];          // 계좌 정보 배열
   ceremonyProgram: string;        // 예식 순서
+  
+  // 🆕 wedding_infos 테이블의 추가 필드들 (선택사항)
+  venueName?: string;             // 웨딩홀 이름
+  venueAddress?: string;          // 웨딩홀 주소
+  kakaoMapUrl?: string;           // 카카오맵 URL
+  naverMapUrl?: string;           // 네이버맵 URL
+  parkingInfo?: string;           // 주차 정보
+  transportInfo?: string;         // 교통 정보
+  
   features: {                     // 기능 플래그들
     showVenueInfo: boolean;
     showShareButton: boolean;
