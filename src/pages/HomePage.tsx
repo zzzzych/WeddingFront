@@ -278,8 +278,9 @@ const HomePage: React.FC = () => {
       {/* 헤더 섹션 */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${AppleColors.gradient.start} 0%, ${AppleColors.gradient.middle} 50%, ${AppleColors.gradient.end} 100%)`,
-          color: "white",
+          // background: `linear-gradient(135deg, ${AppleColors.gradient.start} 0%, ${AppleColors.gradient.middle} 50%, ${AppleColors.gradient.end} 100%)`,
+          background: '#ffffff',
+          color: "#222222",
           textAlign: "center",
           padding: "80px 20px 60px",
           position: "relative",
