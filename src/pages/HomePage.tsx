@@ -9,7 +9,7 @@ const systemFont =
 const AppleColors = {
   primary: "#007AFF",
   primaryDark: "#0051D5",
-  background: "#FBFBFD",
+  background: "#ffffff",
   cardBackground: "#FFFFFF",
   text: "#1D1D1F",
   secondaryText: "#86868B",
@@ -285,6 +285,7 @@ const HomePage: React.FC = () => {
           padding: "80px 20px 60px",
           position: "relative",
           overflow: "hidden",
+          borderBottom: `1px solid #222`,
         }}
       >
         <div
@@ -364,21 +365,13 @@ const HomePage: React.FC = () => {
             padding: "40px",
             marginBottom: "60px",
             border: `1px solid ${AppleColors.border}`,
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
             transition: "all 1s ease 0.3s",
           }}
         >
-          <div
-            style={{
-              fontSize: "32px",
-              marginBottom: "24px",
-            }}
-          >
-            💌
-          </div>
           <h2
             style={{
               fontSize: "28px",
@@ -413,7 +406,7 @@ const HomePage: React.FC = () => {
               borderRadius: "20px",
               padding: "40px",
               border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 0.6s",
@@ -444,7 +437,7 @@ const HomePage: React.FC = () => {
                     height: "350px",
                     borderRadius: "16px",
                     overflow: "hidden",
-                    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+                    // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                     backgroundColor: "#f8f9fa",
                   }}
                 >
@@ -608,10 +601,10 @@ const HomePage: React.FC = () => {
                                 : "3px solid transparent",
                             transition: "all 0.3s ease",
                             flexShrink: 0,
-                            boxShadow:
-                              index === mobileCurrentIndex
-                                ? "0 4px 12px rgba(0, 122, 255, 0.3)"
-                                : "0 2px 8px rgba(0, 0, 0, 0.1)",
+                            // boxShadow:
+                            //   index === mobileCurrentIndex
+                            //     ? "0 4px 12px rgba(0, 122, 255, 0.3)"
+                            //     : "0 2px 8px rgba(0, 0, 0, 0.1)",
                           }}
                         >
                           <img
@@ -650,7 +643,7 @@ const HomePage: React.FC = () => {
                     style={{
                       borderRadius: "16px",
                       overflow: "hidden",
-                      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+                      // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                       aspectRatio: "1 / 1",
                       cursor: "pointer",
                       opacity: isLoaded ? 1 : 0,
@@ -689,7 +682,7 @@ const HomePage: React.FC = () => {
               borderRadius: "20px",
               padding: "60px 40px",
               border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               textAlign: "center",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
@@ -882,7 +875,7 @@ const HomePage: React.FC = () => {
                 height: "auto",
                 objectFit: "contain",
                 borderRadius: "12px",
-                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+                // boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
               }}
             />
 

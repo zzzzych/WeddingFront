@@ -881,16 +881,33 @@ export const authenticatedRequest = async (endpoint: string, options: any = {}):
 // ==================== 📋 청첩장 조회 API 함수들 ====================
 
 /**
- * 고유 코드로 청첩장 정보 조회 (일반 사용자용)
+ * 고유 코드로 청첩장 정보 조회 (일반 사용자용 - 토큰 불필요)
  * @param uniqueCode - 청첩장 고유 접근 코드
  * @returns Promise<InvitationByCodeResponse> - 청첩장 정보
  */
 export const getInvitationByCode = async (uniqueCode: string): Promise<InvitationByCodeResponse> => {
   try {
     console.log(`📋 청첩장 정보 조회 시작: ${uniqueCode}`);
-    const response = await apiGet(`/api/invitation/${uniqueCode}`);
-    console.log('✅ 청첩장 정보 조회 완료:', response);
-    return response;
+    
+    // 🔧 토큰 없이 직접 fetch 사용 (일반 사용자용)
+    const response = await fetch(`${API_BASE_URL}/api/invitation/${uniqueCode}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // HTTP 에러 처리
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('해당 청첩장을 찾을 수 없습니다. 링크를 다시 확인해주세요.');
+      }
+      throw new Error(`청첩장 정보를 불러올 수 없습니다. (${response.status})`);
+    }
+
+    const data = await response.json();
+    console.log('✅ 청첩장 정보 조회 완료:', data);
+    return data;
   } catch (error) {
     console.error('❌ 청첩장 정보 조회 실패:', error);
     throw error;
@@ -898,15 +915,29 @@ export const getInvitationByCode = async (uniqueCode: string): Promise<Invitatio
 };
 
 /**
- * 기본 청첩장 정보 조회 (홈페이지용)
+ * 기본 청첩장 정보 조회 (홈페이지용 - 토큰 불필요)
  * @returns Promise<InvitationAPIResponse> - 기본 청첩장 정보
  */
 export const getWeddingInfo = async (): Promise<InvitationAPIResponse> => {
   try {
     console.log('🏠 기본 청첩장 정보 조회 시작');
-    const response = await apiGet('/api/wedding-info');
-    console.log('✅ 기본 청첩장 정보 조회 완료:', response);
-    return response;
+    
+    // 🔧 토큰 없이 직접 fetch 사용 (일반 사용자용)
+    const response = await fetch(`${API_BASE_URL}/api/wedding-info`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // HTTP 에러 처리
+    if (!response.ok) {
+      throw new Error(`기본 청첩장 정보를 불러올 수 없습니다. (${response.status})`);
+    }
+
+    const data = await response.json();
+    console.log('✅ 기본 청첩장 정보 조회 완료:', data);
+    return data;
   } catch (error) {
     console.error('❌ 기본 청첩장 정보 조회 실패:', error);
     throw error;
