@@ -343,7 +343,9 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                   lineHeight: '1.6',
                   color: '#222'
                 }}>
-                  {weddingInfo.transportInfo}
+                  {/* {weddingInfo.transportInfo} */}
+                  서울역 10번 출구쪽 지하 연결 통로 이용 도보 4분<br/>
+                  서울역 12번 출구 도보 2분
                 </p>
               </div>
             </div>
