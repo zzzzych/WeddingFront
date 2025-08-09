@@ -285,7 +285,7 @@ const HomePage: React.FC = () => {
           padding: "80px 20px 60px",
           position: "relative",
           overflow: "hidden",
-          borderBottom: `1px solid #222`,
+          // borderBottom: `1px solid #222`,
         }}
       >
         <div
@@ -364,7 +364,7 @@ const HomePage: React.FC = () => {
             borderRadius: "20px",
             padding: "40px",
             marginBottom: "60px",
-            border: `1px solid ${AppleColors.border}`,
+            // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
             opacity: isLoaded ? 1 : 0,
@@ -405,7 +405,7 @@ const HomePage: React.FC = () => {
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
               padding: "40px",
-              border: `1px solid ${AppleColors.border}`,
+              // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
@@ -595,10 +595,10 @@ const HomePage: React.FC = () => {
                             borderRadius: "12px",
                             overflow: "hidden",
                             cursor: "pointer",
-                            border:
-                              index === mobileCurrentIndex
-                                ? `3px solid ${AppleColors.primary}`
-                                : "3px solid transparent",
+                            // border:
+                            //   index === mobileCurrentIndex
+                            //     ? `3px solid ${AppleColors.primary}`
+                            //     : "3px solid transparent",
                             transition: "all 0.3s ease",
                             flexShrink: 0,
                             // boxShadow:
@@ -922,10 +922,10 @@ const HomePage: React.FC = () => {
                       borderRadius: "8px",
                       overflow: "hidden",
                       cursor: "pointer",
-                      border:
-                        index === currentImageIndex
-                          ? "3px solid white"
-                          : "3px solid transparent",
+                      // border:
+                      //   index === currentImageIndex
+                      //     ? "3px solid white"
+                      //     : "3px solid transparent",
                       transition: "border 0.2s ease",
                       flexShrink: 0,
                     }}

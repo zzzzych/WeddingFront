@@ -11,11 +11,11 @@ import ShareButton from "../components/ShareButton";
 const AppleColors = {
   primary: "#007AFF",
   primaryDark: "#0051D5",
-  background: "#FBFBFD",
+  background: "#fff",
   cardBackground: "#FFFFFF",
   text: "#1D1D1F",
   secondaryText: "#86868B",
-  border: "#E5E5E7",
+  border: "#fff",
   accent: "#30D158",
   gradient: {
     start: "#007AFF",
@@ -806,10 +806,10 @@ const loadInvitationData = async () => {
                             borderRadius: "12px",
                             overflow: "hidden",
                             cursor: "pointer",
-                            border:
-                              index === mobileCurrentIndex
-                                ? `3px solid ${AppleColors.primary}`
-                                : "3px solid transparent",
+                            // border:
+                            //   index === mobileCurrentIndex
+                            //     ? `3px solid ${AppleColors.primary}`
+                            //     : "3px solid transparent",
                             transition: "all 0.3s ease",
                             flexShrink: 0,
                             // boxShadow:
@@ -1310,10 +1310,10 @@ const loadInvitationData = async () => {
                       borderRadius: "8px",
                       overflow: "hidden",
                       cursor: "pointer",
-                      border:
-                        index === currentImageIndex
-                          ? "3px solid white"
-                          : "3px solid transparent",
+                      // border:
+                      //   index === currentImageIndex
+                      //     ? "3px solid white"
+                      //     : "3px solid transparent",
                       transition: "border 0.2s ease",
                       flexShrink: 0,
                     }}
