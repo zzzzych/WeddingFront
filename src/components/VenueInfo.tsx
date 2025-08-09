@@ -9,7 +9,7 @@ interface VenueInfoProps {
 }
 
 const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
-  const [activeTab, setActiveTab] = useState<'info' | 'directions' | 'parking'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'directions' | 'parking'>('directions');
   
   const { weddingInfo } = invitationData;
 

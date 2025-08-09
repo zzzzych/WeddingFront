@@ -577,7 +577,7 @@ const InvitationPage: React.FC = () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            padding: "40px",
+            padding: "40px 0",
             // marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -605,6 +605,7 @@ const InvitationPage: React.FC = () => {
               whiteSpace: "pre-line",
               maxWidth: "500px",
               margin: "0 auto",
+              paddingBottom: "40px"
             }}
           >
             {invitationData.groupInfo.greetingMessage}
@@ -931,7 +932,7 @@ const InvitationPage: React.FC = () => {
           )}
         </div>
         {/* 웨딩 일정 정보 */}
-        <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"20px" }}>
+        <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"20px", paddingTop: "80px" }}>
           <div
             style={{
               fontSize: "18px",
@@ -977,7 +978,7 @@ const InvitationPage: React.FC = () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             // padding: "40px",
-            paddingTop: "30px",
+            paddingTop: "80px",
             marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
