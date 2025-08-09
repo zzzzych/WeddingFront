@@ -3,6 +3,8 @@
 
 import React from "react";
 import { InvitationGroup, RsvpListResponse } from "../../types";
+// 기존 import들 아래에 추가
+import GroupFeatureSettings from '../../components/GroupFeatureSettings';
 
 // ==================== 🎨 스타일 설정 ====================
 
@@ -53,10 +55,10 @@ interface GroupListSectionProps {
  * 개별 그룹 카드 Props 타입
  */
 interface GroupCardProps {
-  group: InvitationGroup; // 그룹 데이터
-  rsvpData: RsvpListResponse | null; // RSVP 데이터
-  isEditing: boolean; // 편집 모드 여부
-  editingGreeting: string; // 편집 중인 인사말
+  group: InvitationGroup;
+  rsvpData: RsvpListResponse | null;
+  isEditing: boolean;
+  editingGreeting: string;
   onStartEditingGreeting: (group: InvitationGroup) => void;
   onUpdateGreeting: (groupId: string, newGreeting: string) => void;
   onUpdateGroupName: (groupId: string, newName: string) => void;
@@ -64,6 +66,8 @@ interface GroupCardProps {
   onDeleteGroup: (groupId: string, groupName: string) => void;
   onCancelEditing: () => void;
   onEditingGreetingChange: (value: string) => void;
+  // 👈 이 줄 추가
+  onUpdateGroupFeatures?: (groupId: string, features: Partial<InvitationGroup>) => Promise<void>;
 }
 
 // ==================== 🔧 유틸리티 함수들 ====================
@@ -121,9 +125,21 @@ const GroupCard: React.FC<GroupCardProps> = ({
   onDeleteGroup,
   onCancelEditing,
   onEditingGreetingChange,
+  onUpdateGroupFeatures
 }) => {
   const stats = getGroupStats(group.groupName, rsvpData);
-
+  const [showFeatureSettings, setShowFeatureSettings] = React.useState(false);
+  const handleFeatureUpdate = async (features: Partial<InvitationGroup>) => {
+      if (onUpdateGroupFeatures && group.id) {
+        try {
+          await onUpdateGroupFeatures(group.id, features);
+          setShowFeatureSettings(false);
+        } catch (error) {
+          console.error('기능 설정 업데이트 실패:', error);
+          throw error;
+        }
+      }
+    };
   return (
     <div
       style={{

@@ -169,8 +169,9 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       }}>
         <div style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', display:"flex", flexDirection:"column", alignItems:"center" }}>
           <strong>참석 여부 안내</strong>
-          <p>식장이 협소하고 좌석 지정이 필요하여</p><p>정확한 참석 인원 확인이 필요합니다.</p>
-          <p>너그러운 양해 부탁드립니다.</p>
+          <p style={{margin:0}}>식장이 협소하고 좌석 지정이 필요하여</p>
+          <p style={{margin:0}}>정확한 참석 인원 확인이 필요합니다.</p>
+          <p style={{margin:0}}>너그러운 양해 부탁드립니다.</p>
         </div>
       </div>
 
