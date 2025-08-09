@@ -287,7 +287,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                textAlign: "center"
+                justifyContent:"center"
               }}>
                 🚗 주차 안내
               </h4>
@@ -295,13 +295,15 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 backgroundColor: '#fff',
                 // border: '1px solid #ffeaa7',
                 borderRadius: '6px',
+                justifyContent:"center"
                 // padding: '15px'
               }}>
                 <p style={{
                   margin: 0,
                   fontSize: '14px',
                   lineHeight: '1.6',
-                  color: '#222'
+                  color: '#222',
+                  textAlign:"center"
                 }}>
                   {weddingInfo.parkingInfo}
                 </p>

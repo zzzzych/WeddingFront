@@ -934,7 +934,7 @@ const InvitationPage: React.FC = () => {
         <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"11px", paddingTop: "120px" }}>
           <div
             style={{
-              fontSize: "18px",
+              fontSize: "20px",
               fontWeight: "700",
               // marginTop: "20px",
               opacity: 0.95,
@@ -947,7 +947,7 @@ const InvitationPage: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: "18px",
+              fontSize: "20px",
               fontWeight: "700",
               // marginTop: "20px",
               opacity: 0.95,
@@ -961,7 +961,7 @@ const InvitationPage: React.FC = () => {
 
           <div
             style={{
-              fontSize: "18px",
+              fontSize: "17px",
               fontWeight: "700",
               // marginTop: "20px",
               opacity: 0.95,
