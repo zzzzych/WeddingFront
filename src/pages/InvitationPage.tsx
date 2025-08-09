@@ -577,7 +577,7 @@ const InvitationPage: React.FC = () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            padding: "40px 0",
+            padding: "40px 0 120px",
             // marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -605,7 +605,6 @@ const InvitationPage: React.FC = () => {
               whiteSpace: "pre-line",
               maxWidth: "500px",
               margin: "0 auto",
-              paddingBottom: "40px"
             }}
           >
             {invitationData.groupInfo.greetingMessage}
@@ -618,7 +617,7 @@ const InvitationPage: React.FC = () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             // padding: "40px",
-            marginBottom: "60px",
+            // marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             opacity: isLoaded ? 1 : 0,
@@ -932,7 +931,7 @@ const InvitationPage: React.FC = () => {
           )}
         </div>
         {/* 웨딩 일정 정보 */}
-        <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"20px", paddingTop: "80px" }}>
+        <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"11px", paddingTop: "120px" }}>
           <div
             style={{
               fontSize: "18px",
@@ -970,7 +969,7 @@ const InvitationPage: React.FC = () => {
               letterSpacing: "0.5px",
               lineHeight: 1.25,
             }}
-          >화환은 정중히 거절합니다</div>
+          >🌸 화환은 정중히 거절합니다 🌸</div>
         </div>
         {/* 오시는 길 정보 (모든 그룹) */}
         <div
@@ -978,7 +977,7 @@ const InvitationPage: React.FC = () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             // padding: "40px",
-            paddingTop: "80px",
+            paddingTop: "120px",
             marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",

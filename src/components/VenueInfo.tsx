@@ -276,9 +276,9 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
             <div style={{
               backgroundColor: 'white',
               borderRadius: '8px',
-              padding: '20px',
+              // padding: '20px',
               marginBottom: '15px',
-              border: '1px solid #dee2e6'
+              // border: '1px solid #dee2e6'
             }}>
               <h4 style={{
                 fontSize: '16px',
@@ -286,21 +286,22 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 margin: '0 0 15px 0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                textAlign: "center"
               }}>
                 🚗 주차 안내
               </h4>
               <div style={{
-                backgroundColor: '#fff3cd',
-                border: '1px solid #ffeaa7',
+                backgroundColor: '#fff',
+                // border: '1px solid #ffeaa7',
                 borderRadius: '6px',
-                padding: '15px'
+                // padding: '15px'
               }}>
                 <p style={{
                   margin: 0,
                   fontSize: '14px',
                   lineHeight: '1.6',
-                  color: '#856404'
+                  color: '#222'
                 }}>
                   {weddingInfo.parkingInfo}
                 </p>
@@ -313,8 +314,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
             <div style={{
               backgroundColor: 'white',
               borderRadius: '8px',
-              padding: '20px',
-              border: '1px solid #dee2e6'
+              // padding: '20px',
+              // border: '1px solid #dee2e6'
             }}>
               <h4 style={{
                 fontSize: '16px',
@@ -322,21 +323,22 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 margin: '0 0 15px 0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                textAlign:"center"
               }}>
                 🚇 대중교통 이용
               </h4>
               <div style={{
-                backgroundColor: '#e3f2fd',
-                border: '1px solid #bbdefb',
+                backgroundColor: '#ffffff',
+                // border: '1px solid #bbdefb',
                 borderRadius: '6px',
-                padding: '15px'
+                // padding: '15px'
               }}>
                 <p style={{
                   margin: 0,
                   fontSize: '14px',
                   lineHeight: '1.6',
-                  color: '#1565c0'
+                  color: '#222'
                 }}>
                   {weddingInfo.transportInfo}
                 </p>
