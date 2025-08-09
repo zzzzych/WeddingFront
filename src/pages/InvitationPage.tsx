@@ -492,9 +492,12 @@ const InvitationPage: React.FC = () => {
           // color: "white",
           color: "#222",
           textAlign: "center",
-          padding: "80px 20px 20px",
+          // padding: "80px 20px 20px",
           position: "relative",
           overflow: "hidden",
+          height:"100vh",
+          display:"flex",
+          alignItems:"center"
         }}
       >
         <div
@@ -521,11 +524,7 @@ const InvitationPage: React.FC = () => {
         >
           <h1
             style={{
-              fontSize: "48px",
-              fontWeight: "700",
-              margin: "0",
-              fontFamily: systemFont,
-              textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              margin:"40px 0"
             }}
           >
             {/* {"🤵🏻"} ❤️{" "}
@@ -608,9 +607,9 @@ const InvitationPage: React.FC = () => {
             }}
           >
             {/* {invitationData.groupInfo.greetingMessage} */}
-            소중한 주말 저녁, 저희의 결혼을 축복하기 위해 귀한 발걸음을 해주셔서 진심으로 감사드립니다. <br/>
-            오시는 길이 헛되지 않도록 정성껏 준비했으니, 부디 즐거운 마음으로 함께해주시면 더없는 기쁨이겠습니다. <br/>
-            저희의 새로운 시작을 따뜻한 마음으로 지켜봐 주세요.
+            소중한 주말 저녁, <br/>저희의 결혼을 축복하기 위해 <br/>귀한 발걸음을 해주셔서 진심으로 감사드립니다. <br/><br/>
+            오시는 길이 헛되지 않도록 정성껏 준비했으니, 부디 즐거운 마음으로 함께해주시면 <br/>더없는 기쁨이겠습니다. <br/><br/>
+            저희의 새로운 시작을 <br/>따뜻한 마음으로 지켜봐 주세요.
           </div>
         </div>
 

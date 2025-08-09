@@ -157,21 +157,24 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
     }}>
       {/* 안내 메시지 */}
       <div style={{
-        backgroundColor: '#f8d7da',
-        border: '1px solid #f5c6cb',
+        backgroundColor: '#fff',
+        border: '1px solid #ffff',
         borderRadius: '6px',
-        padding: '15px',
-        marginBottom: '20px',
-        color: '#721c24'
+        paddingBottom: '60px',
+        // marginBottom: '20px',
+        color: '#721c24',
+        display:"flex",
+        flexDirection:"column",
+        alignItems:"center"
       }}>
-        <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
-          <strong>참석 여부 안내</strong><br />
-          식장이 협소하고 좌석 지정이 필요하여 정확한 참석 인원 확인이 필요합니다.<br />
-          너그러운 양해 부탁드립니다.
-        </p>
+        <div style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', display:"flex", flexDirection:"column", alignItems:"center" }}>
+          <strong>참석 여부 안내</strong>
+          <p>식장이 협소하고 좌석 지정이 필요하여</p><p>정확한 참석 인원 확인이 필요합니다.</p>
+          <p>너그러운 양해 부탁드립니다.</p>
+        </div>
       </div>
 
-      <h3 style={{ marginBottom: '20px', color: '#856404' }}>참석 여부 회신</h3>
+      <h3 style={{ marginBottom: '40px', color: '#856404', textAlign:"center" }}>참석 여부 회신</h3>
 
       <form onSubmit={handleSubmit}>
         {/* 이름 입력 */}

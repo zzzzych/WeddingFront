@@ -281,9 +281,12 @@ const HomePage: React.FC = () => {
           background: '#ffffff',
           color: "#222222",
           textAlign: "center",
-          padding: "80px 20px 20px",
+          // padding: "80px 20px 20px",
+          height:"100vh",
           position: "relative",
           overflow: "hidden",
+          display:"flex",
+          alignItems:"center"
           // borderBottom: `1px solid #222`,
         }}
       >
@@ -309,15 +312,7 @@ const HomePage: React.FC = () => {
             transition: "all 0.8s ease",
           }}
         >
-          <h1
-            style={{
-              fontSize: "48px",
-              fontWeight: "700",
-              margin: "0",
-              fontFamily: systemFont,
-              textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
+          <h1 style={{margin:"40px 0"}}>
             {/* {weddingInfo.groomName} ♥ {weddingInfo.brideName} */}
             <img src="/images/wedding.png" width="100%"/>
           </h1>
