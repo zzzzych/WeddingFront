@@ -495,7 +495,7 @@ const loadInvitationData = async () => {
           // color: "white",
           color: "#222",
           textAlign: "center",
-          padding: "80px 20px 60px",
+          padding: "80px 20px 20px",
           position: "relative",
           overflow: "hidden",
         }}
@@ -531,20 +531,22 @@ const loadInvitationData = async () => {
               textShadow: "0 2px 4px rgba(0,0,0,0.1)",
             }}
           >
-            {invitationData.weddingInfo.groomName} ♥{" "}
-            {invitationData.weddingInfo.brideName}
+            {/* {"🤵🏻"} ❤️{" "}
+            {"👰🏻‍♀️"} */}
+            <img src="/images/wedding.png" width="100%"/>
           </h1>
 
           <div
             style={{
               fontSize: "20px",
               fontWeight: "300",
-              marginTop: "16px",
+              // marginTop: "16px",
               opacity: 0.9,
               fontFamily: systemFont,
             }}
           >
-            Wedding Invitation
+            <div style={{fontSize:"32px", fontWeight: 700, lineHeight:1}}>{invitationData.weddingInfo.groomName} ♥ {invitationData.weddingInfo.brideName}</div>
+            <div style={{lineHeight:2}}>Wedding Invitation</div>
           </div>
 
           {/* 결혼식 일자 표시 - 🆕 서버 데이터 기반으로 동적 생성 (개선된 버전) */}
@@ -552,7 +554,7 @@ const loadInvitationData = async () => {
             style={{
               fontSize: "18px",
               fontWeight: "400",
-              marginTop: "20px",
+              // marginTop: "20px",
               opacity: 0.95,
               fontFamily: systemFont,
               letterSpacing: "0.5px",
@@ -576,7 +578,7 @@ const loadInvitationData = async () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             padding: "40px",
-            marginBottom: "60px",
+            // marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
@@ -585,7 +587,7 @@ const loadInvitationData = async () => {
             transition: "all 1s ease 0.3s",
           }}
         >
-          <h2
+          {/* <h2
             style={{
               fontSize: "28px",
               fontWeight: "600",
@@ -593,7 +595,7 @@ const loadInvitationData = async () => {
               margin: "0 0 24px 0",
               fontFamily: systemFont,
             }}
-          >소중한 분들께</h2>
+          >소중한 분들께</h2> */}
           <div
             style={{
               fontSize: "18px",
@@ -614,7 +616,7 @@ const loadInvitationData = async () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            padding: "40px",
+            // padding: "40px",
             marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -623,7 +625,7 @@ const loadInvitationData = async () => {
             transition: "all 1s ease 0.6s",
           }}
         >
-          <h2
+          {/* <h2
             style={{
               fontSize: "28px",
               fontWeight: "600",
@@ -634,7 +636,7 @@ const loadInvitationData = async () => {
             }}
           >
             📸 우리의 이야기
-          </h2>
+          </h2> */}
 
           {/* 조건부 렌더링: 모바일이면 슬라이드, 데스크톱이면 그리드 */}
           {photos.length > 0 ? (
@@ -646,7 +648,8 @@ const loadInvitationData = async () => {
                   style={{
                     position: "relative",
                     width: "100%",
-                    height: "350px",
+                    // height: "350px",
+                    height:"auto",
                     borderRadius: "16px",
                     overflow: "hidden",
                     // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",

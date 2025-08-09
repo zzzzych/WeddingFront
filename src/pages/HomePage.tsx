@@ -282,7 +282,7 @@ const HomePage: React.FC = () => {
           background: '#ffffff',
           color: "#222222",
           textAlign: "center",
-          padding: "80px 20px 60px",
+          padding: "80px 20px 20px",
           position: "relative",
           overflow: "hidden",
           // borderBottom: `1px solid #222`,
@@ -319,19 +319,21 @@ const HomePage: React.FC = () => {
               textShadow: "0 2px 4px rgba(0,0,0,0.1)",
             }}
           >
-            {weddingInfo.groomName} ♥ {weddingInfo.brideName}
+            {/* {weddingInfo.groomName} ♥ {weddingInfo.brideName} */}
+            <img src="/images/wedding.png" width="100%"/>
           </h1>
 
           <div
             style={{
               fontSize: "20px",
               fontWeight: "300",
-              marginTop: "16px",
+              // marginTop: "16px",
               opacity: 0.9,
               fontFamily: systemFont,
             }}
           >
-            Wedding Invitation
+            <div style={{fontSize:"32px", fontWeight: 700, lineHeight:1}}>{weddingInfo.groomName} ♥ {weddingInfo.brideName}</div>
+            <div style={{lineHeight:2}}>Wedding Invitation</div>
           </div>
 
           {/* 🆕 결혼식 일자 추가 */}
@@ -339,7 +341,7 @@ const HomePage: React.FC = () => {
             style={{
               fontSize: "18px",
               fontWeight: "400",
-              marginTop: "20px",
+              // marginTop: "20px",
               opacity: 0.95,
               fontFamily: systemFont,
               letterSpacing: "0.5px",
@@ -363,7 +365,7 @@ const HomePage: React.FC = () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             padding: "40px",
-            marginBottom: "60px",
+            // marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
@@ -372,7 +374,7 @@ const HomePage: React.FC = () => {
             transition: "all 1s ease 0.3s",
           }}
         >
-          <h2
+          {/* <h2
             style={{
               fontSize: "28px",
               fontWeight: "600",
@@ -382,7 +384,7 @@ const HomePage: React.FC = () => {
             }}
           >
             소중한 분들께
-          </h2>
+          </h2> */}
           <div
             style={{
               fontSize: "18px",
@@ -404,7 +406,7 @@ const HomePage: React.FC = () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              padding: "40px",
+              // padding: "40px",
               // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
@@ -412,7 +414,7 @@ const HomePage: React.FC = () => {
               transition: "all 1s ease 0.6s",
             }}
           >
-            <h2
+            {/* <h2
               style={{
                 fontSize: "28px",
                 fontWeight: "600",
@@ -423,7 +425,7 @@ const HomePage: React.FC = () => {
               }}
             >
               📸 우리의 이야기
-            </h2>
+            </h2> */}
 
             {/* 조건부 렌더링: 모바일이면 슬라이드, 데스크톱이면 그리드 */}
             {isMobile ? (
@@ -434,7 +436,8 @@ const HomePage: React.FC = () => {
                   style={{
                     position: "relative",
                     width: "100%",
-                    height: "350px",
+                    // height: "350px",
+                    height:"auto",
                     borderRadius: "16px",
                     overflow: "hidden",
                     // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
