@@ -566,31 +566,6 @@ const InvitationPage: React.FC = () => {
         </div>
       </div>
       {/* 메인 컨텐츠 섹션들 - 기능 설정에 따라 조건부 렌더링 */}
-
-      {/* 🔍 오시는 길 정보 - showVenueInfo가 true일 때만 표시 */}
-      {invitationData?.showVenueInfo && (
-        <VenueInfo invitationData={invitationData} />
-      )}
-
-      {/* 📝 참석 응답 폼 - showRsvpForm이 true일 때만 표시 */}
-      {invitationData?.showRsvpForm && (
-        <RsvpForm
-          uniqueCode={uniqueCode!}
-          onSubmitSuccess={handleRsvpSuccess}
-          onSubmitError={handleRsvpError}
-        />
-      )}
-
-      {/* 📤 공유 버튼 - showShareButton이 true일 때만 표시 */}
-      {invitationData?.showShareButton && (
-        <ShareButton
-          uniqueCode={uniqueCode!}
-          groomName={invitationData.weddingInfo.groomName}
-          brideName={invitationData.weddingInfo.brideName}
-          weddingDate={invitationData.weddingInfo.weddingDate}
-          venueName={invitationData.weddingInfo.venueName}
-        />
-      )}
       <div
         style={{
           maxWidth: "1000px",
@@ -1045,9 +1020,13 @@ const InvitationPage: React.FC = () => {
           >
             🗺️ 오시는 길
           </h2> */}
-          <VenueInfo invitationData={invitationData} />
+          {/* <VenueInfo invitationData={invitationData} /> */}
+        
+          {/* 🔍 오시는 길 정보 - showVenueInfo가 true일 때만 표시 */}
+              {invitationData?.showVenueInfo && (
+                <VenueInfo invitationData={invitationData} />
+              )}
         </div>
-
         {/* 참석 응답 폼 (WEDDING_GUEST 그룹만) */}
         {invitationData.showRsvpForm && (
           <div
@@ -1075,11 +1054,21 @@ const InvitationPage: React.FC = () => {
             >
               💒 참석 여부
             </h2> */}
-            <RsvpForm
+            {/* <RsvpForm
               uniqueCode={uniqueCode!}
               onSubmitSuccess={handleRsvpSuccess}
               onSubmitError={handleRsvpError}
-            />
+            /> */}
+
+
+      {/* 📝 참석 응답 폼 - showRsvpForm이 true일 때만 표시 */}
+      {invitationData?.showRsvpForm && (
+        <RsvpForm
+          uniqueCode={uniqueCode!}
+          onSubmitSuccess={handleRsvpSuccess}
+          onSubmitError={handleRsvpError}
+        />
+      )}
           </div>
         )}
 
@@ -1126,7 +1115,7 @@ const InvitationPage: React.FC = () => {
         )}
 
         {/* 계좌 정보 (showAccountInfo가 true인 그룹만) */}
-        {invitationData.showAccountInfo && (
+        {invitationData?.showAccountInfo && (
           <div
             style={{
               backgroundColor: AppleColors.cardBackground,
@@ -1178,6 +1167,18 @@ const InvitationPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* 📤 공유 버튼 - showShareButton이 true일 때만 표시 */}
+        {invitationData?.showShareButton && (
+          <ShareButton
+            uniqueCode={uniqueCode!}
+            groomName={invitationData.weddingInfo.groomName}
+            brideName={invitationData.weddingInfo.brideName}
+            weddingDate={invitationData.weddingInfo.weddingDate}
+            venueName={invitationData.weddingInfo.venueName}
+          />
+        )}
+
 
         {/* 공유 버튼 (showShareButton이 true인 그룹만) */}
         {invitationData.showShareButton && uniqueCode && (
