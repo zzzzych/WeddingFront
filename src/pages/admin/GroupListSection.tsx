@@ -403,6 +403,24 @@ const GroupCard: React.FC<GroupCardProps> = ({
           >
             📋 URL 복사
           </button>
+          {/* 기존 버튼들 위에 기능 설정 버튼 추가 */}
+          <button
+            onClick={() => setShowFeatureSettings(true)}
+            style={{
+              backgroundColor: AppleColors.secondary,
+              color: "white",
+              border: "none",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: "500",
+              cursor: "pointer",
+              marginBottom: "8px",
+              width: "100%",
+            }}
+          >
+            ⚙️ 기능 설정
+          </button>
           <button
             onClick={() => onDeleteGroup(group.id!, group.groupName)}
             style={{
