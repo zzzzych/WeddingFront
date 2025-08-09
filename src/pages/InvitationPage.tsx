@@ -960,6 +960,7 @@ const loadInvitationData = async () => {
             opacity: 0.95,
             fontFamily: systemFont,
             letterSpacing: "0.5px",
+            lineHeight: 1.25
           }}
         >
           {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
@@ -972,6 +973,7 @@ const loadInvitationData = async () => {
             opacity: 0.95,
             fontFamily: systemFont,
             letterSpacing: "0.5px",
+            lineHeight:1.25
           }}
         >
           {invitationData.weddingInfo.venueName}
@@ -982,7 +984,7 @@ const loadInvitationData = async () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            padding: "40px",
+            // padding: "40px",
             marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -1047,7 +1049,7 @@ const loadInvitationData = async () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              padding: "40px",
+              // padding: "40px",
               marginBottom: "60px",
               // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -1089,7 +1091,7 @@ const loadInvitationData = async () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              padding: "40px",
+              // padding: "40px",
               marginBottom: "60px",
               // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -1143,7 +1145,7 @@ const loadInvitationData = async () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              padding: "40px",
+              // padding: "40px",
               marginBottom: "60px",
               // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",

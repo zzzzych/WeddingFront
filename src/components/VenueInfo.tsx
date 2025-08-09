@@ -45,7 +45,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
       backgroundColor: '#ffffff',
       // border: '1px solid #ffeaa7',
       borderRadius: '12px',
-      padding: '25px',
+      // padding: '25px',
       marginBottom: '20px'
     }}>
       {/* 헤더 */}
