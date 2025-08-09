@@ -49,6 +49,7 @@ interface GroupListSectionProps {
   onDeleteGroup: (groupId: string, groupName: string) => void; // 그룹 삭제
   onCancelEditing: () => void; // 편집 취소
   onEditingGreetingChange: (value: string) => void; // 편집 중인 인사말 변경
+  onUpdateGroupFeatures?: (groupId: string, features: Partial<InvitationGroup>) => Promise<void>;
 }
 
 /**
@@ -129,17 +130,19 @@ const GroupCard: React.FC<GroupCardProps> = ({
 }) => {
   const stats = getGroupStats(group.groupName, rsvpData);
   const [showFeatureSettings, setShowFeatureSettings] = React.useState(false);
-  const handleFeatureUpdate = async (features: Partial<InvitationGroup>) => {
-      if (onUpdateGroupFeatures && group.id) {
-        try {
-          await onUpdateGroupFeatures(group.id, features);
-          setShowFeatureSettings(false);
-        } catch (error) {
-          console.error('기능 설정 업데이트 실패:', error);
-          throw error;
-        }
+  // 👈 기능 설정 핸들러 함수 수정 (GroupCard 내부에서)
+  const handleFeatureUpdate = async (groupId: string, features: any) => {
+    if (onUpdateGroupFeatures && group.id) {
+      try {
+        // groupId는 이미 group.id로 고정되므로 features만 전달
+        await onUpdateGroupFeatures(group.id, features);
+        setShowFeatureSettings(false);
+      } catch (error) {
+        console.error('기능 설정 업데이트 실패:', error);
+        throw error;
       }
-    };
+    }
+  };
   return (
     <div
       style={{
@@ -514,6 +517,31 @@ const GroupCard: React.FC<GroupCardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 그룹 기능 설정 */}
+      {showFeatureSettings && (
+      <div style={{
+        marginTop: "20px",
+        padding: "16px",
+        backgroundColor: "#f8f9fa",
+        borderRadius: "8px",
+        border: "1px solid #dee2e6"
+      }}>
+        <GroupFeatureSettings
+          group={group}
+          currentFeatures={{
+            showRsvpForm: group.showRsvpForm || false,
+            showAccountInfo: group.showAccountInfo || false,
+            showShareButton: group.showShareButton || false,
+            showVenueInfo: group.showVenueInfo || false,
+            showPhotoGallery: group.showPhotoGallery || false,
+            showCeremonyProgram: group.showCeremonyProgram || false,
+          }}
+          onSave={handleFeatureUpdate}
+          onCancel={() => setShowFeatureSettings(false)}
+        />
+      </div>
+    )}
     </div>
   );
 };
@@ -584,6 +612,7 @@ const GroupListSection: React.FC<GroupListSectionProps> = ({
   onDeleteGroup,
   onCancelEditing,
   onEditingGreetingChange,
+  onUpdateGroupFeatures,
 }) => {
   return (
     <div
@@ -678,6 +707,7 @@ const GroupListSection: React.FC<GroupListSectionProps> = ({
                 onDeleteGroup={onDeleteGroup}
                 onCancelEditing={onCancelEditing}
                 onEditingGreetingChange={onEditingGreetingChange}
+                onUpdateGroupFeatures={onUpdateGroupFeatures} 
               />
             ))}
           </div>

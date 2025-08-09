@@ -63,7 +63,7 @@ const AdminDashboard: React.FC = () => {
     getTotalStats,
     handleLogout,
     startEditingRsvp,
-  
+    handleUpdateGroupFeatures
   } = useAdminDashboard();
 
   // ==================== 📊 통계 데이터 계산 ====================
@@ -116,6 +116,7 @@ const AdminDashboard: React.FC = () => {
        onEditingGreetingChange={(value: string) => {
         setEditingGreeting(value);  // 👈 이렇게 간단하게 수정하세요
       }}
+      onUpdateGroupFeatures={handleUpdateGroupFeatures}
       />
 
       {/* ==================== 📊 RSVP 응답 목록 섹션 ==================== */}

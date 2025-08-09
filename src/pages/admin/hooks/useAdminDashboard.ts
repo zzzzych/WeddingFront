@@ -1,7 +1,7 @@
 // src/pages/admin/hooks/useAdminDashboard.ts
 // 관리자 대시보드의 모든 상태와 로직을 관리하는 커스텀 훅
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getAllGroups,
@@ -300,6 +300,37 @@ const fetchAdminList = async () => {
     }
   };
 
+  /**
+ * 그룹의 기능 설정을 업데이트하는 함수
+ * @param groupId - 업데이트할 그룹 ID
+ * @param features - 업데이트할 기능 설정들
+ */
+const handleUpdateGroupFeatures = useCallback(
+  async (groupId: string, features: Partial<InvitationGroup>) => {
+    try {
+      console.log('🔧 그룹 기능 설정 업데이트 시작:', { groupId, features });
+      
+      // 백엔드 API 호출
+      await updateGroup(groupId, features);
+      
+      // 성공 시 로컬 상태 업데이트
+      setGroups(prev => 
+        prev.map(group => 
+          group.id === groupId 
+            ? { ...group, ...features }
+            : group
+        )
+      );
+      
+      console.log('✅ 그룹 기능 설정 업데이트 완료');
+    } catch (error) {
+      console.error('❌ 그룹 기능 설정 업데이트 실패:', error);
+      throw error; // 에러를 다시 throw하여 컴포넌트에서 처리할 수 있게 함
+    }
+  },
+  []
+);
+
   // ==================== 📝 RSVP 응답 관리 함수들 ====================
 
   /**
@@ -446,7 +477,7 @@ const updateEditingRsvpData = (field: string, value: any) => {
     adminLoading,
     showAdminList,
     editingRsvpId,
-  editingRsvpData,
+    editingRsvpData,
 
 
     // 상태 변경 함수들
@@ -476,8 +507,9 @@ const updateEditingRsvpData = (field: string, value: any) => {
     handleLogout,
 
     startEditingRsvp,
-  cancelEditingRsvp,
-  handleUpdateRsvp,
-  updateEditingRsvpData,
+    cancelEditingRsvp,
+    handleUpdateRsvp,
+    updateEditingRsvpData,
+    handleUpdateGroupFeatures
   };
 };
