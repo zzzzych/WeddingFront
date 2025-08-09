@@ -55,7 +55,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
       }}>
         <h2 style={{
           fontSize: '24px',
-          color: '#856404',
+          color: '#222',
           margin: '0 0 8px 0',
           display: 'flex',
           alignItems: 'center',
@@ -82,7 +82,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
         border: '1px solid #dee2e6'
       }}>
         {[
-          { key: 'info', label: '웨딩홀 정보', icon: '🏛️' },
+          // { key: 'info', label: '웨딩홀 정보', icon: '🏛️' },
           { key: 'directions', label: '지도 & 길찾기', icon: '🗺️' },
           { key: 'parking', label: '교통 & 주차', icon: '🚗' }
         ].map((tab) => (

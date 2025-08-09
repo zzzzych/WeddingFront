@@ -6,7 +6,6 @@ import RsvpForm from "../components/RsvpForm";
 import VenueInfo from "../components/VenueInfo";
 import ShareButton from "../components/ShareButton";
 
-
 // Apple 디자인 시스템 색상 팔레트 (HomePage.tsx와 동일)
 const AppleColors = {
   primary: "#007AFF",
@@ -25,34 +24,34 @@ const AppleColors = {
 };
 
 // 시스템 폰트 정의 (HomePage.tsx와 동일)
-const systemFont = 'SeoulNamsanM';
+const systemFont = "SeoulNamsanM";
 
 // 🆕 날짜/시간 포맷팅 유틸리티 함수 (디버깅 버전)
 const formatWeddingDateTime = (dateTimeString: string) => {
   // 🔍 디버깅: 받은 데이터 확인
-  console.log('🔍 받은 날짜 데이터:', dateTimeString);
-  console.log('🔍 데이터 타입:', typeof dateTimeString);
-  
+  console.log("🔍 받은 날짜 데이터:", dateTimeString);
+  console.log("🔍 데이터 타입:", typeof dateTimeString);
+
   try {
     const weddingDate = new Date(dateTimeString);
-    
+
     // 🔍 디버깅: 파싱된 날짜 확인
-    console.log('🔍 파싱된 날짜:', weddingDate);
-    console.log('🔍 날짜 유효성:', !isNaN(weddingDate.getTime()));
-    
+    console.log("🔍 파싱된 날짜:", weddingDate);
+    console.log("🔍 날짜 유효성:", !isNaN(weddingDate.getTime()));
+
     // 유효한 날짜인지 확인
     if (isNaN(weddingDate.getTime())) {
-      console.error('❌ 잘못된 날짜 형식:', dateTimeString);
+      console.error("❌ 잘못된 날짜 형식:", dateTimeString);
       throw new Error("Invalid date");
     }
-    
+
     // 시간 정보 추출
     const timeStr = weddingDate.toLocaleTimeString("ko-KR", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     });
-    
+
     // 날짜 정보 추출
     const dateStr = weddingDate.toLocaleDateString("ko-KR", {
       year: "numeric",
@@ -60,9 +59,9 @@ const formatWeddingDateTime = (dateTimeString: string) => {
       day: "numeric",
       weekday: "long",
     });
-    
+
     const result = `${dateStr} ${timeStr}`;
-    console.log('✅ 최종 포맷된 결과:', result);
+    console.log("✅ 최종 포맷된 결과:", result);
     return result;
   } catch (error) {
     // 에러 시 기본값 반환
@@ -80,20 +79,21 @@ interface Photo {
 
 const InvitationPage: React.FC = () => {
   const { uniqueCode } = useParams<{ uniqueCode: string }>();
-  
+
   // 상태 관리
-  const [invitationData, setInvitationData] = useState<InvitationResponse | null>(null);
+  const [invitationData, setInvitationData] =
+    useState<InvitationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false); // 애니메이션용 상태 추가
-  
+
   // 🆕 HomePage.tsx와 동일한 이미지 관련 상태들 추가
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mobileCurrentIndex, setMobileCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // 참석 응답 성공/실패 메시지 상태
   const [rsvpMessage, setRsvpMessage] = useState<{
     type: "success" | "error";
@@ -117,116 +117,130 @@ const InvitationPage: React.FC = () => {
   }, []);
 
   // 컴포넌트 마운트 시 청첩장 데이터 로드
-// InvitationPage.tsx에서 기존 useEffect 부분을 다음 코드로 교체
+  // InvitationPage.tsx에서 기존 useEffect 부분을 다음 코드로 교체
 
-useEffect(() => {
-  // 2. useEffect 내의 loadInvitationData 함수를 다음 코드로 완전히 교체:
+  useEffect(() => {
+    // 2. useEffect 내의 loadInvitationData 함수를 다음 코드로 완전히 교체:
 
-const loadInvitationData = async () => {
-  if (!uniqueCode) {
-    console.error("고유 코드가 없습니다.");
-    setError("잘못된 접근입니다.");
-    setLoading(false);
-    return;
-  }
+    const loadInvitationData = async () => {
+      if (!uniqueCode) {
+        console.error("고유 코드가 없습니다.");
+        setError("잘못된 접근입니다.");
+        setLoading(false);
+        return;
+      }
 
-  try {
-    setLoading(true);
-    setError(null);
+      try {
+        setLoading(true);
+        setError(null);
 
-    // 🆕 invitationService의 타입 안전한 API 함수 사용
-    console.log(`📋 청첩장 데이터 로딩 시작: ${uniqueCode}`);
-    const serverData = await getInvitationByCode(uniqueCode);
-    
-    console.log("✅ 서버에서 받은 데이터:", serverData);
+        // 🆕 invitationService의 타입 안전한 API 함수 사용
+        console.log(`📋 청첩장 데이터 로딩 시작: ${uniqueCode}`);
+        const serverData = await getInvitationByCode(uniqueCode);
 
-    // InvitationPage.tsx의 loadInvitationData 함수 내에서 
-// "console.log("✅ 서버에서 받은 데이터:", serverData);" 다음에 추가:
+        console.log("✅ 서버에서 받은 데이터:", serverData);
 
-    // 🔍 상세 디버깅: wedding_infos 테이블 데이터 확인
-    
+        // InvitationPage.tsx의 loadInvitationData 함수 내에서
+        // "console.log("✅ 서버에서 받은 데이터:", serverData);" 다음에 추가:
 
-    // InvitationPage.tsx의 loadInvitationData 함수 내에서
-    // "console.log("✅ 서버에서 받은 데이터:", serverData);" 바로 다음에 추가:
+        // 🔍 상세 디버깅: wedding_infos 테이블 데이터 확인
 
-    // 🔍 서버 응답 원본 구조 상세 분석
-    console.group("🔍 서버 응답 원본 분석");
-    console.log("📦 전체 응답 객체:", JSON.stringify(serverData, null, 2));
-    console.log("🔑 응답 객체의 모든 키:", Object.keys(serverData));
-    console.log("📊 각 필드별 값과 타입:");
-    Object.entries(serverData).forEach(([key, value]) => {
-      console.log(`  ${key}: ${value} (타입: ${typeof value})`);
-    });
-    console.groupEnd();
+        // InvitationPage.tsx의 loadInvitationData 함수 내에서
+        // "console.log("✅ 서버에서 받은 데이터:", serverData);" 바로 다음에 추가:
 
-    // 🆕 InvitationByCodeResponse 타입에 맞춘 정확한 데이터 변환
-    // 🆕 타입 안전한 데이터 변환 (InvitationByCodeResponse → InvitationResponse)
-    // 🆕 서버 응답 구조에 맞춘 정확한 데이터 변환
-    const transformedData: InvitationResponse = {
-      weddingInfo: {
-        // 서버 응답의 weddingInfo 객체에서 데이터 추출
-        groomName: serverData.weddingInfo?.groomName || "지환",
-        brideName: serverData.weddingInfo?.brideName || "윤진", 
-        weddingDate: serverData.weddingInfo?.weddingdate || "2025-10-25T18:00:00", // 서버에서 소문자 사용
-        weddingLocation: serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
-        greetingMessage: serverData.weddingInfo?.greetingMessage || "결혼합니다.",
-        ceremonyProgram: serverData.weddingInfo?.ceremonyProgram || "예식 순서 정보 없음",
-        accountInfo: [], // 현재 서버에서 제공하지 않음
-        
-        // 상세 장소 정보 - 서버 응답에서 직접 가져오기
-        venueName: serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
-        venueAddress: serverData.weddingInfo?.venueAddress || "주소 정보 없음", 
-        kakaoMapUrl: serverData.weddingInfo?.kakaoMapUrl || undefined, // null → undefined
-        naverMapUrl: serverData.weddingInfo?.naverMapUrl || undefined, // null → undefined
-        parkingInfo: serverData.weddingInfo?.parkingInfo || "주차 정보 없음",
-        transportInfo: serverData.weddingInfo?.transportInfo || "교통 정보 없음",
-      },
-      groupInfo: {
-        // 서버 응답의 groupInfo 객체에서 데이터 추출
-        groupName: serverData.groupInfo?.groupName || "소중한 분들",
-        groupType: (serverData.groupInfo?.groupType as GroupType) || GroupType.WEDDING_GUEST,
-        greetingMessage: serverData.groupInfo?.greetingMessage || "함께해주셔서 감사합니다.",
-      },
-      // 서버 응답의 availableFeatures 객체에서 기능 플래그들 추출
-      showRsvpForm: serverData.availableFeatures?.showRsvpForm ?? true,
-      showAccountInfo: serverData.availableFeatures?.showAccountInfo ?? false,
-      showShareButton: serverData.availableFeatures?.showShareButton ?? false, 
-      showCeremonyProgram: serverData.groupInfo?.showCeremonyProgram ?? true, // groupInfo에서 가져옴
+        // 🔍 서버 응답 원본 구조 상세 분석
+        console.group("🔍 서버 응답 원본 분석");
+        console.log("📦 전체 응답 객체:", JSON.stringify(serverData, null, 2));
+        console.log("🔑 응답 객체의 모든 키:", Object.keys(serverData));
+        console.log("📊 각 필드별 값과 타입:");
+        Object.entries(serverData).forEach(([key, value]) => {
+          console.log(`  ${key}: ${value} (타입: ${typeof value})`);
+        });
+        console.groupEnd();
+
+        // 🆕 InvitationByCodeResponse 타입에 맞춘 정확한 데이터 변환
+        // 🆕 타입 안전한 데이터 변환 (InvitationByCodeResponse → InvitationResponse)
+        // 🆕 서버 응답 구조에 맞춘 정확한 데이터 변환
+        const transformedData: InvitationResponse = {
+          weddingInfo: {
+            // 서버 응답의 weddingInfo 객체에서 데이터 추출
+            groomName: serverData.weddingInfo?.groomName || "지환",
+            brideName: serverData.weddingInfo?.brideName || "윤진",
+            weddingDate:
+              serverData.weddingInfo?.weddingdate || "2025-10-25T18:00:00", // 서버에서 소문자 사용
+            weddingLocation:
+              serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
+            greetingMessage:
+              serverData.weddingInfo?.greetingMessage || "결혼합니다.",
+            ceremonyProgram:
+              serverData.weddingInfo?.ceremonyProgram || "예식 순서 정보 없음",
+            accountInfo: [], // 현재 서버에서 제공하지 않음
+
+            // 상세 장소 정보 - 서버 응답에서 직접 가져오기
+            venueName: serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
+            venueAddress:
+              serverData.weddingInfo?.venueAddress || "주소 정보 없음",
+            kakaoMapUrl: serverData.weddingInfo?.kakaoMapUrl || undefined, // null → undefined
+            naverMapUrl: serverData.weddingInfo?.naverMapUrl || undefined, // null → undefined
+            parkingInfo:
+              serverData.weddingInfo?.parkingInfo || "주차 정보 없음",
+            transportInfo:
+              serverData.weddingInfo?.transportInfo || "교통 정보 없음",
+          },
+          groupInfo: {
+            // 서버 응답의 groupInfo 객체에서 데이터 추출
+            groupName: serverData.groupInfo?.groupName || "소중한 분들",
+            groupType:
+              (serverData.groupInfo?.groupType as GroupType) ||
+              GroupType.WEDDING_GUEST,
+            greetingMessage:
+              serverData.groupInfo?.greetingMessage ||
+              "함께해주셔서 감사합니다.",
+          },
+          // 서버 응답의 availableFeatures 객체에서 기능 플래그들 추출
+          showRsvpForm: serverData.availableFeatures?.showRsvpForm ?? true,
+          showAccountInfo:
+            serverData.availableFeatures?.showAccountInfo ?? false,
+          showShareButton:
+            serverData.availableFeatures?.showShareButton ?? false,
+          showCeremonyProgram:
+            serverData.groupInfo?.showCeremonyProgram ?? true, // groupInfo에서 가져옴
+        };
+
+        console.log("🔄 변환 완료된 데이터:", transformedData);
+        setInvitationData(transformedData);
+        setError(null);
+
+        // 🆕 이미지 데이터 로딩 (향후 서버 API 연동 예정)
+        const photoList = [];
+        for (let i = 1; i <= 8; i++) {
+          photoList.push({
+            id: `wedding-${i}`,
+            url: `/images/wedding-${i}.jpeg`,
+            alt: `웨딩 사진 ${i}`,
+          });
+        }
+        setPhotos(photoList);
+      } catch (err) {
+        console.error("❌ 청첩장 데이터 로드 실패:", err);
+
+        // 🔧 invitationService에서 처리된 에러 메시지 사용
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "청첩장 정보를 불러올 수 없습니다.";
+        setError(errorMessage);
+
+        // ❌ 에러 시에는 기본값 설정하지 않음 (정확한 에러 표시)
+        setInvitationData(null);
+        setPhotos([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    console.log("🔄 변환 완료된 데이터:", transformedData);
-    setInvitationData(transformedData);
-    setError(null);
-
-    // 🆕 이미지 데이터 로딩 (향후 서버 API 연동 예정)
-    const photoList = [];
-    for (let i = 1; i <= 8; i++) {
-      photoList.push({
-        id: `wedding-${i}`,
-        url: `/images/wedding-${i}.jpeg`,
-        alt: `웨딩 사진 ${i}`,
-      });
-    }
-    setPhotos(photoList);
-
-  } catch (err) {
-    console.error("❌ 청첩장 데이터 로드 실패:", err);
-    
-    // 🔧 invitationService에서 처리된 에러 메시지 사용
-    const errorMessage = err instanceof Error ? err.message : "청첩장 정보를 불러올 수 없습니다.";
-    setError(errorMessage);
-    
-    // ❌ 에러 시에는 기본값 설정하지 않음 (정확한 에러 표시)
-    setInvitationData(null);
-    setPhotos([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  loadInvitationData();
-}, [uniqueCode]); // uniqueCode가 변경될 때마다 데이터 다시 로딩
+    loadInvitationData();
+  }, [uniqueCode]); // uniqueCode가 변경될 때마다 데이터 다시 로딩
 
   // 애니메이션 로드 효과
   useEffect(() => {
@@ -428,7 +442,9 @@ const loadInvitationData = async () => {
       >
         <div style={{ textAlign: "center", color: AppleColors.text }}>
           <div style={{ fontSize: "64px", marginBottom: "20px" }}>🔍</div>
-          <div style={{ fontSize: "18px" }}>청첩장 정보를 찾을 수 없습니다.</div>
+          <div style={{ fontSize: "18px" }}>
+            청첩장 정보를 찾을 수 없습니다.
+          </div>
         </div>
       </div>
     );
@@ -452,9 +468,7 @@ const loadInvitationData = async () => {
             left: "50%",
             transform: "translateX(-50%)",
             backgroundColor:
-              rsvpMessage.type === "success"
-                ? AppleColors.accent
-                : "#FF3B30",
+              rsvpMessage.type === "success" ? AppleColors.accent : "#FF3B30",
             color: "white",
             borderRadius: "12px",
             padding: "16px 24px",
@@ -516,7 +530,7 @@ const loadInvitationData = async () => {
           >
             {/* {"🤵🏻"} ❤️{" "}
             {"👰🏻‍♀️"} */}
-            <img src="/images/wedding.png" width="100%"/>
+            <img src="/images/wedding.png" width="100%" />
           </h1>
 
           <div
@@ -528,8 +542,11 @@ const loadInvitationData = async () => {
               fontFamily: systemFont,
             }}
           >
-            <div style={{fontSize:"32px", fontWeight: 700, lineHeight:1}}>{invitationData.weddingInfo.groomName} ♥ {invitationData.weddingInfo.brideName}</div>
-            <div style={{lineHeight:2}}>Wedding Invitation</div>
+            <div style={{ fontSize: "32px", fontWeight: 700, lineHeight: 1 }}>
+              {invitationData.weddingInfo.groomName} ♥{" "}
+              {invitationData.weddingInfo.brideName}
+            </div>
+            <div style={{ lineHeight: 2 }}>Wedding Invitation</div>
           </div>
 
           {/* 결혼식 일자 표시 - 🆕 서버 데이터 기반으로 동적 생성 (개선된 버전) */}
@@ -632,7 +649,7 @@ const loadInvitationData = async () => {
                     position: "relative",
                     width: "100%",
                     // height: "350px",
-                    height:"auto",
+                    height: "auto",
                     borderRadius: "16px",
                     overflow: "hidden",
                     // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
@@ -914,33 +931,45 @@ const loadInvitationData = async () => {
           )}
         </div>
         {/* 웨딩 일정 정보 */}
-        <div style={{textAlign:"center", lineHeight: 1.25}}>
-        <div
-          style={{
-            fontSize: "18px",
-            fontWeight: "700",
-            // marginTop: "20px",
-            opacity: 0.95,
-            fontFamily: systemFont,
-            letterSpacing: "0.5px",
-            lineHeight: 1.25
-          }}
-        >
-          {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
-        </div>
-        <div
-          style={{
-            fontSize: "18px",
-            fontWeight: "700",
-            // marginTop: "20px",
-            opacity: 0.95,
-            fontFamily: systemFont,
-            letterSpacing: "0.5px",
-            lineHeight:1.25
-          }}
-        >
-          {invitationData.weddingInfo.venueName}
-        </div>
+        <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"20px" }}>
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "700",
+              // marginTop: "20px",
+              opacity: 0.95,
+              fontFamily: systemFont,
+              letterSpacing: "0.5px",
+              lineHeight: 1.25,
+            }}
+          >
+            {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
+          </div>
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "700",
+              // marginTop: "20px",
+              opacity: 0.95,
+              fontFamily: systemFont,
+              letterSpacing: "0.5px",
+              lineHeight: 1.25,
+            }}
+          >
+            {invitationData.weddingInfo.venueName}
+          </div>
+
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: "700",
+              // marginTop: "20px",
+              opacity: 0.95,
+              fontFamily: systemFont,
+              letterSpacing: "0.5px",
+              lineHeight: 1.25,
+            }}
+          >화환은 정중히 거절합니다</div>
         </div>
         {/* 오시는 길 정보 (모든 그룹) */}
         <div
@@ -1147,7 +1176,10 @@ const loadInvitationData = async () => {
               groomName={invitationData.weddingInfo.groomName}
               brideName={invitationData.weddingInfo.brideName}
               weddingDate={invitationData.weddingInfo.weddingDate}
-              venueName={invitationData.weddingInfo.venueName || "포포인츠 바이쉐라톤 조선 서울역 19층"}
+              venueName={
+                invitationData.weddingInfo.venueName ||
+                "포포인츠 바이쉐라톤 조선 서울역 19층"
+              }
             />
           </div>
         )}
