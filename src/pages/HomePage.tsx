@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from "react";
 
 // 시스템 폰트 정의
-const systemFont =
-  '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif';
+const systemFont = 'SeoulNamsanM';
 
 // 애플 색상 팔레트
 const AppleColors = {
@@ -364,7 +363,8 @@ const HomePage: React.FC = () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            padding: "40px",
+            // padding: "40px",
+            paddingBottom:"40px",
             // marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",

@@ -25,8 +25,7 @@ const AppleColors = {
 };
 
 // 시스템 폰트 정의 (HomePage.tsx와 동일)
-const systemFont =
-  '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif';
+const systemFont = 'SeoulNamsanM';
 
 // 🆕 날짜/시간 포맷팅 유틸리티 함수 (디버깅 버전)
 const formatWeddingDateTime = (dateTimeString: string) => {
@@ -550,7 +549,7 @@ const loadInvitationData = async () => {
           </div>
 
           {/* 결혼식 일자 표시 - 🆕 서버 데이터 기반으로 동적 생성 (개선된 버전) */}
-          <div
+          {/* <div
             style={{
               fontSize: "18px",
               fontWeight: "400",
@@ -561,7 +560,7 @@ const loadInvitationData = async () => {
             }}
           >
             {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -930,7 +929,18 @@ const loadInvitationData = async () => {
             </div>
           )}
         </div>
-
+        <div
+          style={{
+            fontSize: "18px",
+            fontWeight: "400",
+            // marginTop: "20px",
+            opacity: 0.95,
+            fontFamily: systemFont,
+            letterSpacing: "0.5px",
+          }}
+        >
+          {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
+        </div>
         {/* 오시는 길 정보 (모든 그룹) */}
         <div
           style={{
@@ -945,7 +955,7 @@ const loadInvitationData = async () => {
             transition: "all 1s ease 0.9s",
           }}
         >
-          <h2
+          {/* <h2
             style={{
               fontSize: "28px",
               fontWeight: "600",
@@ -956,7 +966,7 @@ const loadInvitationData = async () => {
             }}
           >
             🗺️ 오시는 길
-          </h2>
+          </h2> */}
           <VenueInfo invitationData={invitationData} />
         </div>
 
@@ -966,7 +976,7 @@ const loadInvitationData = async () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              padding: "40px",
+              // padding: "40px",
               marginBottom: "60px",
               // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -975,7 +985,7 @@ const loadInvitationData = async () => {
               transition: "all 1s ease 1.2s",
             }}
           >
-            <h2
+            {/* <h2
               style={{
                 fontSize: "28px",
                 fontWeight: "600",
@@ -986,7 +996,7 @@ const loadInvitationData = async () => {
               }}
             >
               💒 참석 여부
-            </h2>
+            </h2> */}
             <RsvpForm
               uniqueCode={uniqueCode!}
               onSubmitSuccess={handleRsvpSuccess}

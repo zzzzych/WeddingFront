@@ -42,8 +42,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
 
   return (
     <div style={{
-      backgroundColor: '#fff3cd',
-      border: '1px solid #ffeaa7',
+      backgroundColor: '#ffffff',
+      // border: '1px solid #ffeaa7',
       borderRadius: '12px',
       padding: '25px',
       marginBottom: '20px'
@@ -61,8 +61,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px'
-        }}>
-          🏛️ 오시는 길
+        }}>오시는 길
         </h2>
         <p style={{
           color: '#6c757d',
@@ -83,9 +82,9 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
         border: '1px solid #dee2e6'
       }}>
         {[
-          { key: 'info', label: '🏛️ 웨딩홀 정보', icon: '🏛️' },
-          { key: 'directions', label: '🗺️ 지도 & 길찾기', icon: '🗺️' },
-          { key: 'parking', label: '🚗 교통 & 주차', icon: '🚗' }
+          { key: 'info', label: '웨딩홀 정보', icon: '🏛️' },
+          { key: 'directions', label: '지도 & 길찾기', icon: '🗺️' },
+          { key: 'parking', label: '교통 & 주차', icon: '🚗' }
         ].map((tab) => (
           <button
             key={tab.key}

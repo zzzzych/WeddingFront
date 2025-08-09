@@ -149,8 +149,8 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
   // 메인 폼 렌더링
   return (
     <div style={{
-      backgroundColor: '#fff3cd',
-      border: '1px solid #ffeaa7',
+      backgroundColor: '#ffffff',
+      // border: '1px solid #ffeaa7',
       borderRadius: '8px',
       padding: '20px',
       marginBottom: '20px'
@@ -165,7 +165,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
         color: '#721c24'
       }}>
         <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
-          <strong>📝 참석 여부 안내</strong><br />
+          <strong>참석 여부 안내</strong><br />
           식장이 협소하고 좌석 지정이 필요하여 정확한 참석 인원 확인이 필요합니다.<br />
           너그러운 양해 부탁드립니다.
         </p>
