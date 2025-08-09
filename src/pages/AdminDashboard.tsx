@@ -44,6 +44,7 @@ const AdminDashboard: React.FC = () => {
     setShowCreateModal,
     setEditingGroupId,
     setShowCreateAdminModal,
+    setEditingGreeting,
     cancelEditingRsvp,
     handleUpdateRsvp,
     updateEditingRsvpData,
@@ -112,11 +113,9 @@ const AdminDashboard: React.FC = () => {
         onUpdateGroupCode={handleUpdateGroupCode}
         onDeleteGroup={handleDeleteGroup}
         onCancelEditing={() => setEditingGroupId(null)}
-        onEditingGreetingChange={(value: string) => {
-          // editingGreeting 상태 직접 업데이트를 위한 내부 함수
-          const event = { target: { value } } as React.ChangeEvent<HTMLTextAreaElement>;
-          // 커스텀 훅에서 setEditingGreeting을 노출하지 않았으므로 여기서 처리
-        }}
+       onEditingGreetingChange={(value: string) => {
+        setEditingGreeting(value);  // 👈 이렇게 간단하게 수정하세요
+      }}
       />
 
       {/* ==================== 📊 RSVP 응답 목록 섹션 ==================== */}

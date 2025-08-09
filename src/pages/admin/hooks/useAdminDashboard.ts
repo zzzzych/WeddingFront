@@ -455,7 +455,7 @@ const updateEditingRsvpData = (field: string, value: any) => {
     setEditingGreeting,
     setShowCreateAdminModal,
     setEditingRsvpId,
-  setEditingRsvpData,
+    setEditingRsvpData,
 
     // 데이터 로딩 함수들
     fetchGroups,
