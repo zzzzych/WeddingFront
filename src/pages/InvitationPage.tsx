@@ -144,35 +144,7 @@ const loadInvitationData = async () => {
 // "console.log("✅ 서버에서 받은 데이터:", serverData);" 다음에 추가:
 
     // 🔍 상세 디버깅: wedding_infos 테이블 데이터 확인
-    console.group("📊 Wedding Info 데이터 분석");
-    console.log("👤 신랑 이름:", serverData.groomName);
-    console.log("👰 신부 이름:", serverData.brideName);
-    console.log("📅 결혼식 날짜:", serverData.weddingDate);
-    console.log("🏛️ 결혼식 장소:", serverData.weddingLocation);
-    console.log("💬 인사말:", serverData.greetingMessage);
-    console.log("📋 예식 순서:", serverData.ceremonyProgram);
-    console.log("💳 계좌 정보:", serverData.accountInfo);
-    console.groupEnd();
-
-    // 🔍 상세 디버깅: 그룹 정보 확인
-    console.group("👥 Group Info 데이터 분석");
-    console.log("🏷️ 그룹 이름:", serverData.groupName);
-    console.log("🎯 그룹 타입:", serverData.groupType);
-    console.groupEnd();
-
-    // 🔍 상세 디버깅: 기능 플래그 확인
-    console.group("⚙️ Features 설정 분석");
-    console.log("📝 RSVP 폼 표시:", serverData.features?.showRsvpForm);
-    console.log("💰 계좌 정보 표시:", serverData.features?.showAccountInfo);
-    console.log("📤 공유 버튼 표시:", serverData.features?.showShareButton);
-    console.log("📋 예식 순서 표시:", serverData.features?.showCeremonyProgram);
-    console.groupEnd();
-
-    // 🔍 서버 응답의 전체 구조 확인
-    console.group("🗂️ 서버 응답 전체 구조");
-    console.log("📋 모든 키:", Object.keys(serverData));
-    console.log("🔍 features 객체:", serverData.features);
-    console.groupEnd();
+    
 
     // InvitationPage.tsx의 loadInvitationData 함수 내에서
     // "console.log("✅ 서버에서 받은 데이터:", serverData);" 바로 다음에 추가:
@@ -187,48 +159,39 @@ const loadInvitationData = async () => {
     });
     console.groupEnd();
 
-    // 🔍 특정 필드들의 존재 여부 확인
-    console.group("🔍 핵심 필드 존재 여부 확인");
-    console.log("groomName 존재:", 'groomName' in serverData, "값:", serverData.groomName);
-    console.log("brideName 존재:", 'brideName' in serverData, "값:", serverData.brideName);
-    console.log("weddingDate 존재:", 'weddingDate' in serverData, "값:", serverData.weddingDate);
-    console.log("features 존재:", 'features' in serverData, "값:", serverData.features);
-    console.groupEnd();
-
     // 🆕 InvitationByCodeResponse 타입에 맞춘 정확한 데이터 변환
     // 🆕 타입 안전한 데이터 변환 (InvitationByCodeResponse → InvitationResponse)
+    // 🆕 서버 응답 구조에 맞춘 정확한 데이터 변환
     const transformedData: InvitationResponse = {
       weddingInfo: {
-        // 기본 결혼식 정보 (wedding_infos 테이블 데이터)
-        groomName: serverData.groomName || "지환",
-        brideName: serverData.brideName || "윤진", 
-        weddingDate: serverData.weddingDate || "2025-10-25T18:00:00",
-        weddingLocation: serverData.weddingLocation || "웨딩홀 정보 없음",
-        greetingMessage: serverData.greetingMessage || "결혼합니다.",
-        ceremonyProgram: serverData.ceremonyProgram || "예식 순서 정보 없음",
-        accountInfo: serverData.accountInfo || [],
+        // 서버 응답의 weddingInfo 객체에서 데이터 추출
+        groomName: serverData.weddingInfo?.groomName || "지환",
+        brideName: serverData.weddingInfo?.brideName || "윤진", 
+        weddingDate: serverData.weddingInfo?.weddingdate || "2025-10-25T18:00:00", // 서버에서 소문자 사용
+        weddingLocation: serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
+        greetingMessage: serverData.weddingInfo?.greetingMessage || "결혼합니다.",
+        ceremonyProgram: serverData.weddingInfo?.ceremonyProgram || "예식 순서 정보 없음",
+        accountInfo: [], // 현재 서버에서 제공하지 않음
         
-        // 🔧 상세 장소 정보 (현재 서버 응답에 없는 필드들은 기본값 사용)
-        // 추후 서버에서 이 필드들이 추가되면 serverData에서 가져올 예정
-        venueName: (serverData as any).venueName || serverData.weddingLocation || "웨딩홀 정보 없음",
-        venueAddress: (serverData as any).venueAddress || "주소 정보 없음", 
-        kakaoMapUrl: (serverData as any).kakaoMapUrl || null,
-        naverMapUrl: (serverData as any).naverMapUrl || null,
-        parkingInfo: (serverData as any).parkingInfo || "주차 정보 없음",
-        transportInfo: (serverData as any).transportInfo || "교통 정보 없음",
+        // 상세 장소 정보 - 서버 응답에서 직접 가져오기
+        venueName: serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
+        venueAddress: serverData.weddingInfo?.venueAddress || "주소 정보 없음", 
+        kakaoMapUrl: serverData.weddingInfo?.kakaoMapUrl || undefined, // null → undefined
+        naverMapUrl: serverData.weddingInfo?.naverMapUrl || undefined, // null → undefined
+        parkingInfo: serverData.weddingInfo?.parkingInfo || "주차 정보 없음",
+        transportInfo: serverData.weddingInfo?.transportInfo || "교통 정보 없음",
       },
       groupInfo: {
-        // 그룹별 정보 (invitation_groups 테이블 데이터)
-        groupName: serverData.groupName || "소중한 분들",
-        // 🔧 문자열 타입을 GroupType enum으로 안전하게 변환
-        groupType: (serverData.groupType as GroupType) || GroupType.WEDDING_GUEST,
-        greetingMessage: serverData.greetingMessage || "함께해주셔서 감사합니다.",
+        // 서버 응답의 groupInfo 객체에서 데이터 추출
+        groupName: serverData.groupInfo?.groupName || "소중한 분들",
+        groupType: (serverData.groupInfo?.groupType as GroupType) || GroupType.WEDDING_GUEST,
+        greetingMessage: serverData.groupInfo?.greetingMessage || "함께해주셔서 감사합니다.",
       },
-      // 🆕 서버의 features 객체에서 기능 플래그들 정확히 매핑
-      showRsvpForm: serverData.features?.showRsvpForm ?? true,
-      showAccountInfo: serverData.features?.showAccountInfo ?? false,
-      showShareButton: serverData.features?.showShareButton ?? false, 
-      showCeremonyProgram: serverData.features?.showCeremonyProgram ?? true,
+      // 서버 응답의 availableFeatures 객체에서 기능 플래그들 추출
+      showRsvpForm: serverData.availableFeatures?.showRsvpForm ?? true,
+      showAccountInfo: serverData.availableFeatures?.showAccountInfo ?? false,
+      showShareButton: serverData.availableFeatures?.showShareButton ?? false, 
+      showCeremonyProgram: serverData.groupInfo?.showCeremonyProgram ?? true, // groupInfo에서 가져옴
     };
 
     console.log("🔄 변환 완료된 데이터:", transformedData);
@@ -985,6 +948,7 @@ const loadInvitationData = async () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             // padding: "40px",
+            paddingTop: "30px",
             marginBottom: "60px",
             // border: `1px solid ${AppleColors.border}`,
             // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",

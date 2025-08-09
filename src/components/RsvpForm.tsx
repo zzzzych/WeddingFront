@@ -152,7 +152,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       backgroundColor: '#ffffff',
       // border: '1px solid #ffeaa7',
       borderRadius: '8px',
-      padding: '20px',
+      // padding: '20px',
       marginBottom: '20px'
     }}>
       {/* 안내 메시지 */}

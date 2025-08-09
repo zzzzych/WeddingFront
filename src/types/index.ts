@@ -51,32 +51,52 @@ export interface InvitationAPIResponse {
  * 고유 코드로 조회한 청첩장 응답 타입 (업데이트됨)
  * 특정 그룹 청첩장 조회 시 사용 (/api/invitation/{code})
  */
+// src/types/index.ts 파일에서 InvitationByCodeResponse 인터페이스 수정
+
+/**
+ * 그룹별 청첩장 조회 API 응답 타입 (/api/invitation/{uniqueCode})
+ * 실제 서버 응답 구조에 맞춰 업데이트
+ */
 export interface InvitationByCodeResponse {
-  greetingMessage: string;        // 그룹별 인사말
-  groomName: string;              // 신랑 이름
-  brideName: string;              // 신부 이름
-  weddingDate: string;            // 결혼식 날짜
-  weddingLocation: string;        // 통합된 웨딩홀 정보
-  groupType: string;              // 그룹 타입 (문자열)
-  groupName: string;              // 그룹 이름
-  accountInfo: string[];          // 계좌 정보 배열
-  ceremonyProgram: string;        // 예식 순서
+  // 결혼식 기본 정보 객체
+  weddingInfo: {
+    naverMapUrl: string;
+    venueAddress: string;
+    parkingInfo: string;
+    transportInfo: string;
+    weddingdate: string;  // 서버에서 소문자 사용
+    venueName: string;
+    groomName: string;
+    greetingMessage: string;
+    ceremonyProgram: string;
+    kakaoMapUrl: string;
+    brideName: string;
+  };
   
-  // 🆕 wedding_infos 테이블의 추가 필드들 (선택사항)
-  venueName?: string;             // 웨딩홀 이름
-  venueAddress?: string;          // 웨딩홀 주소
-  kakaoMapUrl?: string;           // 카카오맵 URL
-  naverMapUrl?: string;           // 네이버맵 URL
-  parkingInfo?: string;           // 주차 정보
-  transportInfo?: string;         // 교통 정보
-  
-  features: {                     // 기능 플래그들
-    showVenueInfo: boolean;
-    showShareButton: boolean;
-    showCeremonyProgram: boolean;
-    showRsvpForm: boolean;
-    showAccountInfo: boolean;
+  // 사용 가능한 기능들
+  availableFeatures: {
     showPhotoGallery: boolean;
+    showAccountInfo: boolean;
+    showGreeting: boolean;
+    showInvitationInfo: boolean;
+    showDirections: boolean;
+    showRsvpForm: boolean;
+    showShareButton: boolean;
+  };
+  
+  // 그룹 정보
+  groupInfo: {
+    showShareButton: boolean;
+    greetingMessage: string;
+    showRsvpForm: boolean;
+    uniqueCode: string;
+    showVenueInfo: boolean;
+    showPhotoGallery: boolean;
+    id: string;
+    showCeremonyProgram: boolean;
+    showAccountInfo: boolean;
+    groupName: string;
+    groupType: string;
   };
 }
 
