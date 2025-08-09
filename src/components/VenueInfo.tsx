@@ -326,7 +326,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                textAlign:"center"
+                justifyContent:"center"
               }}>
                 🚇 대중교통 이용
               </h4>
@@ -335,6 +335,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 // border: '1px solid #bbdefb',
                 borderRadius: '6px',
                 // padding: '15px'
+                textAlign:"center"
               }}>
                 <p style={{
                   margin: 0,
