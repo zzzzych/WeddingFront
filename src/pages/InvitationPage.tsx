@@ -174,6 +174,27 @@ const loadInvitationData = async () => {
     console.log("🔍 features 객체:", serverData.features);
     console.groupEnd();
 
+    // InvitationPage.tsx의 loadInvitationData 함수 내에서
+    // "console.log("✅ 서버에서 받은 데이터:", serverData);" 바로 다음에 추가:
+
+    // 🔍 서버 응답 원본 구조 상세 분석
+    console.group("🔍 서버 응답 원본 분석");
+    console.log("📦 전체 응답 객체:", JSON.stringify(serverData, null, 2));
+    console.log("🔑 응답 객체의 모든 키:", Object.keys(serverData));
+    console.log("📊 각 필드별 값과 타입:");
+    Object.entries(serverData).forEach(([key, value]) => {
+      console.log(`  ${key}: ${value} (타입: ${typeof value})`);
+    });
+    console.groupEnd();
+
+    // 🔍 특정 필드들의 존재 여부 확인
+    console.group("🔍 핵심 필드 존재 여부 확인");
+    console.log("groomName 존재:", 'groomName' in serverData, "값:", serverData.groomName);
+    console.log("brideName 존재:", 'brideName' in serverData, "값:", serverData.brideName);
+    console.log("weddingDate 존재:", 'weddingDate' in serverData, "값:", serverData.weddingDate);
+    console.log("features 존재:", 'features' in serverData, "값:", serverData.features);
+    console.groupEnd();
+
     // 🆕 InvitationByCodeResponse 타입에 맞춘 정확한 데이터 변환
     // 🆕 타입 안전한 데이터 변환 (InvitationByCodeResponse → InvitationResponse)
     const transformedData: InvitationResponse = {
@@ -930,7 +951,7 @@ const loadInvitationData = async () => {
           )}
         </div>
         {/* 웨딩 일정 정보 */}
-        <div style={{textAlign:"center"}}>
+        <div style={{textAlign:"center", lineHeight: 1.25}}>
         <div
           style={{
             fontSize: "18px",
