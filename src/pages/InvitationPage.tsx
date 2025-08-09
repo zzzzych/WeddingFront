@@ -205,6 +205,8 @@ const InvitationPage: React.FC = () => {
             serverData.availableFeatures?.showShareButton ?? false,
           showCeremonyProgram:
             serverData.groupInfo?.showCeremonyProgram ?? true, // groupInfo에서 가져옴
+          showVenueInfo: serverData.groupInfo?.showVenueInfo ?? true,
+          showPhotoGallery: serverData.groupInfo?.showPhotoGallery ?? true,
         };
 
         console.log("🔄 변환 완료된 데이터:", transformedData);
@@ -495,9 +497,9 @@ const InvitationPage: React.FC = () => {
           // padding: "80px 20px 20px",
           position: "relative",
           overflow: "hidden",
-          height:"100vh",
-          display:"flex",
-          alignItems:"center"
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
         }}
       >
         <div
@@ -524,7 +526,7 @@ const InvitationPage: React.FC = () => {
         >
           <h1
             style={{
-              margin:"40px 0"
+              margin: "40px 0",
             }}
           >
             {/* {"🤵🏻"} ❤️{" "}
@@ -563,7 +565,32 @@ const InvitationPage: React.FC = () => {
           </div> */}
         </div>
       </div>
+      {/* 메인 컨텐츠 섹션들 - 기능 설정에 따라 조건부 렌더링 */}
 
+      {/* 🔍 오시는 길 정보 - showVenueInfo가 true일 때만 표시 */}
+      {invitationData?.showVenueInfo && (
+        <VenueInfo invitationData={invitationData} />
+      )}
+
+      {/* 📝 참석 응답 폼 - showRsvpForm이 true일 때만 표시 */}
+      {invitationData?.showRsvpForm && (
+        <RsvpForm
+          uniqueCode={uniqueCode!}
+          onSubmitSuccess={handleRsvpSuccess}
+          onSubmitError={handleRsvpError}
+        />
+      )}
+
+      {/* 📤 공유 버튼 - showShareButton이 true일 때만 표시 */}
+      {invitationData?.showShareButton && (
+        <ShareButton
+          uniqueCode={uniqueCode!}
+          groomName={invitationData.weddingInfo.groomName}
+          brideName={invitationData.weddingInfo.brideName}
+          weddingDate={invitationData.weddingInfo.weddingDate}
+          venueName={invitationData.weddingInfo.venueName}
+        />
+      )}
       <div
         style={{
           maxWidth: "1000px",
@@ -597,7 +624,7 @@ const InvitationPage: React.FC = () => {
           >소중한 분들께</h2> */}
           <div
             style={{
-              fontSize: "18px",
+              fontSize: "4.6154vw",
               lineHeight: "1.8",
               color: AppleColors.text,
               fontFamily: systemFont,
@@ -607,9 +634,16 @@ const InvitationPage: React.FC = () => {
             }}
           >
             {/* {invitationData.groupInfo.greetingMessage} */}
-            소중한 주말 저녁, <br/>저희의 결혼을 축복하기 위해 <br/>귀한 발걸음을 해주셔서 진심으로 감사드립니다. <br/><br/>
-            오시는 길이 헛되지 않도록 정성껏 준비했으니, 부디 즐거운 마음으로 함께해주시면 <br/>더없는 기쁨이겠습니다. <br/><br/>
-            저희의 새로운 시작을 <br/>따뜻한 마음으로 지켜봐 주세요.
+            소중한 주말 저녁, <br />
+            저희의 결혼을 축복하기 위해 <br />
+            귀한 발걸음을 해주셔서 진심으로 감사드립니다. <br />
+            <br />
+            오시는 길이 헛되지 않도록 정성껏 준비했으니, 부디 즐거운 마음으로
+            함께해주시면 <br />
+            더없는 기쁨이겠습니다. <br />
+            <br />
+            저희의 새로운 시작을 <br />
+            따뜻한 마음으로 지켜봐 주세요.
           </div>
         </div>
 
@@ -933,10 +967,19 @@ const InvitationPage: React.FC = () => {
           )}
         </div>
         {/* 웨딩 일정 정보 */}
-        <div style={{ textAlign: "center", lineHeight: 1.25, display:"flex", flexDirection:"column", gap:"11px", paddingTop: "120px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            lineHeight: 1.25,
+            display: "flex",
+            flexDirection: "column",
+            gap: "11px",
+            paddingTop: "120px",
+          }}
+        >
           <div
             style={{
-              fontSize: "20px",
+              fontSize: "5.128vw",
               fontWeight: "700",
               // marginTop: "20px",
               opacity: 0.95,
@@ -949,7 +992,7 @@ const InvitationPage: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: "20px",
+              fontSize: "5.128vw",
               fontWeight: "700",
               // marginTop: "20px",
               opacity: 0.95,
@@ -963,7 +1006,7 @@ const InvitationPage: React.FC = () => {
 
           <div
             style={{
-              fontSize: "17px",
+              fontSize: "4.359vw",
               fontWeight: "700",
               // marginTop: "20px",
               opacity: 0.95,
@@ -971,7 +1014,9 @@ const InvitationPage: React.FC = () => {
               letterSpacing: "0.5px",
               lineHeight: 1.25,
             }}
-          >🌸 화환은 정중히 거절합니다 🌸</div>
+          >
+            🌸 화환은 정중히 거절합니다 🌸
+          </div>
         </div>
         {/* 오시는 길 정보 (모든 그룹) */}
         <div

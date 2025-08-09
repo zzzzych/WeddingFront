@@ -263,6 +263,43 @@ export interface UpdateGroupGreetingRequest {
   greetingMessage: string;        // 수정할 인사말
 }
 
+// src/types/index.ts 파일에서 InvitationResponse 인터페이스를 다음과 같이 수정하세요:
+
+/**
+ * 컴포넌트에서 사용하는 최종 청첩장 응답 타입 (수정됨)
+ * 서버 응답을 프론트엔드에서 사용하기 쉽게 변환한 형태
+ */
+export interface InvitationResponse {
+  weddingInfo: {
+    groomName: string;              // 신랑 이름
+    brideName: string;              // 신부 이름
+    weddingDate: string;            // 결혼식 날짜 및 시간 (ISO 문자열)
+    weddingLocation: string;        // 웨딩홀 이름 (통합된 형태)
+    greetingMessage: string;        // 기본 인사말
+    ceremonyProgram: string;        // 예식 순서
+    accountInfo: string[];          // 계좌 정보 배열
+    
+    // 상세 장소 정보들 (VenueInfo 컴포넌트용)
+    venueName?: string;             // 웨딩홀 이름
+    venueAddress?: string;          // 웨딩홀 주소
+    kakaoMapUrl?: string;           // 카카오맵 URL
+    naverMapUrl?: string;           // 네이버맵 URL
+    parkingInfo?: string;           // 주차 정보
+    transportInfo?: string;         // 교통 정보
+  };
+  groupInfo: {
+    groupName: string;              // 그룹 이름
+    groupType: GroupType;           // 그룹 타입
+    greetingMessage: string;        // 그룹별 인사말
+  };
+  // ✅ 기능 설정 필드들 (누락된 필드들 추가)
+  showRsvpForm: boolean;            // 참석 응답 폼 표시 여부
+  showAccountInfo: boolean;         // 계좌 정보 표시 여부
+  showShareButton: boolean;         // 공유 버튼 표시 여부
+  showCeremonyProgram: boolean;     // 예식 순서 표시 여부
+  showVenueInfo?: boolean;          // 🆕 오시는 길 정보 표시 여부
+  showPhotoGallery?: boolean;       // 🆕 포토 갤러리 표시 여부
+}
 // ==================== 📊 RSVP 관련 타입 ====================
 
 /**
