@@ -179,8 +179,8 @@ const loadInvitationData = async () => {
     const transformedData: InvitationResponse = {
       weddingInfo: {
         // 기본 결혼식 정보 (wedding_infos 테이블 데이터)
-        groomName: serverData.groomName || "신랑",
-        brideName: serverData.brideName || "신부", 
+        groomName: serverData.groomName || "지환",
+        brideName: serverData.brideName || "윤진", 
         weddingDate: serverData.weddingDate || "2025-10-25T18:00:00",
         weddingLocation: serverData.weddingLocation || "웨딩홀 정보 없음",
         greetingMessage: serverData.greetingMessage || "결혼합니다.",
@@ -929,10 +929,12 @@ const loadInvitationData = async () => {
             </div>
           )}
         </div>
+        {/* 웨딩 일정 정보 */}
+        <div style={{textAlign:"center"}}>
         <div
           style={{
             fontSize: "18px",
-            fontWeight: "400",
+            fontWeight: "700",
             // marginTop: "20px",
             opacity: 0.95,
             fontFamily: systemFont,
@@ -940,6 +942,19 @@ const loadInvitationData = async () => {
           }}
         >
           {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
+        </div>
+        <div
+          style={{
+            fontSize: "18px",
+            fontWeight: "700",
+            // marginTop: "20px",
+            opacity: 0.95,
+            fontFamily: systemFont,
+            letterSpacing: "0.5px",
+          }}
+        >
+          {invitationData.weddingInfo.venueName}
+        </div>
         </div>
         {/* 오시는 길 정보 (모든 그룹) */}
         <div
