@@ -444,14 +444,14 @@ const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
  * 편집 중인 RSVP 데이터 변경 함수 (수정됨 - 디버깅 추가)
  */
 const updateEditingRsvpData = (field: string, value: any) => {
-  console.log(`🔄 필드 업데이트: ${field} =`, value); // 디버깅용
+  console.log(`🔄 필드 업데이트 요청: ${field} =`, value); // 디버깅용
   
   if (editingRsvpData) {
     const newData = {
       ...editingRsvpData,
       [field]: value
     };
-    console.log('✅ 새 편집 데이터:', newData); // 디버깅용
+    console.log('✅ 업데이트 후 데이터:', newData); // 디버깅용
     setEditingRsvpData(newData);
   } else {
     console.error('❌ editingRsvpData가 없습니다'); // 디버깅용

@@ -282,36 +282,38 @@ const getAttendeeInfo = (rsvp: any) => {
               <select
                 value={editingData.isAttending ? "참석" : "불참"}
                 onChange={(e) => {
-                  const isAttending = e.target.value === "참석";
-                  console.log('🎯 참석 여부 변경:', isAttending, '현재 editingData:', editingData); // 디버깅용
-                  
-                  if (onUpdateEditingRsvpData) {
-                    console.log('🔄 상태 업데이트 시작'); // 디버깅용
-                    
-                    // 1. 참석 여부를 먼저 업데이트하고 즉시 확인
-                    onUpdateEditingRsvpData('isAttending', isAttending);
-                    
-                    // 2. 약간의 지연 후 추가 처리 (상태 업데이트 완료 대기)
-                    setTimeout(() => {
-                      if (!isAttending) {
-                        // 불참 선택 시
-                        console.log('🚫 불참 처리 - 필드 초기화'); // 디버깅용
-                        onUpdateEditingRsvpData('totalCount', 0);
-                        onUpdateEditingRsvpData('attendeeNames', []);
-                      } else {
-                        // 참석 선택 시
-                        console.log('✅ 참석 처리 - 기본값 설정'); // 디버깅용
-                        if (!editingData.totalCount || editingData.totalCount === 0) {
-                          onUpdateEditingRsvpData('totalCount', 1);
-                          onUpdateEditingRsvpData('attendeeNames', ['']);
-                        }
-                      }
-                    }, 10); // 10ms 지연
-                    
-                  } else {
-                    console.error('❌ onUpdateEditingRsvpData 함수가 없음'); // 디버깅용
-                  }
-                }}
+  const isAttending = e.target.value === "참석";
+  console.log('🎯 참석 여부 변경 요청:', isAttending); // 디버깅용
+  
+  if (onUpdateEditingRsvpData) {
+    if (!isAttending) {
+      // 불참 선택 시 - 모든 필드를 한 번에 업데이트
+      console.log('🚫 불참 선택 - 모든 필드 초기화'); // 디버깅용
+      
+      // 각 필드를 순차적으로 업데이트
+      onUpdateEditingRsvpData('isAttending', false);
+      onUpdateEditingRsvpData('totalCount', 0);
+      onUpdateEditingRsvpData('attendeeNames', []);
+      
+      console.log('🔄 불참 처리 완료'); // 디버깅용
+      
+    } else {
+      // 참석 선택 시
+      console.log('✅ 참석 선택 - 기본값 설정'); // 디버깅용
+      
+      onUpdateEditingRsvpData('isAttending', true);
+      
+      // 현재 totalCount가 0이거나 없으면 1로 설정
+      const currentCount = editingData.totalCount || 0;
+      if (currentCount === 0) {
+        onUpdateEditingRsvpData('totalCount', 1);
+        onUpdateEditingRsvpData('attendeeNames', ['']);
+      }
+    }
+  } else {
+    console.error('❌ onUpdateEditingRsvpData 함수가 없음'); // 디버깅용
+  }
+}}
                 style={{
                   padding: "8px 12px",
                   border: `1px solid ${AppleColors.border}`,
