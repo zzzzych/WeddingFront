@@ -119,44 +119,48 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
     return willAttend ? AppleColors.success : AppleColors.destructive;
   };
 
-  /**
-   * 참석자 정보를 표시하는 함수 (수정됨 - 참석자 이름 포함)
-   */
-  const getAttendeeInfo = (rsvp: any) => {
-    const totalCount = rsvp.response?.totalCount || 0;
-    const attendeeNames = rsvp.response?.attendeeNames || [];
-
-    // 불참인 경우
-    if (!rsvp.willAttend && !rsvp.response?.isAttending) {
-      return "불참";
-    }
-
-    // 참석인 경우
-    if (totalCount > 0) {
-      const countText = `${totalCount}명`;
-
-      // 참석자 이름이 있는 경우
-      if (attendeeNames.length > 0) {
-        if (attendeeNames.length === 1) {
-          // 1명인 경우: "이지환 (1명)"
-          return `${attendeeNames[0]} (${countText})`;
-        } else if (attendeeNames.length <= 3) {
-          // 2-3명인 경우: "이지환, 김철수 (2명)" 또는 "이지환, 김철수, 박영희 (3명)"
-          return `${attendeeNames.join(", ")} (${countText})`;
-        } else {
-          // 4명 이상인 경우: "이지환 외 3명 (4명)"
-          return `${attendeeNames[0]} 외 ${
-            attendeeNames.length - 1
-          }명 (${countText})`;
-        }
+/**
+ * 참석자 정보를 포맷팅하는 함수 (수정됨 - 전체 이름 표시)
+ * @param rsvp RSVP 응답 데이터
+ * @returns 포맷팅된 참석자 정보 문자열
+ */
+const getAttendeeInfo = (rsvp: any): string => {
+  const isAttending = rsvp.willAttend ?? rsvp.response?.isAttending;
+  const responderName = rsvp.guestName || rsvp.response?.responderName || '이름 없음';
+  
+  // 불참인 경우 이름 표시
+  if (!isAttending) {
+    return `${responderName} (불참)`;
+  }
+  
+  // 🔧 수정: 참석인 경우 전체 이름 표시
+  const attendeeNames = rsvp.response?.attendeeNames;
+  const totalCount = rsvp.response?.totalCount || 1;
+  
+  if (Array.isArray(attendeeNames) && attendeeNames.length > 0) {
+    // 빈 이름 제거
+    const validNames = attendeeNames.filter(name => name && name.trim() !== '');
+    
+    if (validNames.length > 0) {
+      // 🔧 수정: 모든 이름을 쉼표로 구분하여 표시
+      if (validNames.length === totalCount) {
+        // 이름 개수와 총 인원이 일치하는 경우
+        return `${validNames.join(', ')} (${totalCount}명)`;
       } else {
-        // 이름이 없고 인원만 있는 경우 (기존 데이터 호환성)
-        return countText;
+        // 이름 개수와 총 인원이 다른 경우 (일부 이름만 있는 경우)
+        const unnamedCount = totalCount - validNames.length;
+        if (unnamedCount > 0) {
+          return `${validNames.join(', ')}, 외 ${unnamedCount}명 (총 ${totalCount}명)`;
+        } else {
+          return `${validNames.join(', ')} (${totalCount}명)`;
+        }
       }
     }
-
-    return "0명";
-  };
+  }
+  
+  // fallback: 대표자 이름만 있는 경우
+  return `${responderName} (${totalCount}명)`;
+};
 
   // 편집 모드일 때
   if (isEditing && editingData) {
@@ -333,63 +337,58 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
           {/* 참석 인원 및 이름 (항상 표시, 불참시 비활성화) */}
           <>
             {/* 두 번째 행: 참석 인원 */}
-            <div style={{ opacity: editingData.isAttending ? 1 : 0.5 }}>
-              <label
-                style={{
-                  fontSize: "14px",
-                  color: AppleColors.text,
-                  marginBottom: "8px",
-                  display: "block",
-                  fontWeight: "500",
-                }}
-              >
-                총 참석 인원
-              </label>
-              <select
-                value={editingData.totalCount || 1}
-                disabled={!editingData.isAttending} // 불참시 비활성화
-                onChange={(e) => {
-                  if (!editingData.isAttending) return; // 불참시 변경 방지
-
-                  const newCount = parseInt(e.target.value) || 1;
-                  console.log("🔢 인원 수 변경 (select):", newCount);
-
-                  if (onUpdateEditingRsvpData) {
-                    onUpdateEditingRsvpData("totalCount", newCount);
-
-                    const currentNames = editingData.attendeeNames || [];
-                    let newNames = [...currentNames];
-
-                    if (newCount > currentNames.length) {
-                      while (newNames.length < newCount) {
-                        newNames.push("");
-                      }
-                    } else if (newCount < currentNames.length) {
-                      newNames = newNames.slice(0, newCount);
-                    }
-
-                    onUpdateEditingRsvpData("attendeeNames", newNames);
-                  }
-                }}
-                style={{
-                  padding: "8px 12px",
-                  border: `1px solid ${AppleColors.border}`,
-                  borderRadius: "8px",
-                  fontSize: "16px",
-                  backgroundColor: editingData.isAttending
-                    ? AppleColors.inputBackground
-                    : "#f0f0f0",
-                  minWidth: "80px",
-                  cursor: editingData.isAttending ? "pointer" : "not-allowed",
-                }}
-              >
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((count) => (
-                  <option key={count} value={count}>
-                    {count}명
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* 총 참석 인원 선택 */}
+<div style={{ marginBottom: "12px" }}>
+  <label
+    style={{
+      display: "block",
+      marginBottom: "4px",
+      fontSize: "14px",
+      fontWeight: "600",
+      color: AppleColors.text,
+    }}
+  >
+    총 참석 인원
+  </label>
+  <select
+    value={editingData?.totalCount || 1} // 🔧 수정: value 속성 명시적 설정
+    onChange={(e) => {
+      const newCount = parseInt(e.target.value);
+      onUpdateEditingRsvpData?.("totalCount", newCount);
+      
+      // 🔧 추가: 인원 수 변경 시 attendeeNames 배열도 동기화
+      const currentNames = editingData?.attendeeNames || [];
+      let newAttendeeNames = [...currentNames];
+      
+      if (newCount > currentNames.length) {
+        // 인원이 늘어나면 빈 문자열로 채우기
+        while (newAttendeeNames.length < newCount) {
+          newAttendeeNames.push('');
+        }
+      } else if (newCount < currentNames.length) {
+        // 인원이 줄어들면 배열 자르기
+        newAttendeeNames = newAttendeeNames.slice(0, newCount);
+      }
+      
+      onUpdateEditingRsvpData?.("attendeeNames", newAttendeeNames);
+    }}
+    style={{
+      width: "100%",
+      padding: "8px 12px",
+      border: `1px solid ${AppleColors.border}`,
+      borderRadius: "6px",
+      fontSize: "14px",
+      backgroundColor: AppleColors.inputBackground,
+      fontFamily: systemFont,
+    }}
+  >
+    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+      <option key={num} value={num}>
+        {num}명
+      </option>
+    ))}
+  </select>
+</div>
 
             {/* 참석자 이름들 (항상 표시, 불참시 비활성화) */}
             {editingData.totalCount > 0 && (
