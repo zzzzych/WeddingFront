@@ -278,22 +278,42 @@ const getAttendeeInfo = (rsvp: any) => {
               }}>
                 참석 여부
               </label>
+              {/* // 참석 여부 선택 드롭다운 수정 */}
               <select
-                value={editingData.isAttending ? "true" : "false"}
-                onChange={(e) => handleAttendanceChange(e.target.value === "true")}
+                value={editingData.isAttending ? "참석" : "불참"}
+                onChange={(e) => {
+                  const isAttending = e.target.value === "참석";
+                  console.log('🎯 참석 여부 변경:', isAttending); // 디버깅용
+                  
+                  if (onUpdateEditingRsvpData) {
+                    console.log('✅ 참석 여부 업데이트 함수 호출'); // 디버깅용
+                    onUpdateEditingRsvpData('isAttending', isAttending);
+                    
+                    // 불참 선택 시 인원과 이름 초기화, 참석 선택 시 최소 1명으로 설정
+                    if (!isAttending) {
+                      console.log('🚫 불참 선택 - 인원과 이름 초기화'); // 디버깅용
+                      onUpdateEditingRsvpData('totalCount', 0);
+                      onUpdateEditingRsvpData('attendeeNames', []);
+                    } else if (isAttending && (!editingData.totalCount || editingData.totalCount === 0)) {
+                      console.log('✅ 참석 선택 - 최소 1명으로 설정'); // 디버깅용
+                      onUpdateEditingRsvpData('totalCount', 1);
+                      onUpdateEditingRsvpData('attendeeNames', ['']);
+                    }
+                  } else {
+                    console.error('❌ onUpdateEditingRsvpData 함수가 없음'); // 디버깅용
+                  }
+                }}
                 style={{
-                  width: "100%",
-                  padding: "12px",
+                  padding: "8px 12px",
                   border: `1px solid ${AppleColors.border}`,
                   borderRadius: "8px",
-                  fontSize: "14px",
-                  fontFamily: systemFont,
-                  backgroundColor: "white",
-                  boxSizing: "border-box"
+                  fontSize: "16px",
+                  backgroundColor: AppleColors.inputBackground,
+                  minWidth: "100px"
                 }}
               >
-                <option value="true">참석</option>
-                <option value="false">불참</option>
+                <option value="참석">참석</option>
+                <option value="불참">불참</option>
               </select>
             </div>
           </div>
@@ -312,61 +332,91 @@ const getAttendeeInfo = (rsvp: any) => {
                 }}>
                   총 참석 인원
                 </label>
-                <select
-                  value={editingData.totalCount || 1}
-                  onChange={(e) => handleTotalCountChange(parseInt(e.target.value))}
-                  style={{
-                    width: "200px",
-                    padding: "12px",
-                    border: `1px solid ${AppleColors.border}`,
-                    borderRadius: "8px",
-                    fontSize: "14px",
-                    fontFamily: systemFont,
-                    backgroundColor: "white",
-                  }}
-                >
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}명
-                    </option>
-                  ))}
-                </select>
+                {/* // 총 참석 인원 선택 드롭다운 수정 */}
+              <select
+                value={editingData.totalCount || 1}
+                onChange={(e) => {
+                  const newCount = parseInt(e.target.value) || 1;
+                  console.log('🔢 인원 수 변경 (select):', newCount); // 디버깅용
+                  
+                  // 인원 수 업데이트 함수 호출 확인
+                  if (onUpdateEditingRsvpData) {
+                    console.log('✅ 인원 수 업데이트 함수 호출'); // 디버깅용
+                    onUpdateEditingRsvpData('totalCount', newCount);
+                  } else {
+                    console.error('❌ onUpdateEditingRsvpData 함수가 없음'); // 디버깅용
+                  }
+                }}
+                style={{
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  backgroundColor: AppleColors.inputBackground,
+                  minWidth: "80px"
+                }}
+              >
+                {Array.from({ length: 20 }, (_, i) => i + 1).map(count => (
+                  <option key={count} value={count}>
+                    {count}명
+                  </option>
+                ))}
+              </select>
               </div>
 
               {/* 세 번째 행: 참석자 이름들 */}
-              {editingData.totalCount > 0 && (
-                <div>
+              {/* 참석자 이름 입력 필드들 (동적 생성) */}
+              {editingData.isAttending && editingData.totalCount > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   <label style={{ 
                     fontSize: "14px", 
                     color: AppleColors.text, 
-                    marginBottom: "8px", 
-                    display: "block",
                     fontWeight: "500"
                   }}>
                     참석자 이름 ({editingData.totalCount}명)
                   </label>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-                    {[...Array(editingData.totalCount)].map((_, index) => (
+                  
+                  {/* 동적으로 생성되는 이름 입력 필드들 */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    {Array.from({ length: editingData.totalCount }, (_, index) => (
                       <input
                         key={index}
                         type="text"
-                        value={(editingData.attendeeNames || [])[index] || ''}
-                        onChange={(e) => handleAttendeeNameChange(index, e.target.value)}
-                        placeholder={`${index + 1}번째 참석자${index === 0 ? ' (대표자)' : ''}`}
+                        value={editingData.attendeeNames?.[index] || ''}
+                        onChange={(e) => {
+                          console.log(`🏷️ ${index + 1}번째 참석자 이름 변경:`, e.target.value); // 디버깅용
+                          
+                          if (onUpdateEditingRsvpData) {
+                            const newNames = [...(editingData.attendeeNames || [])];
+                            newNames[index] = e.target.value;
+                            onUpdateEditingRsvpData('attendeeNames', newNames);
+                            
+                            // 첫 번째 이름이 변경되면 대표 응답자 이름도 업데이트
+                            if (index === 0) {
+                              onUpdateEditingRsvpData('responderName', e.target.value);
+                            }
+                          }
+                        }}
+                        placeholder={index === 0 ? "대표 참석자 이름" : `${index + 1}번째 참석자`}
                         style={{
-                          padding: "10px",
+                          padding: "8px 12px",
                           border: `1px solid ${AppleColors.border}`,
-                          borderRadius: "6px",
-                          fontSize: "14px",
-                          fontFamily: systemFont,
-                          backgroundColor: index === 0 ? "#f0f8ff" : "white", // 대표자는 다른 배경색
+                          borderRadius: "8px",
+                          fontSize: "16px",
+                          backgroundColor: AppleColors.inputBackground
                         }}
                       />
                     ))}
                   </div>
-                  <div style={{ fontSize: "12px", color: AppleColors.secondaryText, marginTop: "4px" }}>
+                  
+                  {/* 안내 메시지 */}
+                  <span style={{ 
+                    fontSize: "12px", 
+                    color: AppleColors.secondaryText,
+                    fontStyle: "italic"
+                  }}>
                     💡 첫 번째 이름이 대표 응답자가 됩니다
-                  </div>
+                  </span>
                 </div>
               )}
             </>
