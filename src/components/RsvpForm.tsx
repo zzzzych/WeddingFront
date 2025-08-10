@@ -15,42 +15,49 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
   onSubmitSuccess,
   onSubmitError,
 }) => {
-  // 폼 상태 관리
-  const [formData, setFormData] = useState<RsvpRequest>({
-    isAttending: true, // 기본값: 참석
-    totalCount: 1, // 기본값: 1명
-    attendeeNames: [""], // 기본값: 빈 이름 1개
-    phoneNumber: "", // 전화번호 (선택사항)
-    message: "", // 메시지 (선택사항)
-  });
+// 폼 상태 관리
+const [formData, setFormData] = useState<RsvpRequest>({
+  isAttending: true, // 기본값: 참석
+  responderName: "", // 🔧 추가: 응답자 이름 초기값
+  totalCount: 1, // 기본값: 1명
+  adultCount: 1, // 🔧 추가: 성인 인원 초기값
+  childrenCount: 0, // 🔧 추가: 자녀 인원 초기값
+  attendeeNames: [""], // 기본값: 빈 이름 1개
+  phoneNumber: "", // 전화번호 (선택사항)
+  message: "", // 메시지 (선택사항)
+});
 
   // 로딩 및 제출 완료 상태
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // 참석 여부 변경 처리
+// 참석 여부 변경 처리
 const handleAttendanceChange = (isAttending: boolean) => {
   if (isAttending) {
-    // 참석 선택 시: 기본 1명으로 설정
+    // 참석으로 변경 시: 참석자 정보 초기화
     setFormData({
       ...formData,
       isAttending: true,
       totalCount: 1,
-      attendeeNames: ['']
+      adultCount: 1,
+      childrenCount: 0,
+      attendeeNames: [formData.responderName || ""], // 기존 응답자 이름을 첫 번째 참석자로 설정
     });
   } else {
-    // 불참 선택 시: 인원과 이름 초기화, 전화번호와 메시지도 초기화
+    // 🔧 수정: 불참으로 변경 시 - 응답자 이름은 유지하고 참석자 정보만 초기화
     setFormData({
       ...formData,
       isAttending: false,
       totalCount: 0,
-      attendeeNames: [],
-      phoneNumber: '',     // 추가: 전화번호 초기화
-      message: ''          // 추가: 메시지 초기화
+      adultCount: 0,
+      childrenCount: 0,
+      attendeeNames: [], // 빈 배열로 설정
+      // responderName은 유지 (사용자가 입력한 값 보존)
     });
   }
-  // 에러 메시지 초기화
+  
+  // 🔧 추가: 에러 상태 초기화
   setErrors({});
 };
 
@@ -118,79 +125,110 @@ const handleAttendanceChange = (isAttending: boolean) => {
     }
   };
 
-  // 폼 유효성 검사
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
+  // 유효성 검사 함수
+const validateForm = (): boolean => {
+  const newErrors: { [key: string]: string } = {};
 
-    if (formData.isAttending) {
-      // 참석하는 경우 유효성 검사
-      if (formData.totalCount < 1) {
-        newErrors.totalCount = "참석 인원은 최소 1명 이상이어야 합니다.";
-      }
-
-      if (formData.totalCount > 10) {
-        newErrors.totalCount = "참석 인원은 최대 10명까지 가능합니다.";
-      }
-
-      // 각 참석자 이름 검사
-      formData.attendeeNames.forEach((name, index) => {
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-          newErrors[`attendeeName_${index}`] = `${
-            index + 1
-          }번째 참석자 이름을 입력해주세요.`;
-        } else if (trimmedName.length < 2) {
-          newErrors[`attendeeName_${index}`] = `${
-            index + 1
-          }번째 참석자 이름은 2글자 이상 입력해주세요.`;
-        }
-      });
+  // 🔧 수정: 불참석인 경우에도 응답자 이름 검증
+  if (formData.isAttending === false) {
+    // 불참석인 경우 응답자 이름만 검증
+    if (!formData.responderName || formData.responderName.trim() === "") {
+      newErrors.responderName = "이름을 입력해주세요.";
+    } else if (formData.responderName.trim().length < 2) {
+      newErrors.responderName = "이름은 2글자 이상 입력해주세요.";
+    }
+  } else if (formData.isAttending === true) {
+    // 참석인 경우 기존 검증 로직
+    if (formData.totalCount < 1) {
+      newErrors.totalCount = "참석 인원을 선택해주세요.";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    if (formData.totalCount > 10) {
+      newErrors.totalCount = "참석 인원은 최대 10명까지 가능합니다.";
+    }
+
+    // 각 참석자 이름 검사
+    formData.attendeeNames.forEach((name, index) => {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        newErrors[`attendeeName_${index}`] = `${
+          index + 1
+        }번째 참석자 이름을 입력해주세요.`;
+      } else if (trimmedName.length < 2) {
+        newErrors[`attendeeName_${index}`] = `${
+          index + 1
+        }번째 참석자 이름은 2글자 이상 입력해주세요.`;
+      }
+    });
+  } else {
+    // 참석 여부를 선택하지 않은 경우
+    newErrors.attendance = "참석 여부를 선택해주세요.";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
 
   // 폼 제출 처리
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // 유효성 검사
-    if (!validateForm()) {
-      return;
-    }
+  // 유효성 검사
+  if (!validateForm()) {
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
+  try {
+    setIsSubmitting(true);
 
-      // 제출 데이터 준비 (이름들 trim 처리)
-      const submitData: RsvpRequest = {
+    // 🔧 수정: 참석/불참에 따른 제출 데이터 준비
+    let submitData: RsvpRequest;
+
+    if (formData.isAttending === false) {
+      // 불참인 경우: 응답자 이름만 포함, 참석자 명단은 빈 배열
+      submitData = {
+        isAttending: false,
+        responderName: formData.responderName.trim(),
+        totalCount: 0,
+        adultCount: 0,
+        childrenCount: 0,
+        attendeeNames: [], // 빈 배열
+        phoneNumber: formData.phoneNumber?.trim() || undefined,
+        message: formData.message?.trim() || undefined,
+      };
+    } else {
+      // 참석인 경우: 기존 로직 유지
+      submitData = {
         ...formData,
+        responderName: formData.attendeeNames[0]?.trim() || formData.responderName.trim(),
         attendeeNames: formData.attendeeNames.map((name) => name.trim()),
       };
-
-      // API 호출
-      await submitRsvp(uniqueCode, submitData);
-
-      // 성공 처리
-      setIsSubmitted(true);
-      if (onSubmitSuccess) {
-        onSubmitSuccess();
-      }
-    } catch (error: any) {
-      console.error("참석 응답 제출 실패:", error);
-      const errorMessage =
-        error.message || "참석 응답 제출에 실패했습니다. 다시 시도해주세요.";
-
-      if (onSubmitError) {
-        onSubmitError(errorMessage);
-      } else {
-        alert(errorMessage);
-      }
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    console.log('📤 제출 데이터:', submitData); // 디버깅용
+
+    // API 호출
+    await submitRsvp(uniqueCode, submitData);
+
+    // 성공 처리
+    setIsSubmitted(true);
+    if (onSubmitSuccess) {
+      onSubmitSuccess();
+    }
+  } catch (error: any) {
+    console.error("참석 응답 제출 실패:", error);
+    const errorMessage =
+      error.message || "참석 응답 제출에 실패했습니다. 다시 시도해주세요.";
+
+    if (onSubmitError) {
+      onSubmitError(errorMessage);
+    } else {
+      alert(errorMessage);
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // 제출 완료 후 화면
 if (isSubmitted) {
@@ -216,7 +254,14 @@ if (isSubmitted) {
           : "📝 불참 응답이 완료되었습니다"
         }
       </h3>
-      <p style={{ margin: 0 }}>
+      <p style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: "500" }}>
+        {/* 🔧 수정: 불참자 이름도 표시 */}
+        {formData.isAttending 
+          ? `${formData.attendeeNames[0] || formData.responderName}님` 
+          : `${formData.responderName}님`
+        }
+      </p>
+      <p style={{ margin: 0, fontSize: "14px" }}>
         {formData.isAttending 
           ? "결혼식 당일 뵙겠습니다!" 
           : "응답해 주셔서 감사합니다."
@@ -273,49 +318,56 @@ if (isSubmitted) {
 
       <form onSubmit={handleSubmit}>
         {/* 참석 여부 선택 */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              fontWeight: "bold",
-              color: "#495057",
-            }}
-          >
+        <div style={{ marginBottom: "24px" }}>
+          <label style={{
+            display: "block",
+            marginBottom: "12px",
+            fontSize: "16px",
+            fontWeight: "600",
+            color: "#333",
+          }}>
             참석 여부 *
           </label>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-              }}
-            >
+          <div style={{ display: "flex", gap: "16px" }}>
+            <label style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: "pointer",
+              fontSize: "15px",
+            }}>
               <input
                 type="radio"
-                name="isAttending"
+                name="attendance"
+                value="true"
                 checked={formData.isAttending === true}
                 onChange={() => handleAttendanceChange(true)}
-                style={{ marginRight: "6px" }}
-                disabled={isSubmitting}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  accentColor: "#007AFF",
+                }}
               />
               참석
             </label>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-              }}
-            >
+            <label style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: "pointer",
+              fontSize: "15px",
+            }}>
               <input
                 type="radio"
-                name="isAttending"
+                name="attendance"
+                value="false"
                 checked={formData.isAttending === false}
                 onChange={() => handleAttendanceChange(false)}
-                style={{ marginRight: "6px" }}
-                disabled={isSubmitting}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  accentColor: "#007AFF",
+                }}
               />
               불참석
             </label>
@@ -478,6 +530,49 @@ if (isSubmitted) {
             </div>
           </>
         )}
+
+        {/* 🔧 추가: 불참석인 경우 이름 입력 필드 */}
+        {formData.isAttending === false && (
+          <div style={{ marginBottom: "24px" }}>
+            <label style={{
+              display: "block",
+              marginBottom: "8px",
+              fontSize: "16px",
+              fontWeight: "600",
+              color: "#333",
+            }}>
+              이름 *
+            </label>
+            <input
+              type="text"
+              value={formData.responderName || ""}
+              onChange={(e) => setFormData({
+                ...formData,
+                responderName: e.target.value
+              })}
+              placeholder="불참 응답자 이름을 입력해주세요"
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                fontSize: "15px",
+                border: `2px solid ${errors.responderName ? "#FF3B30" : "#E5E5EA"}`,
+                borderRadius: "8px",
+                outline: "none",
+                transition: "border-color 0.2s",
+              }}
+            />
+            {errors.responderName && (
+              <p style={{
+                color: "#FF3B30",
+                fontSize: "14px",
+                margin: "4px 0 0 0",
+              }}>
+                {errors.responderName}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* 제출 버튼 */}
         <button
           type="submit"

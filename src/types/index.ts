@@ -368,15 +368,18 @@ export interface RsvpListResponse {
 }
 
 /**
- * RSVP 제출 요청 타입 (일반 사용자가 응답 제출할 때)
+ * RSVP 요청 데이터 (클라이언트에서 서버로 전송)
  */
 export interface RsvpRequest {
   isAttending: boolean;           // 참석 여부
-  totalCount: number;             // 총 참석 인원 수 (기존 adultCount + childrenCount 통합)
-  attendeeNames: string[];        // 참석자 이름 배열 (참석 선택 시 필수, 첫 번째가 대표 응답자)
-  phoneNumber?: string;           // 전화번호 (선택사항)
+  responderName: string;          // 🔧 추가: 응답자 이름 (불참자 이름 포함)
+  totalCount: number;             // 총 참석 인원 (불참인 경우 0)
+  adultCount?: number;            // 🔧 추가: 성인 인원 (옵셔널)
+  childrenCount?: number;         // 🔧 추가: 자녀 인원 (옵셔널)
+  attendeeNames: string[];        // 참석자 이름 목록 (불참인 경우 빈 배열)
+  phoneNumber?: string;           // 연락처 (선택사항)
   message?: string;               // 메시지 (선택사항)
-  groupId?: string;               // 그룹 ID (서버에서 자동 설정 가능)
+  groupId?: string;               // 그룹 ID (선택사항)
 }
 
 /**
