@@ -4,7 +4,7 @@ import { getInvitationByCode } from "../services/invitationService";
 import { InvitationAPIResponse, InvitationResponse, GroupType } from "../types";
 import RsvpForm from "../components/RsvpForm";
 import VenueInfo from "../components/VenueInfo";
-import ShareButton from "../components/ShareButton";
+import ShareButton from '../components/ShareButton';
 
 // Apple 디자인 시스템 색상 팔레트 (HomePage.tsx와 동일)
 const AppleColors = {
@@ -169,42 +169,31 @@ const InvitationPage: React.FC = () => {
             weddingDate:
               serverData.weddingInfo?.weddingdate || "2025-10-25T18:00:00", // 서버에서 소문자 사용
             weddingLocation:
-              serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
+              serverData.weddingInfo?.venueName || "포포인츠 바이 쉐라톤 조선 서울역 19층",
             greetingMessage:
-              serverData.weddingInfo?.greetingMessage || "결혼합니다.",
-            ceremonyProgram:
-              serverData.weddingInfo?.ceremonyProgram || "예식 순서 정보 없음",
-            accountInfo: [], // 현재 서버에서 제공하지 않음
+              serverData.weddingInfo?.greetingMessage || "두 손 잡고 걷다보니 즐거움만 가득 \n 더 큰 즐거움의 시작에 함께 해주세요. \n 지환, 윤진 결혼합니다.",
+            ceremonyProgram: serverData.weddingInfo?.ceremonyProgram || "예식 순서",
+            accountInfo: ["농협 121065-56-105215 (고인옥 / 신랑母)"], // 기본값
 
-            // 상세 장소 정보 - 서버 응답에서 직접 가져오기
-            venueName: serverData.weddingInfo?.venueName || "웨딩홀 정보 없음",
-            venueAddress:
-              serverData.weddingInfo?.venueAddress || "주소 정보 없음",
-            kakaoMapUrl: serverData.weddingInfo?.kakaoMapUrl || undefined, // null → undefined
-            naverMapUrl: serverData.weddingInfo?.naverMapUrl || undefined, // null → undefined
-            parkingInfo:
-              serverData.weddingInfo?.parkingInfo || "주차 정보 없음",
-            transportInfo:
-              serverData.weddingInfo?.transportInfo || "교통 정보 없음",
+            // 상세 장소 정보들 추가
+            venueName: serverData.weddingInfo?.venueName,
+            venueAddress: serverData.weddingInfo?.venueAddress,
+            kakaoMapUrl: serverData.weddingInfo?.kakaoMapUrl,
+            naverMapUrl: serverData.weddingInfo?.naverMapUrl,
+            parkingInfo: serverData.weddingInfo?.parkingInfo,
+            transportInfo: serverData.weddingInfo?.transportInfo,
           },
           groupInfo: {
-            // 서버 응답의 groupInfo 객체에서 데이터 추출
-            groupName: serverData.groupInfo?.groupName || "소중한 분들",
-            groupType:
-              (serverData.groupInfo?.groupType as GroupType) ||
-              GroupType.WEDDING_GUEST,
-            greetingMessage:
-              serverData.groupInfo?.greetingMessage ||
-              "함께해주셔서 감사합니다.",
+            // 서버 응답의 groupInfo에서 그룹 정보 추출
+            groupName: serverData.groupInfo?.groupName || "기본 그룹",
+            groupType: (serverData.groupInfo?.groupType as GroupType) || GroupType.WEDDING_GUEST,
+            greetingMessage: serverData.groupInfo?.greetingMessage || "초대합니다.",
           },
-          // 서버 응답의 availableFeatures 객체에서 기능 플래그들 추출
-          showRsvpForm: serverData.availableFeatures?.showRsvpForm ?? true,
-          showAccountInfo:
-            serverData.availableFeatures?.showAccountInfo ?? false,
-          showShareButton:
-            serverData.availableFeatures?.showShareButton ?? false,
-          showCeremonyProgram:
-            serverData.groupInfo?.showCeremonyProgram ?? true, // groupInfo에서 가져옴
+          // ✅ 수정: 서버에서 받은 실제 그룹 기능 설정값 사용
+          showRsvpForm: serverData.groupInfo?.showRsvpForm ?? true,
+          showAccountInfo: serverData.groupInfo?.showAccountInfo ?? false,
+          showShareButton: serverData.groupInfo?.showShareButton ?? false,
+          showCeremonyProgram: serverData.groupInfo?.showCeremonyProgram ?? true,
           showVenueInfo: serverData.groupInfo?.showVenueInfo ?? true,
           showPhotoGallery: serverData.groupInfo?.showPhotoGallery ?? true,
         };
@@ -1114,8 +1103,29 @@ const InvitationPage: React.FC = () => {
           </div>
         )}
 
+        {/* 계좌 정보 - showAccountInfo가 true일 때만 표시 */}
+        {/* {invitationData.showAccountInfo && (
+          <AccountInfo accountInfo={invitationData.weddingInfo.accountInfo} />
+        )} */}
+
+        {/* 공유 버튼 - showShareButton이 true일 때만 표시 */}
+        {invitationData.showShareButton && (
+          <ShareButton 
+            uniqueCode={uniqueCode!}
+            groomName={invitationData.weddingInfo.groomName}
+            brideName={invitationData.weddingInfo.brideName}
+            weddingDate={invitationData.weddingInfo.weddingDate}
+            venueName={invitationData.weddingInfo.venueName}
+          />
+        )}
+
+        {/* 예식 순서 - showCeremonyProgram이 true일 때만 표시 */}
+        {/* {invitationData.showCeremonyProgram && (
+          <CeremonyProgram program={invitationData.weddingInfo.ceremonyProgram} />
+        )} */}
+        
         {/* 계좌 정보 (showAccountInfo가 true인 그룹만) */}
-        {invitationData?.showAccountInfo && (
+        {/* {invitationData?.showAccountInfo && (
           <div
             style={{
               backgroundColor: AppleColors.cardBackground,
@@ -1166,10 +1176,10 @@ const InvitationPage: React.FC = () => {
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* 📤 공유 버튼 - showShareButton이 true일 때만 표시 */}
-        {invitationData?.showShareButton && (
+        {/* {invitationData?.showShareButton && (
           <ShareButton
             uniqueCode={uniqueCode!}
             groomName={invitationData.weddingInfo.groomName}
@@ -1177,11 +1187,11 @@ const InvitationPage: React.FC = () => {
             weddingDate={invitationData.weddingInfo.weddingDate}
             venueName={invitationData.weddingInfo.venueName}
           />
-        )}
+        )} */}
 
 
         {/* 공유 버튼 (showShareButton이 true인 그룹만) */}
-        {invitationData.showShareButton && uniqueCode && (
+        {/* {invitationData.showShareButton && uniqueCode && (
           <div
             style={{
               backgroundColor: AppleColors.cardBackground,
@@ -1230,7 +1240,7 @@ const InvitationPage: React.FC = () => {
               }
             />
           </div>
-        )}
+        )} */}
       </div>
 
       {/* 🆕 이미지 모달 (HomePage.tsx와 동일) */}
