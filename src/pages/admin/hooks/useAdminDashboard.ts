@@ -392,12 +392,24 @@ const cancelEditingRsvp = () => {
 };
 
 /**
- * RSVP 응답 업데이트 함수
+ * RSVP 응답 업데이트 함수 (수정됨 - 서버 API 형식에 맞게 데이터 변환)
  */
 const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
   try {
     console.log(`🔄 RSVP 업데이트: ${rsvpId}`, updateData);
-    await updateRsvpResponse(rsvpId, updateData);
+    
+    // 서버 API가 기대하는 RsvpRequest 형식으로 데이터 변환
+    const serverRequestData = {
+      isAttending: updateData.isAttending, // 참석 여부
+      totalCount: updateData.isAttending ? updateData.totalCount : 0, // 불참이면 0으로 설정
+      attendeeNames: updateData.isAttending ? (updateData.attendeeNames || []) : [], // 불참이면 빈 배열
+      phoneNumber: updateData.phoneNumber || null, // 선택사항
+      message: updateData.message || null // 선택사항
+    };
+    
+    console.log('🔄 서버로 전송할 데이터:', serverRequestData); // 디버깅용
+    
+    await updateRsvpResponse(rsvpId, serverRequestData);
     await fetchAllRsvps(); // 데이터 새로고침
     setEditingRsvpId(null);
     setEditingRsvpData(null);
