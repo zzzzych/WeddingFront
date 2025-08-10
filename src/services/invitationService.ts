@@ -484,7 +484,7 @@ export const getRsvpList = async (groupId: string): Promise<SimpleRsvpWithGroupI
 };
 
 /**
- * RSVP 응답 수정 (관리자용)
+ * RSVP 응답 수정 (관리자용) - 에러 처리 개선
  * @param rsvpId - 수정할 RSVP ID
  * @param updateData - 수정할 데이터
  * @returns Promise<any> - 수정된 RSVP 응답
@@ -492,11 +492,61 @@ export const getRsvpList = async (groupId: string): Promise<SimpleRsvpWithGroupI
 export const updateRsvpResponse = async (rsvpId: string, updateData: UpdateRsvpRequest): Promise<any> => {
   try {
     console.log(`🔄 RSVP 응답 수정: ${rsvpId}`, updateData);
-    const response = await apiPut(`/api/admin/rsvps/${rsvpId}`, updateData);
-    console.log('✅ RSVP 응답 수정 성공:', response);
-    return response;
-  } catch (error) {
+    
+    // 인증 토큰 확인
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/rsvps/${rsvpId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(updateData)
+    });
+
+    // 응답 상태 확인
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status} 에러가 발생했습니다.`;
+      
+      try {
+        const errorData = await response.json();
+        console.error('❌ 서버 에러 응답:', errorData);
+        errorMessage = errorData.reason || errorData.error || errorData.message || errorMessage;
+      } catch (parseError) {
+        console.error('❌ 에러 응답 파싱 실패:', parseError);
+        
+        // 응답 텍스트 확인 시도
+        try {
+          const errorText = await response.text();
+          console.error('❌ 에러 응답 텍스트:', errorText);
+          if (errorText) {
+            errorMessage = `서버 에러: ${errorText}`;
+          }
+        } catch (textError) {
+          console.error('❌ 에러 텍스트 읽기 실패:', textError);
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    console.log('✅ RSVP 응답 수정 성공:', result);
+    return result;
+    
+  } catch (error: any) {
     console.error('❌ RSVP 응답 수정 실패:', error);
+    
+    // 네트워크 에러 처리
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('서버 연결에 실패했습니다. 네트워크를 확인해주세요.');
+    }
+    
+    // 이미 Error 객체인 경우 그대로 전달
     throw error;
   }
 };
