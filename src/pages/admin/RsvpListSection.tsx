@@ -120,7 +120,7 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
   };
 
 /**
- * 참석자 정보를 포맷팅하는 함수 (수정됨 - 전체 이름 표시)
+ * 참석자 정보를 포맷팅하는 함수 (개선됨 - 불참석자 이름 표기 및 전체 이름 표시)
  * @param rsvp RSVP 응답 데이터
  * @returns 포맷팅된 참석자 정보 문자열
  */
@@ -128,37 +128,53 @@ const getAttendeeInfo = (rsvp: any): string => {
   const isAttending = rsvp.willAttend ?? rsvp.response?.isAttending;
   const responderName = rsvp.guestName || rsvp.response?.responderName || '이름 없음';
   
-  // 불참인 경우 이름 표시
+  // 🔧 개선: 불참인 경우 명확한 이름 표시
   if (!isAttending) {
+    // 불참인 경우에도 attendeeNames 배열에서 이름을 확인
+    const attendeeNames = rsvp.response?.attendeeNames;
+    
+    if (Array.isArray(attendeeNames) && attendeeNames.length > 0) {
+      // attendeeNames에서 유효한 이름들 추출
+      const validNames = attendeeNames.filter(name => name && name.trim() !== '');
+      
+      if (validNames.length > 0) {
+        // 불참이지만 이름 목록이 있는 경우 (모든 이름 표시)
+        if (validNames.length === 1) {
+          return `${validNames[0]} (불참)`;
+        } else {
+          return `${validNames.join(', ')} (불참)`;
+        }
+      }
+    }
+    
+    // attendeeNames가 없거나 비어있는 경우 responderName 사용
     return `${responderName} (불참)`;
   }
   
-  // 🔧 수정: 참석인 경우 전체 이름 표시
+  // 🔧 개선: 참석인 경우 전체 이름 표시
   const attendeeNames = rsvp.response?.attendeeNames;
   const totalCount = rsvp.response?.totalCount || 1;
   
   if (Array.isArray(attendeeNames) && attendeeNames.length > 0) {
-    // 빈 이름 제거
+    // 빈 이름 제거하여 유효한 이름들만 추출
     const validNames = attendeeNames.filter(name => name && name.trim() !== '');
     
     if (validNames.length > 0) {
-      // 🔧 수정: 모든 이름을 쉼표로 구분하여 표시
       if (validNames.length === totalCount) {
         // 이름 개수와 총 인원이 일치하는 경우
         return `${validNames.join(', ')} (${totalCount}명)`;
-      } else {
-        // 이름 개수와 총 인원이 다른 경우 (일부 이름만 있는 경우)
+      } else if (validNames.length < totalCount) {
+        // 이름 개수가 총 인원보다 적은 경우 (일부 이름만 있는 경우)
         const unnamedCount = totalCount - validNames.length;
-        if (unnamedCount > 0) {
-          return `${validNames.join(', ')}, 외 ${unnamedCount}명 (총 ${totalCount}명)`;
-        } else {
-          return `${validNames.join(', ')} (${totalCount}명)`;
-        }
+        return `${validNames.join(', ')}, 외 ${unnamedCount}명 (총 ${totalCount}명)`;
+      } else {
+        // 이름 개수가 총 인원보다 많은 경우 (데이터 불일치)
+        return `${validNames.slice(0, totalCount).join(', ')} (${totalCount}명)`;
       }
     }
   }
   
-  // fallback: 대표자 이름만 있는 경우
+  // fallback: attendeeNames가 없거나 비어있는 경우 responderName 사용
   return `${responderName} (${totalCount}명)`;
 };
 

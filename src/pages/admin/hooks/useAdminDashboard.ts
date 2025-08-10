@@ -467,164 +467,149 @@ const cancelEditingRsvp = () => {
 };
 
 /**
- * RSVP 응답 업데이트 함수 (수정됨 - 편집 상태 보존 및 낙관적 업데이트)
+ * RSVP 응답 수정 처리 함수 (개선됨 - 데이터 검증 및 보정 강화)
+ * @param rsvpId - 수정할 RSVP ID
+ * @param updateData - 수정할 데이터
  */
 const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
-  // 🔧 새로 추가: 편집 중인 데이터 임시 저장 (함수 시작 부분으로 이동)
-  const currentEditingId = editingRsvpId;
-  const currentEditingData = editingRsvpData;
-  
   try {
-    console.log(`🔄 RSVP 업데이트: ${rsvpId}`, updateData);
+    console.log('🔄 RSVP 응답 수정 시작:', { rsvpId, updateData });
     
-    // 서버 API가 기대하는 RsvpRequest 형식으로 데이터 변환 (기존 로직 유지)
-    const serverRequestData = {
-      isAttending: updateData.isAttending,
-      totalCount: updateData.isAttending ? (updateData.totalCount || 1) : 0,
-      attendeeNames: updateData.isAttending ? 
-        (updateData.attendeeNames && updateData.attendeeNames.length > 0 ? 
-          updateData.attendeeNames.filter((name: string) => name.trim() !== '') : 
-          ['']) : // 참석이지만 이름이 없으면 빈 문자열 하나라도 넣기
-        [], // 불참이면 빈 배열
-      phoneNumber: updateData.phoneNumber || null,
-      message: updateData.message || null
-    };
-
-    // 추가 검증: 참석인 경우 totalCount와 attendeeNames 길이 맞추기 (기존 로직 유지)
-    if (serverRequestData.isAttending && serverRequestData.totalCount > 0) {
-      const nameCount = serverRequestData.attendeeNames.length;
-      const requiredCount = serverRequestData.totalCount;
+    // 🔧 추가: 데이터 검증 및 보정
+    const validatedData = { ...updateData };
+    
+    // 참석 여부에 따른 데이터 보정
+    if (validatedData.isAttending === false) {
+      // 불참인 경우 - 인원 수를 0으로, 이름 배열은 대표자 이름만 유지
+      validatedData.totalCount = 0;
+      validatedData.attendeeNames = validatedData.responderName 
+        ? [validatedData.responderName] 
+        : [];
       
-      if (nameCount < requiredCount) {
-        // 이름이 부족하면 빈 문자열로 채우기
-        while (serverRequestData.attendeeNames.length < requiredCount) {
-          serverRequestData.attendeeNames.push('');
+      console.log('📝 불참 데이터 보정:', validatedData);
+    } else if (validatedData.isAttending === true) {
+      // 참석인 경우 - 최소 인원 수 및 이름 검증
+      const totalCount = Math.max(1, Number(validatedData.totalCount) || 1);
+      validatedData.totalCount = totalCount;
+      
+      // attendeeNames 배열 검증 및 보정
+      let attendeeNames = validatedData.attendeeNames || [];
+      
+      // 배열 크기 조정
+      if (attendeeNames.length < totalCount) {
+        // 부족한 만큼 빈 문자열로 채우기
+        while (attendeeNames.length < totalCount) {
+          attendeeNames.push('');
         }
-      } else if (nameCount > requiredCount) {
-        // 이름이 많으면 잘라내기
-        serverRequestData.attendeeNames = serverRequestData.attendeeNames.slice(0, requiredCount);
+      } else if (attendeeNames.length > totalCount) {
+        // 초과하는 부분 제거
+        attendeeNames = attendeeNames.slice(0, totalCount);
       }
-    }
-
-    console.log('🔄 최종 서버 전송 데이터:', serverRequestData); // 디버깅용
-    
-    // 🔧 수정: 낙관적 업데이트 - 로컬 상태 먼저 업데이트
-    if (rsvpData && rsvpData.responses) {
-      const updatedResponses = rsvpData.responses.map(item => {
-        if (item.id === rsvpId || item.response?.id === rsvpId) {
-          return {
-            ...item,
-            willAttend: updateData.isAttending,
-            guestName: updateData.responderName,
-            phoneNumber: updateData.phoneNumber,
-            message: updateData.message,
-            response: {
-              ...item.response,
-              isAttending: updateData.isAttending,
-              responderName: updateData.responderName,
-              totalCount: serverRequestData.totalCount,
-              attendeeNames: serverRequestData.attendeeNames,
-              phoneNumber: updateData.phoneNumber,
-              message: updateData.message
-            }
-          };
+      
+      // 대표자 이름 확인 및 보정
+      if (!attendeeNames[0] || attendeeNames[0].trim() === '') {
+        if (validatedData.responderName && validatedData.responderName.trim() !== '') {
+          attendeeNames[0] = validatedData.responderName;
+        } else {
+          throw new Error('대표자 이름은 필수입니다.');
         }
-        return item;
-      });
+      }
       
-      // 로컬 상태 즉시 업데이트
-      setRsvpData({
-        ...rsvpData,
-        responses: updatedResponses
-      });
+      // responderName을 첫 번째 attendeeName과 동기화
+      validatedData.responderName = attendeeNames[0];
+      validatedData.attendeeNames = attendeeNames;
       
-      console.log('✅ 낙관적 업데이트 완료'); // 디버깅용
+      console.log('📝 참석 데이터 보정:', validatedData);
     }
     
-    // 서버 요청
-    await updateRsvpResponse(rsvpId, serverRequestData);
+    // 🔧 추가: 최종 데이터 검증
+    if (!validatedData.responderName || validatedData.responderName.trim() === '') {
+      throw new Error('응답자 이름은 필수입니다.');
+    }
     
-    // 🔧 수정: 편집 상태 초기화를 먼저 하고
+    // API 호출
+    await updateRsvpResponse(rsvpId, validatedData);
+    
+    console.log('✅ RSVP 응답 수정 완료');
+    alert('✅ RSVP 응답이 성공적으로 수정되었습니다.');
+    
+    // 편집 모드 종료
     setEditingRsvpId(null);
     setEditingRsvpData(null);
     
-    // 🔧 수정: 약간의 지연 후 서버에서 최신 데이터 가져오기 (편집 상태 충돌 방지)
-    setTimeout(async () => {
-      try {
-        console.log('🔄 서버 데이터 동기화 시작');
-        await fetchAllRsvps(); // 서버에서 최신 데이터 가져오기
-        console.log('✅ 서버 데이터 동기화 완료');
-      } catch (error) {
-        console.error('❌ 서버 데이터 동기화 실패:', error);
-        // 동기화 실패해도 낙관적 업데이트된 상태 유지
-      }
-    }, 100); // 100ms 지연
-    
-    alert("✅ RSVP 응답이 업데이트되었습니다.");
+    // 목록 새로고침
+    await fetchAllRsvps();
     
   } catch (error: any) {
-    console.error("❌ RSVP 업데이트 실패:", error);
+    console.error('❌ RSVP 응답 수정 실패:', error);
     
-    // 🔧 새로 추가: 실패 시 편집 상태 복원
-    if (currentEditingId && currentEditingData) {
-      console.log('🔄 편집 상태 복원');
-      setEditingRsvpId(currentEditingId);
-      setEditingRsvpData(currentEditingData);
-    }
-    
-    // 🔧 새로 추가: 실패 시 서버에서 최신 데이터 다시 가져오기 (롤백)
-    try {
-      await fetchAllRsvps();
-      console.log('✅ 실패 후 데이터 롤백 완료');
-    } catch (rollbackError) {
-      console.error('❌ 롤백 실패:', rollbackError);
-    }
-    
-    alert(`❌ RSVP 업데이트에 실패했습니다: ${error.message}`);
+    // 사용자 친화적인 에러 메시지 표시
+    const errorMessage = error.message || 'RSVP 응답 수정에 실패했습니다.';
+    alert(`❌ ${errorMessage}`);
   }
 };
 
 /**
- * 편집 중인 RSVP 데이터 업데이트 함수 (수정됨 - 상태 동기화 개선)
+ * RSVP 편집 데이터 업데이트 함수 (수정됨 - 타입 안전성 개선)
+ * @param field - 수정할 필드명
+ * @param value - 새로운 값
  */
 const updateEditingRsvpData = (field: string, value: any) => {
-  console.log(`🔄 편집 데이터 업데이트: ${field} =`, value);
+  if (!editingRsvpData) return;
   
-  if (editingRsvpData) {
-    // 🔧 새로 추가: 벌크 업데이트 지원
-    if (field === "_bulk_update" && typeof value === "object") {
-      console.log('🔄 벌크 업데이트 실행:', value);
-      setEditingRsvpData(value);
-      console.log('✅ 벌크 업데이트 완료');
-      return;
+  setEditingRsvpData(prev => {
+    // null 체크
+    if (!prev) return null;
+    
+    const updated = { ...prev, [field]: value };
+    
+    // 🔧 수정: totalCount 변경 시 attendeeNames 배열 자동 조정
+    if (field === 'totalCount') {
+      const newCount = Number(value) || 0;
+      const currentNames = prev.attendeeNames || [];
+      
+      if (newCount > 0) {
+        // 참석인 경우 - attendeeNames 배열 조정
+        if (newCount > currentNames.length) {
+          // 인원이 늘어난 경우 - 빈 문자열로 채우기
+          const additionalNames = new Array(newCount - currentNames.length).fill('');
+          updated.attendeeNames = [...currentNames, ...additionalNames];
+        } else if (newCount < currentNames.length) {
+          // 인원이 줄어든 경우 - 배열 자르기
+          updated.attendeeNames = currentNames.slice(0, newCount);
+        }
+        // 크기가 같으면 그대로 유지
+      } else {
+        // 불참인 경우 - 빈 배열
+        updated.attendeeNames = [];
+      }
     }
     
-    // 기존 개별 필드 업데이트 로직
-    const newData = {
-      ...editingRsvpData,
-      [field]: value
-    };
-    
-    // 🔧 추가: 참석 여부 변경 시 관련 필드들 자동 조정
+    // 🔧 수정: isAttending 변경 시도 attendeeNames 배열 조정
     if (field === 'isAttending') {
-      if (!value) {
-        // 불참으로 변경 시
-        newData.totalCount = 0;
-        newData.attendeeNames = [];
+      if (value === false) {
+        // 불참으로 변경된 경우
+        updated.totalCount = 0;
+        updated.attendeeNames = [];
       } else {
-        // 참석으로 변경 시
-        if (newData.totalCount === 0) {
-          newData.totalCount = 1;
-          newData.attendeeNames = [newData.responderName || ''];
+        // 참석으로 변경된 경우
+        if (updated.totalCount === 0) {
+          updated.totalCount = 1; // 최소 1명으로 설정
+        }
+        const currentNames = prev.attendeeNames || [];
+        const requiredCount = updated.totalCount || 1;
+        
+        if (currentNames.length < requiredCount) {
+          // 이름 배열이 부족하면 빈 문자열로 채우기
+          const additionalNames = new Array(requiredCount - currentNames.length).fill('');
+          updated.attendeeNames = [...currentNames, ...additionalNames];
         }
       }
     }
     
-    console.log('✅ 개별 필드 업데이트 후 데이터:', newData);
-    setEditingRsvpData(newData);
-  } else {
-    console.error('❌ editingRsvpData가 없습니다');
-  }
+    console.log('🔄 편집 데이터 업데이트:', { field, value, updated }); // 디버깅용
+    return updated;
+  });
 };
 
 // 🔧 추가: 디버깅을 위한 상태 변경 감지 (옵션)
