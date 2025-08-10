@@ -892,6 +892,7 @@ const InvitationPage: React.FC = () => {
             lineHeight: 1.25,
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             gap: "11px",
             paddingTop: "120px",
           }}
@@ -903,6 +904,7 @@ const InvitationPage: React.FC = () => {
           fontWeight: "700",
           fontFamily: systemFont,
           letterSpacing: "0.5px",
+          width:"65%"
         }}>
           {/* 첫 번째 줄 - 이광수 고인옥의 아들 지환 */}
           <div style={{
@@ -912,8 +914,8 @@ const InvitationPage: React.FC = () => {
             margin: "0",
             width: "100%"
           }}>
-            <span style={{flex: "0 0 auto"}}>이광수 고인옥</span>
-            <span style={{flex: "0 0 auto", margin: "0 10px"}}>의 아들</span>
+            <span style={{flex: "0 0 auto"}}>이광수 고인옥<span style={{fontSize:getResponsiveFontSize(16, 4.1026, isMobile)}}>의</span></span>
+            <span style={{flex: "0 0 auto", margin: "0 10px", fontSize:getResponsiveFontSize(16, 4.1026, isMobile)}}>아들</span>
             <span style={{flex: "0 0 auto"}}>지환</span>
           </div>
           
@@ -925,8 +927,8 @@ const InvitationPage: React.FC = () => {
             margin: "0",
             width: "100%"
           }}>
-            <span style={{flex: "0 0 auto"}}>이재관 배연수</span>
-            <span style={{flex: "0 0 auto", margin: "0 10px"}}>의 딸</span>
+            <span style={{flex: "0 0 auto"}}>이재관 배연수<span style={{fontSize:getResponsiveFontSize(16, 4.1026, isMobile)}}>의</span></span>
+            <span style={{flex: "0 0 auto", margin: "0 10px", fontSize:getResponsiveFontSize(16, 4.1026, isMobile)}}>딸</span>
             <span style={{flex: "0 0 auto"}}>윤진</span>
           </div>
         </div>
