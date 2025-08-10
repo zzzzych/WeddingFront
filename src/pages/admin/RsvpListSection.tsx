@@ -322,160 +322,144 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
           </div>
 
           {/* 참석인 경우에만 표시 */}
-          {editingData.isAttending && (
-            <>
-              {/* 두 번째 행: 참석 인원 */}
-              <div>
+          {/* 참석 인원 및 이름 (항상 표시, 불참시 비활성화) */}
+          <>
+            {/* 두 번째 행: 참석 인원 */}
+            <div style={{ opacity: editingData.isAttending ? 1 : 0.5 }}>
+              <label
+                style={{
+                  fontSize: "14px",
+                  color: AppleColors.text,
+                  marginBottom: "8px",
+                  display: "block",
+                  fontWeight: "500",
+                }}
+              >
+                총 참석 인원
+              </label>
+              <select
+                value={editingData.totalCount || 1}
+                disabled={!editingData.isAttending} // 불참시 비활성화
+                onChange={(e) => {
+                  if (!editingData.isAttending) return; // 불참시 변경 방지
+
+                  const newCount = parseInt(e.target.value) || 1;
+                  console.log("🔢 인원 수 변경 (select):", newCount);
+
+                  if (onUpdateEditingRsvpData) {
+                    onUpdateEditingRsvpData("totalCount", newCount);
+
+                    const currentNames = editingData.attendeeNames || [];
+                    let newNames = [...currentNames];
+
+                    if (newCount > currentNames.length) {
+                      while (newNames.length < newCount) {
+                        newNames.push("");
+                      }
+                    } else if (newCount < currentNames.length) {
+                      newNames = newNames.slice(0, newCount);
+                    }
+
+                    onUpdateEditingRsvpData("attendeeNames", newNames);
+                  }
+                }}
+                style={{
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  backgroundColor: editingData.isAttending
+                    ? AppleColors.inputBackground
+                    : "#f0f0f0",
+                  minWidth: "80px",
+                  cursor: editingData.isAttending ? "pointer" : "not-allowed",
+                }}
+              >
+                {Array.from({ length: 20 }, (_, i) => i + 1).map((count) => (
+                  <option key={count} value={count}>
+                    {count}명
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 참석자 이름들 (항상 표시, 불참시 비활성화) */}
+            {editingData.totalCount > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  opacity: editingData.isAttending ? 1 : 0.5,
+                }}
+              >
                 <label
                   style={{
                     fontSize: "14px",
                     color: AppleColors.text,
-                    marginBottom: "8px",
-                    display: "block",
                     fontWeight: "500",
                   }}
                 >
-                  총 참석 인원
+                  참석자 이름 ({editingData.totalCount}명)
                 </label>
-                {/* // 총 참석 인원 선택 드롭다운 수정 */}
-                <select
-                  value={editingData.totalCount || 1}
-                  onChange={(e) => {
-                    const newCount = parseInt(e.target.value) || 1;
-                    console.log("🔢 인원 수 변경 (select):", newCount); // 디버깅용
 
-                    if (onUpdateEditingRsvpData) {
-                      // 1. 인원 수 업데이트
-                      onUpdateEditingRsvpData("totalCount", newCount);
-
-                      // 2. 이름 배열도 인원 수에 맞게 조정
-                      const currentNames = editingData.attendeeNames || [];
-                      let newNames = [...currentNames];
-
-                      if (newCount > currentNames.length) {
-                        // 인원이 늘어났을 때 빈 이름 추가
-                        while (newNames.length < newCount) {
-                          newNames.push("");
-                        }
-                      } else if (newCount < currentNames.length) {
-                        // 인원이 줄어났을 때 뒤의 이름들 제거
-                        newNames = newNames.slice(0, newCount);
-                      }
-
-                      onUpdateEditingRsvpData("attendeeNames", newNames);
-                      console.log("✅ 인원 수 및 이름 배열 업데이트 완료"); // 디버깅용
-                    } else {
-                      console.error("❌ onUpdateEditingRsvpData 함수가 없음"); // 디버깅용
-                    }
-                  }}
-                  style={{
-                    padding: "8px 12px",
-                    border: `1px solid ${AppleColors.border}`,
-                    borderRadius: "8px",
-                    fontSize: "16px",
-                    backgroundColor: AppleColors.inputBackground,
-                    minWidth: "80px",
-                  }}
-                >
-                  {Array.from({ length: 20 }, (_, i) => i + 1).map((count) => (
-                    <option key={count} value={count}>
-                      {count}명
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 세 번째 행: 참석자 이름들 */}
-              {/* 참석자 이름 입력 필드들 (동적 생성) */}
-              {editingData.isAttending && editingData.totalCount > 0 && (
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
                     gap: "12px",
                   }}
                 >
-                  <label
-                    style={{
-                      fontSize: "14px",
-                      color: AppleColors.text,
-                      fontWeight: "500",
-                    }}
-                  >
-                    참석자 이름 ({editingData.totalCount}명)
-                  </label>
+                  {Array.from(
+                    { length: editingData.totalCount },
+                    (_, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        disabled={!editingData.isAttending} // 불참시 비활성화
+                        value={editingData.attendeeNames?.[index] || ""}
+                        onChange={(e) => {
+                          if (!editingData.isAttending) return; // 불참시 변경 방지
 
-                  {/* 동적으로 생성되는 이름 입력 필드들 */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "12px",
-                    }}
-                  >
-                    {Array.from(
-                      { length: editingData.totalCount },
-                      (_, index) => (
-                        <input
-                          key={index}
-                          type="text"
-                          value={editingData.attendeeNames?.[index] || ""}
-                          onChange={(e) => {
-                            console.log(
-                              `🏷️ ${index + 1}번째 참석자 이름 변경:`,
-                              e.target.value
-                            ); // 디버깅용
+                          if (onUpdateEditingRsvpData) {
+                            const newNames = [
+                              ...(editingData.attendeeNames || []),
+                            ];
+                            newNames[index] = e.target.value;
+                            onUpdateEditingRsvpData("attendeeNames", newNames);
 
-                            if (onUpdateEditingRsvpData) {
-                              const newNames = [
-                                ...(editingData.attendeeNames || []),
-                              ];
-                              newNames[index] = e.target.value;
+                            if (index === 0) {
                               onUpdateEditingRsvpData(
-                                "attendeeNames",
-                                newNames
+                                "responderName",
+                                e.target.value
                               );
-
-                              // 첫 번째 이름이 변경되면 대표 응답자 이름도 업데이트
-                              if (index === 0) {
-                                onUpdateEditingRsvpData(
-                                  "responderName",
-                                  e.target.value
-                                );
-                              }
                             }
-                          }}
-                          placeholder={
-                            index === 0
-                              ? "대표 참석자 이름"
-                              : `${index + 1}번째 참석자`
                           }
-                          style={{
-                            padding: "8px 12px",
-                            border: `1px solid ${AppleColors.border}`,
-                            borderRadius: "8px",
-                            fontSize: "16px",
-                            backgroundColor: AppleColors.inputBackground,
-                          }}
-                        />
-                      )
-                    )}
-                  </div>
-
-                  {/* 안내 메시지 */}
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: AppleColors.secondaryText,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    💡 첫 번째 이름이 대표 응답자가 됩니다
-                  </span>
+                        }}
+                        placeholder={
+                          index === 0
+                            ? "대표 참석자 이름"
+                            : `${index + 1}번째 참석자`
+                        }
+                        style={{
+                          padding: "8px 12px",
+                          border: `1px solid ${AppleColors.border}`,
+                          borderRadius: "8px",
+                          fontSize: "16px",
+                          backgroundColor: editingData.isAttending
+                            ? AppleColors.inputBackground
+                            : "#f0f0f0",
+                          cursor: editingData.isAttending
+                            ? "text"
+                            : "not-allowed",
+                        }}
+                      />
+                    )
+                  )}
                 </div>
-              )}
-            </>
-          )}
+              </div>
+            )}
+          </>
 
           {/* 네 번째 행: 연락처와 메시지 */}
           <div
