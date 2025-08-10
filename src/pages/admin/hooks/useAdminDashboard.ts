@@ -550,9 +550,9 @@ const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
 };
 
 /**
- * RSVP 편집 데이터 업데이트 함수 (수정됨 - 타입 안전성 개선)
- * @param field - 수정할 필드명
- * @param value - 새로운 값
+ * RSVP 편집 데이터 업데이트 함수 (수정됨 - _bulk_update 지원 추가)
+ * @param field - 수정할 필드명 또는 "_bulk_update"
+ * @param value - 새로운 값 또는 전체 데이터 객체
  */
 const updateEditingRsvpData = (field: string, value: any) => {
   if (!editingRsvpData) return;
@@ -560,6 +560,12 @@ const updateEditingRsvpData = (field: string, value: any) => {
   setEditingRsvpData(prev => {
     // null 체크
     if (!prev) return null;
+    
+    // 🆕 _bulk_update 처리 추가
+    if (field === "_bulk_update") {
+      console.log('🔄 벌크 업데이트 실행:', value); // 디버깅용
+      return { ...value }; // 전체 객체를 교체
+    }
     
     const updated = { ...prev, [field]: value };
     
@@ -585,7 +591,7 @@ const updateEditingRsvpData = (field: string, value: any) => {
       }
     }
     
-    // 🔧 수정: isAttending 변경 시도 attendeeNames 배열 조정
+    // 🔧 수정: isAttending 변경 시 attendeeNames 배열 조정
     if (field === 'isAttending') {
       if (value === false) {
         // 불참으로 변경된 경우
