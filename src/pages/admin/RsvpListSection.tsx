@@ -168,7 +168,6 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
       onUpdateEditingRsvpData?.("attendeeNames", newNames);
     };
 
-
     return (
       <div
         style={{
@@ -270,10 +269,14 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
               </label>
               {/* // 참석 여부 선택 드롭다운 수정 */}
               <select
-                value={editingData.isAttending ? "참석" : "불참"}
+                value={editingData.isAttending === false ? "불참" : "참석"} // 명시적 비교로 변경
                 onChange={(e) => {
                   const isAttending = e.target.value === "참석";
                   console.log("🎯 참석 여부 변경 요청:", isAttending); // 디버깅용
+                  console.log(
+                    "🎯 현재 editingData.isAttending:",
+                    editingData.isAttending
+                  ); // 추가 디버깅
 
                   if (onUpdateEditingRsvpData) {
                     if (!isAttending) {
