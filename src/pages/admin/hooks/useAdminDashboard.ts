@@ -47,11 +47,11 @@ export const useAdminDashboard = () => {
 
   // RSVP 편집 관련 상태
   const [editingRsvpId, setEditingRsvpId] = useState<string | null>(null);
+  // RSVP 편집 관련 상태
   const [editingRsvpData, setEditingRsvpData] = useState<{
     responderName: string;
     isAttending: boolean;
-    adultCount: number;
-    childrenCount: number;
+    totalCount: number;
     phoneNumber?: string;
     message?: string;
   } | null>(null);
@@ -91,7 +91,8 @@ export const useAdminDashboard = () => {
         willAttend: item.response?.isAttending,
         phoneNumber: item.response?.phoneNumber,
         companions: item.response ? 
-          Math.max(0, (item.response.adultCount + item.response.childrenCount) - 1) : 0,
+          Math.max(0, (item.response.totalCount || 0) - 1) : // 🔧 totalCount - 1로 변경 (대표자 제외)
+          0,
         message: item.response?.message,
         groupName: item.groupInfo?.groupName
       }));
@@ -355,19 +356,18 @@ const handleUpdateGroupFeatures = useCallback(
   };
 
   /**
- * RSVP 편집 시작 함수
- */
-const startEditingRsvp = (rsvp: any) => {
-  setEditingRsvpId(rsvp.id);
-  setEditingRsvpData({
-    responderName: rsvp.guestName || rsvp.response?.responderName,
-    isAttending: rsvp.willAttend ?? rsvp.response?.isAttending,
-    adultCount: rsvp.response?.adultCount || 1,
-    childrenCount: rsvp.response?.childrenCount || 0,
-    phoneNumber: rsvp.phoneNumber || rsvp.response?.phoneNumber || '',
-    message: rsvp.message || rsvp.response?.message || ''
-  });
-};
+   * RSVP 편집 시작 함수
+   */
+  const startEditingRsvp = (rsvp: any) => {
+    setEditingRsvpId(rsvp.id);
+    setEditingRsvpData({
+      responderName: rsvp.guestName || rsvp.response?.responderName,
+      isAttending: rsvp.willAttend ?? rsvp.response?.isAttending,
+      totalCount: rsvp.response?.totalCount || 1,
+      phoneNumber: rsvp.phoneNumber || rsvp.response?.phoneNumber || '',
+      message: rsvp.message || rsvp.response?.message || ''
+    });
+  };
 
 /**
  * RSVP 편집 취소 함수

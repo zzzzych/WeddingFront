@@ -119,16 +119,15 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
     return willAttend ? AppleColors.success : AppleColors.destructive;
   };
 
-  // 성인/아동 인원 표시 함수
+  // 총 인원 표시 함수
   const getAttendeeInfo = (rsvp: any) => {
-    const adultCount = rsvp.response?.adultCount || 1;
-    const childrenCount = rsvp.response?.childrenCount || 0;
+    const totalCount = rsvp.response?.totalCount || 0;
     
-    const parts = [];
-    if (adultCount > 0) parts.push(`성인 ${adultCount}명`);
-    if (childrenCount > 0) parts.push(`아동 ${childrenCount}명`);
+    if (!rsvp.willAttend && !rsvp.response?.isAttending) {
+      return '불참';
+    }
     
-    return parts.join(', ') || '성인 1명';
+    return totalCount > 0 ? `총 ${totalCount}명` : '1명';
   };
 
   if (isEditing && editingData) {
@@ -204,39 +203,18 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
               </select>
             </div>
 
-            {/* 성인 인원 */}
+            {/* 총 참석 인원 */}
             <div>
               <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
-                성인 인원
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={editingData.adultCount}
-                onChange={(e) => onUpdateEditingRsvpData?.('adultCount', parseInt(e.target.value) || 1)}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: `1px solid ${AppleColors.border}`,
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontFamily: systemFont,
-                }}
-              />
-            </div>
-
-            {/* 아동 인원 */}
-            <div>
-              <label style={{ fontSize: "12px", color: AppleColors.secondaryText, marginBottom: "4px", display: "block" }}>
-                아동 인원
+                총 참석 인원
               </label>
               <input
                 type="number"
                 min="0"
                 max="20"
-                value={editingData.childrenCount}
-                onChange={(e) => onUpdateEditingRsvpData?.('childrenCount', parseInt(e.target.value) || 0)}
+                value={editingData.totalCount || 0}
+                onChange={(e) => onUpdateEditingRsvpData?.('totalCount', parseInt(e.target.value) || 0)}
+                disabled={!editingData.isAttending}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -244,9 +222,19 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
                   borderRadius: "6px",
                   fontSize: "14px",
                   fontFamily: systemFont,
+                  backgroundColor: !editingData.isAttending ? AppleColors.inputBackground : "white",
+                  color: !editingData.isAttending ? AppleColors.secondaryText : AppleColors.text,
                 }}
               />
+              {!editingData.isAttending && (
+                <div style={{ fontSize: "11px", color: AppleColors.secondaryText, marginTop: "2px" }}>
+                  불참 선택 시 자동으로 0명으로 설정됩니다
+                </div>
+              )}
             </div>
+
+            {/* 빈 공간 (그리드 레이아웃 유지용) */}
+            <div></div>
           </div>
 
           {/* 전화번호 */}
