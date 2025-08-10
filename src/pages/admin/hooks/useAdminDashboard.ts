@@ -398,16 +398,36 @@ const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
   try {
     console.log(`🔄 RSVP 업데이트: ${rsvpId}`, updateData);
     
-    // 서버 API가 기대하는 RsvpRequest 형식으로 데이터 변환
-    const serverRequestData = {
-      isAttending: updateData.isAttending, // 참석 여부
-      totalCount: updateData.isAttending ? updateData.totalCount : 0, // 불참이면 0으로 설정
-      attendeeNames: updateData.isAttending ? (updateData.attendeeNames || []) : [], // 불참이면 빈 배열
-      phoneNumber: updateData.phoneNumber || null, // 선택사항
-      message: updateData.message || null // 선택사항
-    };
+  // 서버 API가 기대하는 RsvpRequest 형식으로 데이터 변환 (수정됨)
+  const serverRequestData = {
+    isAttending: updateData.isAttending,
+    totalCount: updateData.isAttending ? (updateData.totalCount || 1) : 0,
+    attendeeNames: updateData.isAttending ? 
+      (updateData.attendeeNames && updateData.attendeeNames.length > 0 ? 
+        updateData.attendeeNames.filter((name: string) => name.trim() !== '') : 
+        ['']) : // 참석이지만 이름이 없으면 빈 문자열 하나라도 넣기
+      [], // 불참이면 빈 배열
+    phoneNumber: updateData.phoneNumber || null,
+    message: updateData.message || null
+  };
+
+  // 추가 검증: 참석인 경우 totalCount와 attendeeNames 길이 맞추기
+  if (serverRequestData.isAttending && serverRequestData.totalCount > 0) {
+    const nameCount = serverRequestData.attendeeNames.length;
+    const requiredCount = serverRequestData.totalCount;
     
-    console.log('🔄 서버로 전송할 데이터:', serverRequestData); // 디버깅용
+    if (nameCount < requiredCount) {
+      // 이름이 부족하면 빈 문자열로 채우기
+      while (serverRequestData.attendeeNames.length < requiredCount) {
+        serverRequestData.attendeeNames.push('');
+      }
+    } else if (nameCount > requiredCount) {
+      // 이름이 많으면 잘라내기
+      serverRequestData.attendeeNames = serverRequestData.attendeeNames.slice(0, requiredCount);
+    }
+  }
+
+  console.log('🔄 최종 서버 전송 데이터:', serverRequestData); // 디버깅용
     
     await updateRsvpResponse(rsvpId, serverRequestData);
     await fetchAllRsvps(); // 데이터 새로고침
