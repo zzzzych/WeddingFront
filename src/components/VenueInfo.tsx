@@ -9,7 +9,7 @@ interface VenueInfoProps {
 }
 
 const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
-  const [activeTab, setActiveTab] = useState<'info' | 'directions' | 'parking'>('directions');
+  const [activeTab, setActiveTab] = useState<'info' | 'directions' | 'parking' | 'account'>('directions');;
   
   const { weddingInfo } = invitationData;
 
@@ -84,7 +84,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
         {[
           // { key: 'info', label: '웨딩홀 정보', icon: '🏛️' },
           { key: 'directions', label: '지도 & 길찾기', icon: '🗺️' },
-          { key: 'parking', label: '교통 & 주차', icon: '🚗' }
+          { key: 'parking', label: '교통 & 주차', icon: '🚗' },
+          { key: 'account', label: '마음 전할 곳', icon: '💝' }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -360,6 +361,50 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               border: '1px solid #dee2e6',
               textAlign: 'center'
             }}>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'account' && (
+        <div>
+          {/* 계좌 정보 표시 */}
+          {weddingInfo.accountInfo && weddingInfo.accountInfo.length > 0 ? (
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              marginBottom: '15px'
+            }}>
+              <h4 style={{
+                fontSize: '16px',
+                color: '#2c3e50',
+                margin: '0 0 15px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                justifyContent: 'center'
+              }}>
+                💝 마음 전할 곳
+              </h4>
+              <div style={{
+                fontSize: '14px',
+                color: '#6c757d',
+                textAlign: 'center',
+                marginBottom: '15px'
+              }}>
+                농협 121065-56-105215 (고이우 / 신랑)
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '30px',
+              textAlign: 'center'
+            }}>
+              <p style={{ color: '#6c757d', margin: 0 }}>
+                계좌 정보가 없습니다.
+              </p>
             </div>
           )}
         </div>
