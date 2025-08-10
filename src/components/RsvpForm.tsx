@@ -186,19 +186,19 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       let submitData: RsvpRequest;
 
       if (formData.isAttending === false) {
-        // 불참인 경우: 응답자 이름을 attendeeNames 첫 번째로도 설정
-        const responderName = formData.responderName.trim();
-        submitData = {
-          isAttending: false,
-          responderName: responderName,
-          totalCount: 0,
-          adultCount: 0,
-          childrenCount: 0,
-          attendeeNames: [responderName], // 응답자 이름을 첫 번째 요소로 설정
-          phoneNumber: formData.phoneNumber?.trim() || undefined,
-          message: formData.message?.trim() || undefined,
-        };
-      } else {
+  // 불참인 경우: attendeeNames는 빈 배열, responderName만 사용
+  const responderName = formData.responderName.trim();
+  submitData = {
+    isAttending: false,
+    responderName: responderName,
+    totalCount: 0,
+    adultCount: 0,
+    childrenCount: 0,
+    attendeeNames: [], // ✅ 빈 배열로 수정
+    phoneNumber: formData.phoneNumber?.trim() || undefined,
+    message: formData.message?.trim() || undefined,
+  };
+} else {
         // 참석인 경우: 기존 로직 유지
         const trimmedNames = formData.attendeeNames.map((name) => name.trim());
         submitData = {
