@@ -467,7 +467,7 @@ const cancelEditingRsvp = () => {
 };
 
 /**
- * RSVP 응답 수정 처리 함수 (개선됨 - 데이터 검증 및 보정 강화)
+ * RSVP 응답 수정 처리 함수 (개선됨 - 불참자 이름 처리 수정)
  * @param rsvpId - 수정할 RSVP ID
  * @param updateData - 수정할 데이터
  */
@@ -480,11 +480,18 @@ const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
     
     // 참석 여부에 따른 데이터 보정
     if (validatedData.isAttending === false) {
-      // 불참인 경우 - 인원 수를 0으로, 이름 배열은 대표자 이름만 유지
+      // 🔧 수정: 불참인 경우 - 인원 수를 0으로, 참석자 이름 배열은 빈 배열로 설정
       validatedData.totalCount = 0;
-      validatedData.attendeeNames = validatedData.responderName 
-        ? [validatedData.responderName] 
-        : [];
+      validatedData.attendeeNames = []; // 빈 배열로 변경
+      
+      // 🔧 추가: 불참자의 대표자 이름은 responderName에만 유지
+      if (!validatedData.responderName || validatedData.responderName.trim() === '') {
+        // responderName이 없으면 기존 데이터에서 가져오기
+        const originalResponder = editingRsvpData?.responderName || 
+                                 updateData.responderName || 
+                                 '익명';
+        validatedData.responderName = originalResponder;
+      }
       
       console.log('📝 불참 데이터 보정:', validatedData);
     } else if (validatedData.isAttending === true) {
