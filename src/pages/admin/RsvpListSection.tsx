@@ -160,14 +160,6 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
 
   // 편집 모드일 때
   if (isEditing && editingData) {
-    // 참석자 이름 배열 처리 함수
-    const handleAttendeeNameChange = (index: number, name: string) => {
-      console.log(`🔄 참석자 이름 변경: ${index} -> ${name}`); // 디버깅용
-      const newNames = [...(editingData.attendeeNames || [])];
-      newNames[index] = name;
-      onUpdateEditingRsvpData?.("attendeeNames", newNames);
-    };
-
     return (
       <div
         style={{
@@ -267,7 +259,7 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
               >
                 참석 여부
               </label>
-              {/* // 참석 여부 선택 드롭다운 수정 */}
+              {/* 참석 여부 선택 드롭다운 수정 */}
               <select
                 value={editingData.isAttending ? "참석" : "불참"} // 명시적 비교로 변경
                 onChange={(e) => {
@@ -435,38 +427,28 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
                         disabled={!editingData.isAttending} // 불참시 비활성화
                         value={editingData.attendeeNames?.[index] || ""}
                         onChange={(e) => {
-                          console.log(
-                            `🔄 참석자 ${index} 이름 변경:`,
-                            e.target.value
-                          ); // 디버깅용
+                          console.log(`🔄 참석자 ${index} 이름 변경:`, e.target.value);
 
-                          if (!editingData.isAttending) return; // 불참시 변경 방지
+                          if (!editingData.isAttending) return;
 
                           if (onUpdateEditingRsvpData) {
-                            // 새로운 배열을 생성하여 특정 인덱스만 변경
-                            const newNames = [
-                              ...(editingData.attendeeNames || []),
-                            ];
-                            // 배열 길이가 부족한 경우 빈 문자열로 채우기
+                            const newNames = [...(editingData.attendeeNames || [])];
+                            
                             while (newNames.length <= index) {
                               newNames.push("");
                             }
+                            
                             newNames[index] = e.target.value;
-
-                            console.log("🔄 업데이트될 이름 배열:", newNames); // 디버깅용
-                            onUpdateEditingRsvpData("attendeeNames", newNames);
-
-                            // 첫 번째 이름(대표자)이 변경된 경우 responderName도 함께 업데이트
-                            if (index === 0) {
-                              console.log(
-                                "🔄 대표자 이름도 함께 업데이트:",
-                                e.target.value
-                              ); // 디버깅용
-                              onUpdateEditingRsvpData(
-                                "responderName",
-                                e.target.value
-                              );
-                            }
+                            
+                            console.log("🔄 업데이트될 이름 배열:", newNames);
+                            
+                            const updatedData = {
+                              ...editingData,
+                              attendeeNames: newNames,
+                              responderName: index === 0 ? e.target.value : editingData.responderName
+                            };
+                            
+                            onUpdateEditingRsvpData("_bulk_update", updatedData);
                           }
                         }}
                         placeholder={
@@ -518,9 +500,12 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
               <input
                 type="tel"
                 value={editingData.phoneNumber || ""} // null/undefined 방지
-                onChange={(e) =>
-                  onUpdateEditingRsvpData?.("phoneNumber", e.target.value)
-                }
+                onChange={(e) => {
+                  console.log("🔄 전화번호 변경:", e.target.value); // 디버깅용
+                  if (onUpdateEditingRsvpData) {
+                    onUpdateEditingRsvpData("phoneNumber", e.target.value);
+                  }
+                }}
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -549,10 +534,12 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
               </label>
               <textarea
                 value={editingData.message || ""} // null/undefined 방지
-                onChange={(e) =>
-                  onUpdateEditingRsvpData?.("message", e.target.value)
-                }
-                rows={3}
+                onChange={(e) => {
+                  console.log("🔄 메시지 변경:", e.target.value); // 디버깅용
+                  if (onUpdateEditingRsvpData) {
+                    onUpdateEditingRsvpData("message", e.target.value);
+                  }
+                }}
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -560,10 +547,11 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
                   borderRadius: "8px",
                   fontSize: "14px",
                   fontFamily: systemFont,
-                  resize: "vertical",
                   boxSizing: "border-box",
+                  resize: "vertical",
                 }}
-                placeholder="축하 메시지나 요청사항을 입력하세요"
+                rows={3}
+                placeholder="메시지를 입력하세요"
               />
             </div>
           </div>
@@ -762,6 +750,7 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
     </div>
   );
 };
+
 // ==================== 📋 로딩 상태 컴포넌트 ====================
 
 /**
