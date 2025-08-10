@@ -357,31 +357,105 @@ const handleUpdateGroupFeatures = useCallback(
   };
 
 /**
- * RSVP 편집 시작 함수 (수정됨 - 기존 데이터 정확히 로드)
+ * RSVP 편집 시작 함수 (수정됨 - 데이터 정확성 및 안정성 개선)
  */
 const startEditingRsvp = (rsvp: any) => {
   console.log('🔄 편집 시작 - 원본 데이터:', rsvp); // 디버깅용
   
-  // response 객체에서 데이터 추출
-  const responseData = rsvp.response || {};
-  const isAttending = rsvp.willAttend ?? responseData.isAttending ?? true;
-  const totalCount = responseData.totalCount || 1;
-  const attendeeNames = responseData.attendeeNames || [];
-  
-  // 편집 데이터 설정
-  const editData = {
-    responderName: rsvp.guestName || responseData.responderName || '',
-    isAttending: isAttending,
-    totalCount: totalCount,
-    attendeeNames: [...attendeeNames], // 배열 복사
-    phoneNumber: rsvp.phoneNumber || responseData.phoneNumber || '',
-    message: rsvp.message || responseData.message || ''
-  };
-  
-  console.log('✅ 편집 데이터 설정:', editData); // 디버깅용
-  
-  setEditingRsvpId(rsvp.id);
-  setEditingRsvpData(editData);
+  try {
+    // 🔧 수정: 더 안전한 데이터 추출 로직
+    const responseData = rsvp.response || {};
+    
+    // 참석 여부 결정 (우선순위: willAttend > response.isAttending > 기본값 true)
+    let isAttending: boolean;
+    if (rsvp.willAttend !== undefined && rsvp.willAttend !== null) {
+      isAttending = Boolean(rsvp.willAttend);
+    } else if (responseData.isAttending !== undefined && responseData.isAttending !== null) {
+      isAttending = Boolean(responseData.isAttending);
+    } else {
+      isAttending = true; // 기본값
+    }
+    
+    // 총 인원수 결정
+    let totalCount: number;
+    if (isAttending) {
+      totalCount = Math.max(1, responseData.totalCount || 1); // 참석인 경우 최소 1명
+    } else {
+      totalCount = 0; // 불참인 경우 0명
+    }
+    
+    // 참석자 이름 배열 처리
+    let attendeeNames: string[];
+    if (isAttending) {
+      const originalNames = responseData.attendeeNames || [];
+      if (Array.isArray(originalNames) && originalNames.length > 0) {
+        // 기존 이름 목록이 있는 경우
+        attendeeNames = [...originalNames];
+        
+        // totalCount와 이름 개수 동기화
+        if (attendeeNames.length < totalCount) {
+          // 이름이 부족하면 빈 문자열로 채우기
+          while (attendeeNames.length < totalCount) {
+            attendeeNames.push('');
+          }
+        } else if (attendeeNames.length > totalCount) {
+          // 이름이 많으면 totalCount에 맞춰 자르기
+          attendeeNames = attendeeNames.slice(0, totalCount);
+        }
+      } else {
+        // 이름 목록이 없으면 totalCount만큼 빈 문자열 배열 생성
+        attendeeNames = new Array(totalCount).fill('');
+        
+        // 첫 번째 이름은 responderName으로 설정 (있는 경우)
+        const responderName = rsvp.guestName || responseData.responderName || '';
+        if (responderName && attendeeNames.length > 0) {
+          attendeeNames[0] = responderName;
+        }
+      }
+    } else {
+      // 불참인 경우 빈 배열
+      attendeeNames = [];
+    }
+    
+    // 🔧 수정: 편집 데이터 객체 생성 (더 안전한 방식)
+    const editData = {
+      responderName: rsvp.guestName || responseData.responderName || attendeeNames[0] || '',
+      isAttending: isAttending,
+      totalCount: totalCount,
+      attendeeNames: attendeeNames,
+      phoneNumber: rsvp.phoneNumber || responseData.phoneNumber || '',
+      message: rsvp.message || responseData.message || ''
+    };
+    
+    console.log('✅ 편집 데이터 설정 완료:', editData); // 디버깅용
+    console.log('📊 데이터 검증:', {
+      '참석여부': editData.isAttending,
+      '총인원': editData.totalCount,
+      '이름개수': editData.attendeeNames.length,
+      '이름목록': editData.attendeeNames
+    }); // 추가 디버깅
+    
+    // 🔧 수정: 상태 설정 전 유효성 최종 검증
+    if (editData.isAttending && editData.totalCount !== editData.attendeeNames.length) {
+      console.warn('⚠️ 데이터 불일치 감지 - 자동 수정:', {
+        totalCount: editData.totalCount,
+        namesLength: editData.attendeeNames.length
+      });
+      
+      // 자동 수정: totalCount를 이름 개수에 맞춤
+      editData.totalCount = Math.max(1, editData.attendeeNames.length);
+    }
+    
+    // 상태 업데이트
+    setEditingRsvpId(rsvp.id);
+    setEditingRsvpData(editData);
+    
+    console.log('🎯 편집 상태 설정 완료 - ID:', rsvp.id); // 디버깅용
+    
+  } catch (error) {
+    console.error('❌ RSVP 편집 시작 실패:', error);
+    alert('편집을 시작할 수 없습니다. 다시 시도해주세요.');
+  }
 };
 
 /**
@@ -393,71 +467,154 @@ const cancelEditingRsvp = () => {
 };
 
 /**
- * RSVP 응답 업데이트 함수 (수정됨 - 서버 API 형식에 맞게 데이터 변환)
+ * RSVP 응답 업데이트 함수 (수정됨 - 편집 상태 보존 및 낙관적 업데이트)
  */
 const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
+  // 🔧 새로 추가: 편집 중인 데이터 임시 저장 (함수 시작 부분으로 이동)
+  const currentEditingId = editingRsvpId;
+  const currentEditingData = editingRsvpData;
+  
   try {
     console.log(`🔄 RSVP 업데이트: ${rsvpId}`, updateData);
     
-  // 서버 API가 기대하는 RsvpRequest 형식으로 데이터 변환 (수정됨)
-  const serverRequestData = {
-    isAttending: updateData.isAttending,
-    totalCount: updateData.isAttending ? (updateData.totalCount || 1) : 0,
-    attendeeNames: updateData.isAttending ? 
-      (updateData.attendeeNames && updateData.attendeeNames.length > 0 ? 
-        updateData.attendeeNames.filter((name: string) => name.trim() !== '') : 
-        ['']) : // 참석이지만 이름이 없으면 빈 문자열 하나라도 넣기
-      [], // 불참이면 빈 배열
-    phoneNumber: updateData.phoneNumber || null,
-    message: updateData.message || null
-  };
+    // 서버 API가 기대하는 RsvpRequest 형식으로 데이터 변환 (기존 로직 유지)
+    const serverRequestData = {
+      isAttending: updateData.isAttending,
+      totalCount: updateData.isAttending ? (updateData.totalCount || 1) : 0,
+      attendeeNames: updateData.isAttending ? 
+        (updateData.attendeeNames && updateData.attendeeNames.length > 0 ? 
+          updateData.attendeeNames.filter((name: string) => name.trim() !== '') : 
+          ['']) : // 참석이지만 이름이 없으면 빈 문자열 하나라도 넣기
+        [], // 불참이면 빈 배열
+      phoneNumber: updateData.phoneNumber || null,
+      message: updateData.message || null
+    };
 
-  // 추가 검증: 참석인 경우 totalCount와 attendeeNames 길이 맞추기
-  if (serverRequestData.isAttending && serverRequestData.totalCount > 0) {
-    const nameCount = serverRequestData.attendeeNames.length;
-    const requiredCount = serverRequestData.totalCount;
-    
-    if (nameCount < requiredCount) {
-      // 이름이 부족하면 빈 문자열로 채우기
-      while (serverRequestData.attendeeNames.length < requiredCount) {
-        serverRequestData.attendeeNames.push('');
+    // 추가 검증: 참석인 경우 totalCount와 attendeeNames 길이 맞추기 (기존 로직 유지)
+    if (serverRequestData.isAttending && serverRequestData.totalCount > 0) {
+      const nameCount = serverRequestData.attendeeNames.length;
+      const requiredCount = serverRequestData.totalCount;
+      
+      if (nameCount < requiredCount) {
+        // 이름이 부족하면 빈 문자열로 채우기
+        while (serverRequestData.attendeeNames.length < requiredCount) {
+          serverRequestData.attendeeNames.push('');
+        }
+      } else if (nameCount > requiredCount) {
+        // 이름이 많으면 잘라내기
+        serverRequestData.attendeeNames = serverRequestData.attendeeNames.slice(0, requiredCount);
       }
-    } else if (nameCount > requiredCount) {
-      // 이름이 많으면 잘라내기
-      serverRequestData.attendeeNames = serverRequestData.attendeeNames.slice(0, requiredCount);
     }
-  }
 
-  console.log('🔄 최종 서버 전송 데이터:', serverRequestData); // 디버깅용
+    console.log('🔄 최종 서버 전송 데이터:', serverRequestData); // 디버깅용
     
+    // 🔧 수정: 낙관적 업데이트 - 로컬 상태 먼저 업데이트
+    if (rsvpData && rsvpData.responses) {
+      const updatedResponses = rsvpData.responses.map(item => {
+        if (item.id === rsvpId || item.response?.id === rsvpId) {
+          return {
+            ...item,
+            willAttend: updateData.isAttending,
+            guestName: updateData.responderName,
+            phoneNumber: updateData.phoneNumber,
+            message: updateData.message,
+            response: {
+              ...item.response,
+              isAttending: updateData.isAttending,
+              responderName: updateData.responderName,
+              totalCount: serverRequestData.totalCount,
+              attendeeNames: serverRequestData.attendeeNames,
+              phoneNumber: updateData.phoneNumber,
+              message: updateData.message
+            }
+          };
+        }
+        return item;
+      });
+      
+      // 로컬 상태 즉시 업데이트
+      setRsvpData({
+        ...rsvpData,
+        responses: updatedResponses
+      });
+      
+      console.log('✅ 낙관적 업데이트 완료'); // 디버깅용
+    }
+    
+    // 서버 요청
     await updateRsvpResponse(rsvpId, serverRequestData);
-    await fetchAllRsvps(); // 데이터 새로고침
+    
+    // 🔧 수정: 편집 상태 초기화를 먼저 하고
     setEditingRsvpId(null);
     setEditingRsvpData(null);
+    
+    // 🔧 수정: 약간의 지연 후 서버에서 최신 데이터 가져오기 (편집 상태 충돌 방지)
+    setTimeout(async () => {
+      try {
+        console.log('🔄 서버 데이터 동기화 시작');
+        await fetchAllRsvps(); // 서버에서 최신 데이터 가져오기
+        console.log('✅ 서버 데이터 동기화 완료');
+      } catch (error) {
+        console.error('❌ 서버 데이터 동기화 실패:', error);
+        // 동기화 실패해도 낙관적 업데이트된 상태 유지
+      }
+    }, 100); // 100ms 지연
+    
     alert("✅ RSVP 응답이 업데이트되었습니다.");
+    
   } catch (error: any) {
     console.error("❌ RSVP 업데이트 실패:", error);
+    
+    // 🔧 새로 추가: 실패 시 편집 상태 복원
+    if (currentEditingId && currentEditingData) {
+      console.log('🔄 편집 상태 복원');
+      setEditingRsvpId(currentEditingId);
+      setEditingRsvpData(currentEditingData);
+    }
+    
+    // 🔧 새로 추가: 실패 시 서버에서 최신 데이터 다시 가져오기 (롤백)
+    try {
+      await fetchAllRsvps();
+      console.log('✅ 실패 후 데이터 롤백 완료');
+    } catch (rollbackError) {
+      console.error('❌ 롤백 실패:', rollbackError);
+    }
+    
     alert(`❌ RSVP 업데이트에 실패했습니다: ${error.message}`);
   }
 };
 
 /**
- * 편집 중인 RSVP 데이터 변경 함수 (수정됨 - 디버깅 추가)
+ * 편집 중인 RSVP 데이터 변경 함수 (수정됨 - 벌크 업데이트 지원)
  */
 const updateEditingRsvpData = (field: string, value: any) => {
   console.log(`🔄 필드 업데이트 요청: ${field} =`, value); // 디버깅용
   
   if (editingRsvpData) {
+    // 🔧 새로 추가: 벌크 업데이트 지원
+    if (field === "_bulk_update" && typeof value === "object") {
+      console.log('🔄 벌크 업데이트 실행:', value); // 디버깅용
+      setEditingRsvpData(value);
+      console.log('✅ 벌크 업데이트 완료'); // 디버깅용
+      return;
+    }
+    
+    // 기존 개별 필드 업데이트 로직 유지
     const newData = {
       ...editingRsvpData,
       [field]: value
     };
-    console.log('✅ 업데이트 후 데이터:', newData); // 디버깅용
+    console.log('✅ 개별 필드 업데이트 후 데이터:', newData); // 디버깅용
     setEditingRsvpData(newData);
   } else {
     console.error('❌ editingRsvpData가 없습니다'); // 디버깅용
   }
 };
+
+// 🔧 추가: 디버깅을 위한 상태 변경 감지 (옵션)
+// useEffect(() => {
+//   console.log('📊 editingRsvpData 상태 변경:', editingRsvpData);
+// }, [editingRsvpData]);
 
   // ==================== 👥 관리자 관련 함수들 ====================
 
