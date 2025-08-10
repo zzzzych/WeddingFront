@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 // src/pages/HomePage.tsx - 모바일 조건부 렌더링 완전 수정
 import React, { useState, useEffect } from "react";
 
@@ -192,6 +193,7 @@ const HomePage: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isModalOpen, photos.length]);
 
   if (loading) {
@@ -216,7 +218,6 @@ const HomePage: React.FC = () => {
             style={{
               width: "40px",
               height: "40px",
-              // border: `3px solid ${AppleColors.border}`,
               borderTop: `3px solid ${AppleColors.primary}`,
               borderRadius: "50%",
               animation: "spin 1s linear infinite",
@@ -277,17 +278,14 @@ const HomePage: React.FC = () => {
       {/* 헤더 섹션 */}
       <div
         style={{
-          // background: `linear-gradient(135deg, ${AppleColors.gradient.start} 0%, ${AppleColors.gradient.middle} 50%, ${AppleColors.gradient.end} 100%)`,
           background: '#ffffff',
           color: "#222222",
           textAlign: "center",
-          // padding: "80px 20px 20px",
           height:"100vh",
           position: "relative",
           overflow: "hidden",
           display:"flex",
           alignItems:"center"
-          // borderBottom: `1px solid #222`,
         }}
       >
         <div
@@ -321,7 +319,6 @@ const HomePage: React.FC = () => {
             style={{
               fontSize: "20px",
               fontWeight: "300",
-              // marginTop: "16px",
               opacity: 0.9,
               fontFamily: systemFont,
             }}
@@ -335,7 +332,6 @@ const HomePage: React.FC = () => {
             style={{
               fontSize: "18px",
               fontWeight: "400",
-              // marginTop: "20px",
               opacity: 0.95,
               fontFamily: systemFont,
               letterSpacing: "0.5px",
@@ -358,28 +354,13 @@ const HomePage: React.FC = () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            // padding: "40px",
             paddingBottom:"40px",
-            // marginBottom: "60px",
-            // border: `1px solid ${AppleColors.border}`,
-            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
             transition: "all 1s ease 0.3s",
           }}
         >
-          {/* <h2
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: AppleColors.text,
-              margin: "0 0 24px 0",
-              fontFamily: systemFont,
-            }}
-          >
-            소중한 분들께
-          </h2> */}
           <div
             style={{
               fontSize: "18px",
@@ -401,27 +382,11 @@ const HomePage: React.FC = () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              // padding: "40px",
-              // border: `1px solid ${AppleColors.border}`,
-              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 0.6s",
             }}
           >
-            {/* <h2
-              style={{
-                fontSize: "28px",
-                fontWeight: "600",
-                color: AppleColors.text,
-                margin: "0 0 32px 0",
-                textAlign: "center",
-                fontFamily: systemFont,
-              }}
-            >
-              📸 우리의 이야기
-            </h2> */}
-
             {/* 조건부 렌더링: 모바일이면 슬라이드, 데스크톱이면 그리드 */}
             {isMobile ? (
               // 🔥 모바일: 슬라이드 레이아웃
@@ -431,11 +396,9 @@ const HomePage: React.FC = () => {
                   style={{
                     position: "relative",
                     width: "100%",
-                    // height: "350px",
                     height:"auto",
                     borderRadius: "16px",
                     overflow: "hidden",
-                    // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                     backgroundColor: "#f8f9fa",
                   }}
                 >
@@ -593,16 +556,8 @@ const HomePage: React.FC = () => {
                             borderRadius: "12px",
                             overflow: "hidden",
                             cursor: "pointer",
-                            // border:
-                            //   index === mobileCurrentIndex
-                            //     ? `3px solid ${AppleColors.primary}`
-                            //     : "3px solid transparent",
                             transition: "all 0.3s ease",
                             flexShrink: 0,
-                            // boxShadow:
-                            //   index === mobileCurrentIndex
-                            //     ? "0 4px 12px rgba(0, 122, 255, 0.3)"
-                            //     : "0 2px 8px rgba(0, 0, 0, 0.1)",
                           }}
                         >
                           <img
@@ -641,7 +596,6 @@ const HomePage: React.FC = () => {
                     style={{
                       borderRadius: "16px",
                       overflow: "hidden",
-                      // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                       aspectRatio: "1 / 1",
                       cursor: "pointer",
                       opacity: isLoaded ? 1 : 0,
@@ -679,8 +633,6 @@ const HomePage: React.FC = () => {
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
               padding: "60px 40px",
-              // border: `1px solid ${AppleColors.border}`,
-              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               textAlign: "center",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
@@ -873,7 +825,6 @@ const HomePage: React.FC = () => {
                 height: "auto",
                 objectFit: "contain",
                 borderRadius: "12px",
-                // boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
               }}
             />
 
@@ -920,10 +871,6 @@ const HomePage: React.FC = () => {
                       borderRadius: "8px",
                       overflow: "hidden",
                       cursor: "pointer",
-                      // border:
-                      //   index === currentImageIndex
-                      //     ? "3px solid white"
-                      //     : "3px solid transparent",
                       transition: "border 0.2s ease",
                       flexShrink: 0,
                     }}

@@ -925,7 +925,7 @@ const InvitationPage: React.FC = () => {
               fontFamily: systemFont,
               letterSpacing: "0.5px",}}>
           <p style={{margin:"0"}}>이광수 고인옥<span>의 아들</span> 지환</p>
-          <p style={{margin:"0"}}>이재광 배연수<span>의  딸</span> 윤진</p> 
+          <p style={{margin:"0"}}>이재관 배연수<span>의 딸</span> 윤진</p> 
         </div>
           <div
             style={{
