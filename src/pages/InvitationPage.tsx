@@ -982,10 +982,10 @@ const InvitationPage: React.FC = () => {
             transition: "all 1s ease 0.9s",
           }}
         >
-          {/* 🔍 오시는 길 정보 - showVenueInfo가 true일 때만 표시 */}
-              {invitationData?.showVenueInfo && (
-                <VenueInfo invitationData={invitationData} />
-              )}
+          {/* 올바른 조건 - showVenueInfo 또는 showAccountInfo 중 하나라도 true면 렌더링 */}
+          {(invitationData.showVenueInfo || invitationData.showAccountInfo) && (
+            <VenueInfo invitationData={invitationData} />
+          )}
         </div>
         {/* 참석 응답 폼 (WEDDING_GUEST 그룹만) */}
         {invitationData.showRsvpForm && (
