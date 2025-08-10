@@ -438,19 +438,23 @@ const updateEditingRsvpData = (field: string, value: any) => {
     setEditingGreeting(group.greetingMessage || "");
   };
 
-  /**
-   * 전체 통계 계산 함수
-   */
-  const getTotalStats = () => {
-    const summary = rsvpData?.summary;
-    return {
-      totalGroups: groups.length,
-      totalResponses: summary?.totalResponses || 0,
-      totalAttending: summary?.attendingResponses || 0,
-      totalNotAttending: summary?.notAttendingResponses || 0,
-      totalPending: 0,
-    };
+  // src/pages/admin/hooks/useAdminDashboard.ts 
+// getTotalStats 함수만 수정하면 됩니다
+
+/**
+ * 전체 통계 계산 함수 (수정됨 - 총 참석 인원 추가)
+ */
+const getTotalStats = () => {
+  const summary = rsvpData?.summary;
+  return {
+    totalGroups: groups.length,                           // 총 그룹 수
+    totalResponses: summary?.totalResponses || 0,         // 총 응답 수
+    totalAttending: summary?.attendingResponses || 0,     // 참석 응답 수
+    totalNotAttending: summary?.notAttendingResponses || 0, // 불참 응답 수
+    totalPending: 0,                                      // 미응답 수 (현재는 0)
+    totalAttendingCount: summary?.totalAttendingCount || 0, // 🆕 총 참석 인원 수 추가
   };
+};
 
   /**
    * 로그아웃 처리 함수
