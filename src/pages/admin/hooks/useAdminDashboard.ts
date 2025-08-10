@@ -588,31 +588,43 @@ const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
  * 편집 중인 RSVP 데이터 업데이트 함수 (수정됨 - 상태 동기화 개선)
  */
 const updateEditingRsvpData = (field: string, value: any) => {
-  console.log(`🔄 편집 데이터 업데이트: ${field} = ${value}`);
+  console.log(`🔄 편집 데이터 업데이트: ${field} =`, value);
   
-  setEditingRsvpData(prev => {
-    if (!prev) return null;
+  if (editingRsvpData) {
+    // 🔧 새로 추가: 벌크 업데이트 지원
+    if (field === "_bulk_update" && typeof value === "object") {
+      console.log('🔄 벌크 업데이트 실행:', value);
+      setEditingRsvpData(value);
+      console.log('✅ 벌크 업데이트 완료');
+      return;
+    }
     
-    const updated = { ...prev, [field]: value };
+    // 기존 개별 필드 업데이트 로직
+    const newData = {
+      ...editingRsvpData,
+      [field]: value
+    };
     
     // 🔧 추가: 참석 여부 변경 시 관련 필드들 자동 조정
     if (field === 'isAttending') {
       if (!value) {
         // 불참으로 변경 시
-        updated.totalCount = 0;
-        updated.attendeeNames = [];
+        newData.totalCount = 0;
+        newData.attendeeNames = [];
       } else {
         // 참석으로 변경 시
-        if (updated.totalCount === 0) {
-          updated.totalCount = 1;
-          updated.attendeeNames = [updated.responderName || ''];
+        if (newData.totalCount === 0) {
+          newData.totalCount = 1;
+          newData.attendeeNames = [newData.responderName || ''];
         }
       }
     }
     
-    console.log('📝 업데이트된 편집 데이터:', updated);
-    return updated;
-  });
+    console.log('✅ 개별 필드 업데이트 후 데이터:', newData);
+    setEditingRsvpData(newData);
+  } else {
+    console.error('❌ editingRsvpData가 없습니다');
+  }
 };
 
 // 🔧 추가: 디버깅을 위한 상태 변경 감지 (옵션)
