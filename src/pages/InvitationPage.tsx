@@ -920,7 +920,7 @@ const InvitationPage: React.FC = () => {
           }}
         >
 
-        <div style={{padding:"0 0 120px", fontSize: "4.359vw",
+        <div style={{padding:"0 0 120px", fontSize: "5.128vw",
               fontWeight: "700",
               fontFamily: systemFont,
               letterSpacing: "0.5px",}}>
