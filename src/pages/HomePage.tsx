@@ -308,6 +308,11 @@ const HomePage: React.FC = () => {
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(30px)",
             transition: "all 0.8s ease",
+            // 🔧 PC/모바일 반응형 너비 설정 추가
+            maxWidth: isMobile ? "390px" : "1200px",
+            margin: "0 auto",
+            padding: isMobile ? "20px" : "40px 60px",
+            width: "100%",
           }}
         >
           <h1 style={{margin:"40px 0"}}>
