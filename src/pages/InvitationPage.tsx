@@ -563,10 +563,6 @@ const InvitationPage: React.FC = () => {
         }}
       >
         {/* 인사말 섹션 (Apple 카드 스타일) */}
-        <div style={{padding:"0 0 120px"}}>
-          <p style={{margin:"0"}}>이광수 고인옥<span>의 아들</span> 지환</p>
-          <p style={{margin:"0"}}>이재광 배연수<span>의  딸</span> 윤진</p> 
-        </div>
         <div
           style={{
             backgroundColor: AppleColors.cardBackground,
@@ -923,6 +919,14 @@ const InvitationPage: React.FC = () => {
             paddingTop: "120px",
           }}
         >
+
+        <div style={{padding:"0 0 120px", fontSize: "4.359vw",
+              fontWeight: "700",
+              fontFamily: systemFont,
+              letterSpacing: "0.5px",}}>
+          <p style={{margin:"0"}}>이광수 고인옥<span>의 아들</span> 지환</p>
+          <p style={{margin:"0"}}>이재광 배연수<span>의  딸</span> 윤진</p> 
+        </div>
           <div
             style={{
               fontSize: "5.128vw",
