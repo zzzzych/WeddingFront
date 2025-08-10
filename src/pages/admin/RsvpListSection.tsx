@@ -168,30 +168,6 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
       onUpdateEditingRsvpData?.("attendeeNames", newNames);
     };
 
-    const handleTotalCountChange = (count: number) => {
-      console.log(`🔄 인원 변경: ${editingData.totalCount} -> ${count}`); // 디버깅용
-
-      const currentNames = editingData.attendeeNames || [];
-      let newNames = [...currentNames];
-
-      if (count > currentNames.length) {
-        // 인원이 늘어났을 때 빈 이름 추가
-        while (newNames.length < count) {
-          newNames.push("");
-        }
-      } else if (count < currentNames.length) {
-        // 인원이 줄어났을 때 뒤의 이름들 제거
-        newNames = newNames.slice(0, count);
-      }
-
-      console.log(`✅ 새 이름 배열:`, newNames); // 디버깅용
-
-      // 기존 방식대로 개별 업데이트
-      if (onUpdateEditingRsvpData) {
-        onUpdateEditingRsvpData("totalCount", count);
-        onUpdateEditingRsvpData("attendeeNames", newNames);
-      }
-    };
 
     return (
       <div
