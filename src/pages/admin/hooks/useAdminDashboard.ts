@@ -355,19 +355,33 @@ const handleUpdateGroupFeatures = useCallback(
     }
   };
 
-  /**
-   * RSVP 편집 시작 함수
-   */
-  const startEditingRsvp = (rsvp: any) => {
-    setEditingRsvpId(rsvp.id);
-    setEditingRsvpData({
-      responderName: rsvp.guestName || rsvp.response?.responderName,
-      isAttending: rsvp.willAttend ?? rsvp.response?.isAttending,
-      totalCount: rsvp.response?.totalCount || 1,
-      phoneNumber: rsvp.phoneNumber || rsvp.response?.phoneNumber || '',
-      message: rsvp.message || rsvp.response?.message || ''
-    });
+/**
+ * RSVP 편집 시작 함수 (수정됨 - 기존 데이터 정확히 로드)
+ */
+const startEditingRsvp = (rsvp: any) => {
+  console.log('🔄 편집 시작 - 원본 데이터:', rsvp); // 디버깅용
+  
+  // response 객체에서 데이터 추출
+  const responseData = rsvp.response || {};
+  const isAttending = rsvp.willAttend ?? responseData.isAttending ?? true;
+  const totalCount = responseData.totalCount || 1;
+  const attendeeNames = responseData.attendeeNames || [];
+  
+  // 편집 데이터 설정
+  const editData = {
+    responderName: rsvp.guestName || responseData.responderName || '',
+    isAttending: isAttending,
+    totalCount: totalCount,
+    attendeeNames: [...attendeeNames], // 배열 복사
+    phoneNumber: rsvp.phoneNumber || responseData.phoneNumber || '',
+    message: rsvp.message || responseData.message || ''
   };
+  
+  console.log('✅ 편집 데이터 설정:', editData); // 디버깅용
+  
+  setEditingRsvpId(rsvp.id);
+  setEditingRsvpData(editData);
+};
 
 /**
  * RSVP 편집 취소 함수
@@ -395,14 +409,20 @@ const handleUpdateRsvp = async (rsvpId: string, updateData: any) => {
 };
 
 /**
- * 편집 중인 RSVP 데이터 변경 함수
+ * 편집 중인 RSVP 데이터 변경 함수 (수정됨 - 디버깅 추가)
  */
 const updateEditingRsvpData = (field: string, value: any) => {
+  console.log(`🔄 필드 업데이트: ${field} =`, value); // 디버깅용
+  
   if (editingRsvpData) {
-    setEditingRsvpData({
+    const newData = {
       ...editingRsvpData,
       [field]: value
-    });
+    };
+    console.log('✅ 새 편집 데이터:', newData); // 디버깅용
+    setEditingRsvpData(newData);
+  } else {
+    console.error('❌ editingRsvpData가 없습니다'); // 디버깅용
   }
 };
 

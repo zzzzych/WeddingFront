@@ -119,7 +119,6 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
     return willAttend ? AppleColors.success : AppleColors.destructive;
   };
 
-
   /**
  * 참석자 정보를 표시하는 함수 (수정됨 - 참석자 이름 포함)
  */
@@ -157,16 +156,19 @@ const getAttendeeInfo = (rsvp: any) => {
   return '0명';
 };
 
-  // 편집 모드일 때
+ // 편집 모드일 때
   if (isEditing && editingData) {
     // 참석자 이름 배열 처리 함수
     const handleAttendeeNameChange = (index: number, name: string) => {
+      console.log(`🔄 참석자 이름 변경: ${index} -> ${name}`); // 디버깅용
       const newNames = [...(editingData.attendeeNames || [])];
       newNames[index] = name;
       onUpdateEditingRsvpData?.('attendeeNames', newNames);
     };
 
     const handleTotalCountChange = (count: number) => {
+      console.log(`🔄 인원 변경: ${editingData.totalCount} -> ${count}`); // 디버깅용
+      
       const currentNames = editingData.attendeeNames || [];
       let newNames = [...currentNames];
       
@@ -180,11 +182,18 @@ const getAttendeeInfo = (rsvp: any) => {
         newNames = newNames.slice(0, count);
       }
       
-      onUpdateEditingRsvpData?.('totalCount', count);
-      onUpdateEditingRsvpData?.('attendeeNames', newNames);
+      console.log(`✅ 새 이름 배열:`, newNames); // 디버깅용
+      
+      // 기존 방식대로 개별 업데이트
+      if (onUpdateEditingRsvpData) {
+        onUpdateEditingRsvpData('totalCount', count);
+        onUpdateEditingRsvpData('attendeeNames', newNames);
+      }
     };
 
     const handleAttendanceChange = (isAttending: boolean) => {
+      console.log(`🔄 참석 여부 변경: ${editingData.isAttending} -> ${isAttending}`); // 디버깅용
+      
       onUpdateEditingRsvpData?.('isAttending', isAttending);
       if (!isAttending) {
         // 불참 선택 시 인원과 이름 초기화
@@ -243,7 +252,7 @@ const getAttendeeInfo = (rsvp: any) => {
               </label>
               <input
                 type="text"
-                value={editingData.responderName || ''}
+                value={editingData.responderName || ''} // null/undefined 방지
                 onChange={(e) => onUpdateEditingRsvpData?.('responderName', e.target.value)}
                 style={{
                   width: "100%",
@@ -378,7 +387,7 @@ const getAttendeeInfo = (rsvp: any) => {
               </label>
               <input
                 type="tel"
-                value={editingData.phoneNumber || ''}
+                value={editingData.phoneNumber || ''} // null/undefined 방지
                 onChange={(e) => onUpdateEditingRsvpData?.('phoneNumber', e.target.value)}
                 style={{
                   width: "100%",
@@ -405,7 +414,7 @@ const getAttendeeInfo = (rsvp: any) => {
                 메시지 (선택사항)
               </label>
               <textarea
-                value={editingData.message || ''}
+                value={editingData.message || ''} // null/undefined 방지
                 onChange={(e) => onUpdateEditingRsvpData?.('message', e.target.value)}
                 rows={3}
                 style={{
