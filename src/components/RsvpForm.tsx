@@ -1,5 +1,5 @@
 // 참석 여부 응답 폼 컴포넌트
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { submitRsvp } from "../services/invitationService";
 import { RsvpRequest } from "../types";
 
@@ -9,6 +9,12 @@ interface RsvpFormProps {
   onSubmitSuccess?: () => void; // 제출 성공 시 실행할 함수
   onSubmitError?: (error: string) => void; // 제출 실패 시 실행할 함수
 }
+
+// 반응형 폰트 사이즈 함수 (PC: px, 모바일: vw)
+const getResponsiveFontSize = (pcPx: number, mobileVw: number, isMobile: boolean) => {
+  return isMobile ? `${mobileVw}vw` : `${pcPx}px`;
+};
+
 
 const RsvpForm: React.FC<RsvpFormProps> = ({
   uniqueCode,
@@ -31,6 +37,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isMobile, setIsMobile] = useState(false);
 
   // 참석 여부 변경 처리
   const handleAttendanceChange = (isAttending: boolean) => {
@@ -182,7 +189,6 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       setIsSubmitting(true);
 
       // 🔧 수정: 참석/불참에 따른 제출 데이터 준비
-      // 🔧 수정: 참석/불참에 따른 제출 데이터 준비
       let submitData: RsvpRequest;
 
       if (formData.isAttending === false) {
@@ -234,6 +240,22 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  // 🆕 모바일 감지 useEffect 추가 (HomePage.tsx와 동일)
+    useEffect(() => {
+      const checkMobile = () => {
+        const width = window.innerWidth;
+        setIsMobile(width <= 768);
+      };
+  
+      // 초기 체크
+      checkMobile();
+  
+      // 윈도우 리사이즈 이벤트 리스너
+      window.addEventListener("resize", checkMobile);
+  
+      return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
   // 제출 완료 후 화면
   if (isSubmitted) {
@@ -300,7 +322,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
         <div
           style={{
             margin: 0,
-            fontSize: "14px",
+            fontSize: getResponsiveFontSize(15, 3.8462, isMobile),
             lineHeight: "1.5",
             display: "flex",
             flexDirection: "column",
@@ -314,11 +336,11 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
         </div>
       </div>
 
-      <h3
+      <h2
         style={{ marginBottom: "40px", color: "#222222", textAlign: "center" }}
       >
         참석 여부 회신
-      </h3>
+      </h2>
 
       <form onSubmit={handleSubmit}>
         {/* 참석 여부 선택 */}

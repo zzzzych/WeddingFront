@@ -8,6 +8,11 @@ interface VenueInfoProps {
   invitationData: InvitationResponse;  // 청첩장 데이터
 }
 
+// 반응형 폰트 사이즈 함수 (PC: px, 모바일: vw)
+const getResponsiveFontSize = (pcPx: number, mobileVw: number, isMobile: boolean) => {
+  return isMobile ? `${mobileVw}vw` : `${pcPx}px`;
+};
+
 const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'directions' | 'parking' | 'account'>('directions');;
   
