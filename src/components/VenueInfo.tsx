@@ -85,7 +85,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
           // { key: 'info', label: '웨딩홀 정보', icon: '🏛️' },
           { key: 'directions', label: '지도 & 길찾기', icon: '🗺️' },
           { key: 'parking', label: '교통 & 주차', icon: '🚗' },
-          { key: 'account', label: '마음 전할 곳', icon: '💝' }
+          ...(invitationData.showAccountInfo ? [{ key: 'account', label: '마음 전할 곳', icon: '💝' }] : [])
         ].map((tab) => (
           <button
             key={tab.key}
@@ -366,7 +366,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
         </div>
       )}
 
-      {activeTab === 'account' && (
+      {/* 계좌 정보 탭 - showAccountInfo가 true일 때만 표시 */}
+      {activeTab === 'account' && invitationData.showAccountInfo && (
         <div>
           {/* 계좌 정보 표시 */}
           {weddingInfo.accountInfo && weddingInfo.accountInfo.length > 0 ? (
@@ -386,14 +387,21 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               }}>
                 💝 마음 전할 곳
               </h4>
-              <div style={{
-                fontSize: '14px',
-                color: '#6c757d',
-                textAlign: 'center',
-                marginBottom: '15px'
-              }}>
-                농협 121065-56-105215 (고이우 / 신랑)
-              </div>
+              {/* 관리자에서 입력한 계좌 정보들을 배열로 표시 */}
+              {weddingInfo.accountInfo.map((account, index) => (
+                <div key={index} style={{
+                  fontSize: '14px',
+                  color: '#2c3e50',
+                  textAlign: 'center',
+                  marginBottom: '10px',
+                  padding: '8px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '6px',
+                  border: '1px solid #dee2e6'
+                }}>
+                  {account}
+                </div>
+              ))}
             </div>
           ) : (
             <div style={{
