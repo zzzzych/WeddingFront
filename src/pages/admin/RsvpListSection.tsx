@@ -191,21 +191,6 @@ const getAttendeeInfo = (rsvp: any) => {
       }
     };
 
-    const handleAttendanceChange = (isAttending: boolean) => {
-      console.log(`🔄 참석 여부 변경: ${editingData.isAttending} -> ${isAttending}`); // 디버깅용
-      
-      onUpdateEditingRsvpData?.('isAttending', isAttending);
-      if (!isAttending) {
-        // 불참 선택 시 인원과 이름 초기화
-        onUpdateEditingRsvpData?.('totalCount', 0);
-        onUpdateEditingRsvpData?.('attendeeNames', []);
-      } else if (isAttending && (!editingData.totalCount || editingData.totalCount === 0)) {
-        // 참석 선택 시 최소 1명으로 설정
-        onUpdateEditingRsvpData?.('totalCount', 1);
-        onUpdateEditingRsvpData?.('attendeeNames', ['']);
-      }
-    };
-
     return (
       <div
         style={{
