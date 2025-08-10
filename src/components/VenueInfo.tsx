@@ -59,15 +59,85 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
     return null;
   }
 
+  // showAccountInfo만 true이고 showVenueInfo가 false인 경우: 탭 없이 바로 계좌 정보 표시
+  if (!invitationData.showVenueInfo && invitationData.showAccountInfo) {
+    return (
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        marginBottom: '20px'
+      }}>
+        {/* 헤더 */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '25px'
+        }}>
+          <h2 style={{
+            fontSize: '24px',
+            color: '#222',
+            margin: '0 0 8px 0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            마음 전할 곳
+          </h2>
+          <p style={{
+            color: '#6c757d',
+            fontSize: '14px',
+            margin: 0
+          }}>
+            축하의 마음을 전해주세요
+          </p>
+        </div>
+
+        {/* 계좌 정보 표시 */}
+        {weddingInfo.accountInfo && weddingInfo.accountInfo.length > 0 ? (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            marginBottom: '15px'
+          }}>
+            {/* 관리자에서 입력한 계좌 정보들을 배열로 표시 */}
+            {weddingInfo.accountInfo.map((account, index) => (
+              <div key={index} style={{
+                fontSize: '14px',
+                color: '#2c3e50',
+                textAlign: 'center',
+                marginBottom: '10px',
+                padding: '8px',
+                backgroundColor: '#ffffff',
+                borderRadius: '6px',
+              }}>
+                {account}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '30px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#6c757d', margin: 0 }}>
+              계좌 정보가 없습니다.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // showVenueInfo가 true인 경우 (탭 형태로 표시)
   return (
     <div style={{
       backgroundColor: '#ffffff',
-      // border: '1px solid #ffeaa7',
       borderRadius: '12px',
-      // padding: '25px',
       marginBottom: '20px'
     }}>
-      {/* 헤더 - showVenueInfo가 true일 때만 "오시는 길" 제목 표시, 아니면 "마음 전할 곳" */}
+      {/* 헤더 */}
       <div style={{
         textAlign: 'center',
         marginBottom: '25px'
@@ -81,21 +151,18 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
           justifyContent: 'center',
           gap: '8px'
         }}>
-          {invitationData.showVenueInfo ? '오시는 길' : '마음 전할 곳'}
+          오시는 길
         </h2>
         <p style={{
           color: '#6c757d',
           fontSize: '14px',
           margin: 0
         }}>
-          {invitationData.showVenueInfo 
-            ? '결혼식 장소 및 교통편 안내' 
-            : '축하의 마음을 전해주세요'
-          }
+          결혼식 장소 및 교통편 안내
         </p>
       </div>
 
-      {/* 탭 메뉴 - 활성화된 기능이 2개 이상일 때만 표시 */}
+      {/* 탭 메뉴 - showVenueInfo와 showAccountInfo가 모두 true일 때만 표시 */}
       {(invitationData.showVenueInfo && invitationData.showAccountInfo) && (
         <div style={{
           display: 'flex',
@@ -106,15 +173,9 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
           border: '1px solid #dee2e6'
         }}>
           {[
-            // showVenueInfo가 true일 때만 오시는 길 관련 탭들 표시
-            ...(invitationData.showVenueInfo ? [
-              { key: 'directions', label: '지도 & 길찾기', icon: '🗺️' },
-              { key: 'parking', label: '교통 & 주차', icon: '🚗' }
-            ] : []),
-            // showAccountInfo가 true일 때만 계좌 정보 탭 표시
-            ...(invitationData.showAccountInfo ? [
-              { key: 'account', label: '마음 전할 곳', icon: '💝' }
-            ] : [])
+            { key: 'directions', label: '지도 & 길찾기', icon: '🗺️' },
+            { key: 'parking', label: '교통 & 주차', icon: '🚗' },
+            { key: 'account', label: '마음 전할 곳', icon: '💝' }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -139,111 +200,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
         </div>
       )}
 
-      {/* 탭 컨텐츠 */}
-      {activeTab === 'info' && invitationData.showVenueInfo && (
-        <div>
-          {/* 웨딩홀 기본 정보 */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            padding: '20px',
-            marginBottom: '15px',
-            border: '1px solid #dee2e6'
-          }}>
-            <h3 style={{
-              fontSize: '18px',
-              color: '#2c3e50',
-              margin: '0 0 15px 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              🏛️ {weddingInfo.venueName || '웨딩홀'}
-            </h3>
-            
-            <div style={{ marginBottom: '15px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-                marginBottom: '8px'
-              }}>
-                <span style={{ color: '#6c757d', fontSize: '14px', minWidth: '16px' }}>📍</span>
-                <div style={{ flex: 1 }}>
-                  <p style={{
-                    margin: 0,
-                    fontSize: '15px',
-                    lineHeight: '1.5',
-                    color: '#495057'
-                  }}>
-                    {weddingInfo.venueAddress || '서울시 강남구 웨딩홀'}
-                  </p>
-                  <button
-                    onClick={copyAddress}
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: '#007bff',
-                      border: 'none',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      padding: '2px 0',
-                      marginTop: '4px',
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    📋 주소 복사
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 일시 정보 */}
-          <div style={{
-            backgroundColor: '#e3f2fd',
-            borderRadius: '8px',
-            padding: '20px',
-            border: '1px solid #bbdefb'
-          }}>
-            <h4 style={{
-              fontSize: '16px',
-              color: '#1565c0',
-              margin: '0 0 10px 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              🗓️ 결혼식 일정
-            </h4>
-            <p style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#2c3e50',
-              margin: 0
-            }}>
-              {new Date(weddingInfo.weddingDate!).toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                weekday: 'long'
-              })}
-            </p>
-            <p style={{
-              fontSize: '16px',
-              color: '#495057',
-              margin: '4px 0 0 0'
-            }}>
-              {new Date(weddingInfo.weddingDate!).toLocaleTimeString('ko-KR', {
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* 지도 & 길찾기 탭 - showVenueInfo가 true일 때만 표시 */}
-      {activeTab === 'directions' && invitationData.showVenueInfo && (
+      {/* 지도 & 길찾기 탭 */}
+      {activeTab === 'directions' && (
         <div>
           {/* 지도 링크 버튼들 */}
           <div style={{
@@ -301,17 +259,15 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
         </div>
       )}
 
-      {/* 교통 & 주차 탭 - showVenueInfo가 true일 때만 표시 */}
-      {activeTab === 'parking' && invitationData.showVenueInfo && (
+      {/* 교통 & 주차 탭 */}
+      {activeTab === 'parking' && (
         <div>
           {/* 주차 정보 */}
           {weddingInfo.parkingInfo && (
             <div style={{
               backgroundColor: 'white',
               borderRadius: '8px',
-              // padding: '20px',
               marginBottom: '15px',
-              // border: '1px solid #dee2e6'
             }}>
               <h4 style={{
                 fontSize: '16px',
@@ -326,10 +282,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               </h4>
               <div style={{
                 backgroundColor: '#fff',
-                // border: '1px solid #ffeaa7',
                 borderRadius: '6px',
                 justifyContent:"center"
-                // padding: '15px'
               }}>
                 <p style={{
                   margin: 0,
@@ -349,8 +303,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
             <div style={{
               backgroundColor: 'white',
               borderRadius: '8px',
-              // padding: '20px',
-              // border: '1px solid #dee2e6'
             }}>
               <h4 style={{
                 fontSize: '16px',
@@ -365,9 +317,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
               </h4>
               <div style={{
                 backgroundColor: '#ffffff',
-                // border: '1px solid #bbdefb',
                 borderRadius: '6px',
-                // padding: '15px'
                 textAlign:"center"
               }}>
                 <p style={{
@@ -376,23 +326,10 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                   lineHeight: '1.6',
                   color: '#222'
                 }}>
-                  {/* {weddingInfo.transportInfo} */}
                   서울역 10번 출구쪽 지하 연결 통로 이용 도보 4분<br/>
                   서울역 12번 출구 도보 2분
                 </p>
               </div>
-            </div>
-          )}
-
-          {/* 기본 안내 (정보가 없을 때) */}
-          {!weddingInfo.parkingInfo && !weddingInfo.transportInfo && (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '30px',
-              border: '1px solid #dee2e6',
-              textAlign: 'center'
-            }}>
             </div>
           )}
         </div>
@@ -429,48 +366,6 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                   padding: '8px',
                   backgroundColor: '#ffffff',
                   borderRadius: '6px',
-                  // border: '1px solid #dee2e6'
-                }}>
-                  {account}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '30px',
-              textAlign: 'center'
-            }}>
-              <p style={{ color: '#6c757d', margin: 0 }}>
-                계좌 정보가 없습니다.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* showVenueInfo가 false이고 showAccountInfo만 true일 때 직접 계좌 정보 표시 */}
-      {!invitationData.showVenueInfo && invitationData.showAccountInfo && (
-        <div>
-          {/* 계좌 정보 표시 */}
-          {weddingInfo.accountInfo && weddingInfo.accountInfo.length > 0 ? (
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              marginBottom: '15px'
-            }}>
-              {/* 관리자에서 입력한 계좌 정보들을 배열로 표시 */}
-              {weddingInfo.accountInfo.map((account, index) => (
-                <div key={index} style={{
-                  fontSize: '14px',
-                  color: '#2c3e50',
-                  textAlign: 'center',
-                  marginBottom: '10px',
-                  padding: '8px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '6px',
-                  // border: '1px solid #dee2e6'
                 }}>
                   {account}
                 </div>
