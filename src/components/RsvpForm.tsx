@@ -193,27 +193,38 @@ const handleAttendanceChange = (isAttending: boolean) => {
   };
 
   // 제출 완료 후 화면
-  if (isSubmitted) {
-    return (
-      <div
-        style={{
-          backgroundColor: "#d4edda",
-          border: "1px solid #c3e6cb",
-          borderRadius: "8px",
-          padding: "20px",
-          textAlign: "center",
-          color: "#155724",
-        }}
-      >
-        <h3 style={{ margin: "0 0 10px 0", color: "#155724" }}>
-          ✅ 응답이 완료되었습니다
-        </h3>
-        <p style={{ margin: 0 }}>
-          소중한 답변 감사합니다. 결혼식 당일 뵙겠습니다!
-        </p>
-      </div>
-    );
-  }
+if (isSubmitted) {
+  return (
+    <div
+      style={{
+        backgroundColor: formData.isAttending ? "#d4edda" : "#f8d7da", // 참석/불참에 따라 배경색 변경
+        border: formData.isAttending 
+          ? "1px solid #c3e6cb" 
+          : "1px solid #f5c6cb", // 참석/불참에 따라 테두리색 변경
+        borderRadius: "8px",
+        padding: "20px",
+        textAlign: "center",
+        color: formData.isAttending ? "#155724" : "#721c24", // 참석/불참에 따라 텍스트색 변경
+      }}
+    >
+      <h3 style={{ 
+        margin: "0 0 10px 0", 
+        color: formData.isAttending ? "#155724" : "#721c24" 
+      }}>
+        {formData.isAttending 
+          ? "✅ 참석 응답이 완료되었습니다" 
+          : "📝 불참 응답이 완료되었습니다"
+        }
+      </h3>
+      <p style={{ margin: 0 }}>
+        {formData.isAttending 
+          ? "결혼식 당일 뵙겠습니다!" 
+          : "응답해 주셔서 감사합니다."
+        }
+      </p>
+    </div>
+  );
+}
 
   // 메인 폼 렌더링
   return (
