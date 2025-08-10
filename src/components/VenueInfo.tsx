@@ -395,9 +395,9 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                   textAlign: 'center',
                   marginBottom: '10px',
                   padding: '8px',
-                  backgroundColor: '#f8f9fa',
+                  backgroundColor: '#ffffff',
                   borderRadius: '6px',
-                  border: '1px solid #dee2e6'
+                  // border: '1px solid #dee2e6'
                 }}>
                   {account}
                 </div>

@@ -563,6 +563,10 @@ const InvitationPage: React.FC = () => {
         }}
       >
         {/* 인사말 섹션 (Apple 카드 스타일) */}
+        <div style={{padding:"0 0 120px"}}>
+          <p style={{margin:"0"}}>이광수 고인옥<span>의 아들</span> 지환</p>
+          <p style={{margin:"0"}}>이재광 배연수<span>의  딸</span> 윤진</p> 
+        </div>
         <div
           style={{
             backgroundColor: AppleColors.cardBackground,
@@ -1048,13 +1052,15 @@ const InvitationPage: React.FC = () => {
 
         {/* 공유 버튼 - showShareButton이 true일 때만 표시 */}
         {invitationData.showShareButton && (
-          <ShareButton 
-            uniqueCode={uniqueCode!}
-            groomName={invitationData.weddingInfo.groomName}
-            brideName={invitationData.weddingInfo.brideName}
-            weddingDate={invitationData.weddingInfo.weddingDate}
-            venueName={invitationData.weddingInfo.venueName}
-          />
+          <div style={{display:"flex", justifyContent:"center", width:"100%"}}>
+            <ShareButton 
+              uniqueCode={uniqueCode!}
+              groomName={invitationData.weddingInfo.groomName}
+              brideName={invitationData.weddingInfo.brideName}
+              weddingDate={invitationData.weddingInfo.weddingDate}
+              venueName={invitationData.weddingInfo.venueName}
+            />
+          </div>
         )}
 
         {/* 예식 순서 - showCeremonyProgram이 true일 때만 표시 */}

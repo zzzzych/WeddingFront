@@ -521,14 +521,29 @@ export const deleteRsvpResponse = async (rsvpId: string): Promise<void> => {
  * 일반 사용자가 RSVP 응답 제출
  * @param uniqueCode - 청첩장 고유 코드
  * @param rsvpData - 제출할 RSVP 응답 데이터
- * @returns Promise<RsvpSubmitResponse> - 제출 결과
+ * @returns Promise<any> - 제출 결과 (SimpleRsvpResponse)
  */
-export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Promise<RsvpSubmitResponse> => {
+export const submitRsvp = async (uniqueCode: string, rsvpData: RsvpRequest): Promise<any> => {
   try {
     console.log('✉️ RSVP 응답 제출 시작:', { uniqueCode, rsvpData });
-    const response = await apiPost(`/api/invitation/${uniqueCode}/rsvp`, rsvpData);
-    console.log('✅ RSVP 응답 제출 완료:', response);
-    return response;
+    
+    // 🔧 API 호출 시 토큰 없이 public API로 호출
+    const response = await fetch(`${API_BASE_URL}/api/invitation/${uniqueCode}/rsvp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(rsvpData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ RSVP 응답 제출 완료:', result);
+    return result;
   } catch (error) {
     console.error('❌ RSVP 응답 제출 실패:', error);
     throw error;

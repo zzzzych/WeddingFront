@@ -17,10 +17,11 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
 }) => {
   // 폼 상태 관리
   const [formData, setFormData] = useState<RsvpRequest>({
-    responderName: '',
-    isAttending: true,      // 기본값: 참석
-    adultCount: 1,          // 기본값: 성인 1명
-    childrenCount: 0        // 기본값: 자녀 0명
+    isAttending: true,          // 기본값: 참석
+    totalCount: 1,              // 기본값: 1명
+    attendeeNames: [''],        // 기본값: 빈 이름 1개
+    phoneNumber: '',            // 전화번호 (선택사항)
+    message: ''                 // 메시지 (선택사항)
   });
 
   // 로딩 및 제출 완료 상태
@@ -28,8 +29,76 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // 입력값 변경 처리
-  const handleInputChange = (field: keyof RsvpRequest, value: string | number | boolean) => {
+  // 참석 여부 변경 처리
+  const handleAttendanceChange = (isAttending: boolean) => {
+    if (isAttending) {
+      // 참석 선택 시: 기본 1명으로 설정
+      setFormData({
+        ...formData,
+        isAttending: true,
+        totalCount: 1,
+        attendeeNames: ['']
+      });
+    } else {
+      // 불참 선택 시: 인원과 이름 초기화
+      setFormData({
+        ...formData,
+        isAttending: false,
+        totalCount: 0,
+        attendeeNames: []
+      });
+    }
+    // 에러 메시지 초기화
+    setErrors({});
+  };
+
+  // 참석 인원 변경 처리
+  const handleCountChange = (count: number) => {
+    const newAttendeeNames = Array(count).fill('').map((_, index) => 
+      formData.attendeeNames[index] || ''
+    );
+    
+    setFormData({
+      ...formData,
+      totalCount: count,
+      attendeeNames: newAttendeeNames
+    });
+    
+    // 관련 에러 메시지 제거
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors.totalCount;
+      // 줄어든 인원의 이름 에러도 제거
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith('attendeeName_') && parseInt(key.split('_')[1]) >= count) {
+          delete newErrors[key];
+        }
+      });
+      return newErrors;
+    });
+  };
+
+  // 참석자 이름 변경 처리
+  const handleNameChange = (index: number, name: string) => {
+    const newNames = [...formData.attendeeNames];
+    newNames[index] = name;
+    
+    setFormData({
+      ...formData,
+      attendeeNames: newNames
+    });
+    
+    // 해당 이름 필드의 에러 메시지 제거
+    if (errors[`attendeeName_${index}`]) {
+      setErrors(prev => ({
+        ...prev,
+        [`attendeeName_${index}`]: ''
+      }));
+    }
+  };
+
+  // 기타 필드 변경 처리
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -48,27 +117,25 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
-    // 이름 검사
-    if (!formData.responderName.trim()) {
-      newErrors.responderName = '이름을 입력해주세요.';
-    } else if (formData.responderName.trim().length < 2) {
-      newErrors.responderName = '이름은 2글자 이상 입력해주세요.';
-    }
-
-    // 참석하는 경우 인원수 검사
     if (formData.isAttending) {
-      if (formData.adultCount < 1) {
-        newErrors.adultCount = '성인 인원은 최소 1명 이상이어야 합니다.';
+      // 참석하는 경우 유효성 검사
+      if (formData.totalCount < 1) {
+        newErrors.totalCount = '참석 인원은 최소 1명 이상이어야 합니다.';
       }
-      if (formData.childrenCount < 0) {
-        newErrors.childrenCount = '자녀 인원은 0명 이상이어야 합니다.';
+      
+      if (formData.totalCount > 10) {
+        newErrors.totalCount = '참석 인원은 최대 10명까지 가능합니다.';
       }
-      if (formData.adultCount > 10) {
-        newErrors.adultCount = '성인 인원은 최대 10명까지 가능합니다.';
-      }
-      if (formData.childrenCount > 10) {
-        newErrors.childrenCount = '자녀 인원은 최대 10명까지 가능합니다.';
-      }
+
+      // 각 참석자 이름 검사
+      formData.attendeeNames.forEach((name, index) => {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+          newErrors[`attendeeName_${index}`] = `${index + 1}번째 참석자 이름을 입력해주세요.`;
+        } else if (trimmedName.length < 2) {
+          newErrors[`attendeeName_${index}`] = `${index + 1}번째 참석자 이름은 2글자 이상 입력해주세요.`;
+        }
+      });
     }
 
     setErrors(newErrors);
@@ -87,21 +154,13 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
     try {
       setIsSubmitting(true);
 
-      // 불참석 시 인원수 0으로 설정
+      // 제출 데이터 준비 (이름들 trim 처리)
       const submitData: RsvpRequest = {
         ...formData,
-        responderName: formData.responderName.trim(),
-        adultCount: formData.isAttending ? formData.adultCount : 0,
-        childrenCount: formData.isAttending ? formData.childrenCount : 0
+        attendeeNames: formData.attendeeNames.map(name => name.trim())
       };
 
       // API 호출
-      const submitDataWithCode: RsvpRequest = {
-        ...submitData,
-        // uniqueCode를 어떻게 처리할지에 따라 달라짐
-        // 서버에서 uniqueCode로 그룹을 찾는 경우라면 다른 API 엔드포인트가 필요
-      };
-
       await submitRsvp(uniqueCode, submitData);
 
       // 성공 처리
@@ -117,7 +176,6 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
       if (onSubmitError) {
         onSubmitError(errorMessage);
       } else {
-        // 기본 에러 처리
         alert(errorMessage);
       }
     } finally {
@@ -150,9 +208,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
   return (
     <div style={{
       backgroundColor: '#ffffff',
-      // border: '1px solid #ffeaa7',
       borderRadius: '8px',
-      // padding: '20px',
       marginBottom: '20px'
     }}>
       {/* 안내 메시지 */}
@@ -161,55 +217,29 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
         border: '1px solid #ffff',
         borderRadius: '6px',
         paddingBottom: '60px',
-        // marginBottom: '20px',
         color: '#721c24',
-        display:"flex",
-        flexDirection:"column",
-        alignItems:"center"
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
       }}>
-        <div style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', display:"flex", flexDirection:"column", alignItems:"center" }}>
+        <div style={{ 
+          margin: 0, 
+          fontSize: '14px', 
+          lineHeight: '1.5', 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center" 
+        }}>
           <strong>참석 여부 안내</strong>
-          <p style={{margin:0}}>식장이 협소하고 좌석 지정이 필요하여</p>
-          <p style={{margin:0}}>정확한 참석 인원 확인이 필요합니다.</p>
-          <p style={{margin:0}}>너그러운 양해 부탁드립니다.</p>
+          <p style={{margin: 0}}>식장이 협소하고 좌석 지정이 필요하여</p>
+          <p style={{margin: 0}}>정확한 참석 인원 확인이 필요합니다.</p>
+          <p style={{margin: 0}}>너그러운 양해 부탁드립니다.</p>
         </div>
       </div>
 
-      <h3 style={{ marginBottom: '40px', color: '#856404', textAlign:"center" }}>참석 여부 회신</h3>
+      <h3 style={{ marginBottom: '40px', color: '#856404', textAlign: "center" }}>참석 여부 회신</h3>
 
       <form onSubmit={handleSubmit}>
-        {/* 이름 입력 */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '8px', 
-            fontWeight: 'bold',
-            color: '#495057'
-          }}>
-            이름 *
-          </label>
-          <input
-            type="text"
-            value={formData.responderName}
-            onChange={(e) => handleInputChange('responderName', e.target.value)}
-            placeholder="참석자 이름을 입력해주세요"
-            style={{
-              width: '100%',
-              padding: '12px',
-              border: errors.responderName ? '2px solid #dc3545' : '1px solid #ced4da',
-              borderRadius: '6px',
-              fontSize: '16px',
-              boxSizing: 'border-box'
-            }}
-            disabled={isSubmitting}
-          />
-          {errors.responderName && (
-            <p style={{ color: '#dc3545', fontSize: '14px', margin: '5px 0 0 0' }}>
-              {errors.responderName}
-            </p>
-          )}
-        </div>
-
         {/* 참석 여부 선택 */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ 
@@ -226,7 +256,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
                 type="radio"
                 name="isAttending"
                 checked={formData.isAttending === true}
-                onChange={() => handleInputChange('isAttending', true)}
+                onChange={() => handleAttendanceChange(true)}
                 style={{ marginRight: '6px' }}
                 disabled={isSubmitting}
               />
@@ -237,7 +267,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
                 type="radio"
                 name="isAttending"
                 checked={formData.isAttending === false}
-                onChange={() => handleInputChange('isAttending', false)}
+                onChange={() => handleAttendanceChange(false)}
                 style={{ marginRight: '6px' }}
                 disabled={isSubmitting}
               />
@@ -246,10 +276,10 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
           </div>
         </div>
 
-        {/* 인원수 입력 (참석 시만 표시) */}
+        {/* 참석 인원 및 이름 입력 (참석 시만 표시) */}
         {formData.isAttending && (
           <>
-            {/* 성인 인원 */}
+            {/* 참석 인원 선택 */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ 
                 display: 'block', 
@@ -257,33 +287,33 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
                 fontWeight: 'bold',
                 color: '#495057'
               }}>
-                성인 인원 *
+                참석 인원 *
               </label>
               <select
-                value={formData.adultCount}
-                onChange={(e) => handleInputChange('adultCount', parseInt(e.target.value))}
+                value={formData.totalCount}
+                onChange={(e) => handleCountChange(parseInt(e.target.value))}
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: errors.adultCount ? '2px solid #dc3545' : '1px solid #ced4da',
+                  border: errors.totalCount ? '2px solid #dc3545' : '1px solid #ced4da',
                   borderRadius: '6px',
                   fontSize: '16px',
                   boxSizing: 'border-box'
                 }}
                 disabled={isSubmitting}
               >
-                {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
                   <option key={num} value={num}>{num}명</option>
                 ))}
               </select>
-              {errors.adultCount && (
+              {errors.totalCount && (
                 <p style={{ color: '#dc3545', fontSize: '14px', margin: '5px 0 0 0' }}>
-                  {errors.adultCount}
+                  {errors.totalCount}
                 </p>
               )}
             </div>
 
-            {/* 자녀 인원 */}
+            {/* 참석자 이름 입력 */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ 
                 display: 'block', 
@@ -291,33 +321,90 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
                 fontWeight: 'bold',
                 color: '#495057'
               }}>
-                자녀 인원
+                참석자 이름 *
               </label>
-              <select
-                value={formData.childrenCount}
-                onChange={(e) => handleInputChange('childrenCount', parseInt(e.target.value))}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: errors.childrenCount ? '2px solid #dc3545' : '1px solid #ced4da',
-                  borderRadius: '6px',
-                  fontSize: '16px',
-                  boxSizing: 'border-box'
-                }}
-                disabled={isSubmitting}
-              >
-                {[0,1,2,3,4,5,6,7,8,9,10].map(num => (
-                  <option key={num} value={num}>{num}명</option>
-                ))}
-              </select>
-              {errors.childrenCount && (
-                <p style={{ color: '#dc3545', fontSize: '14px', margin: '5px 0 0 0' }}>
-                  {errors.childrenCount}
-                </p>
-              )}
+              {formData.attendeeNames.map((name, index) => (
+                <div key={index} style={{ marginBottom: '10px' }}>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => handleNameChange(index, e.target.value)}
+                    placeholder={`${index + 1}번째 참석자 이름`}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: errors[`attendeeName_${index}`] ? '2px solid #dc3545' : '1px solid #ced4da',
+                      borderRadius: '6px',
+                      fontSize: '16px',
+                      boxSizing: 'border-box'
+                    }}
+                    disabled={isSubmitting}
+                  />
+                  {errors[`attendeeName_${index}`] && (
+                    <p style={{ color: '#dc3545', fontSize: '14px', margin: '5px 0 0 0' }}>
+                      {errors[`attendeeName_${index}`]}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           </>
         )}
+
+        {/* 전화번호 (선택사항) */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '8px', 
+            fontWeight: 'bold',
+            color: '#495057'
+          }}>
+            전화번호 (선택사항)
+          </label>
+          <input
+            type="tel"
+            value={formData.phoneNumber || ''}
+            onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+            placeholder="연락 가능한 전화번호"
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: '1px solid #ced4da',
+              borderRadius: '6px',
+              fontSize: '16px',
+              boxSizing: 'border-box'
+            }}
+            disabled={isSubmitting}
+          />
+        </div>
+
+        {/* 메시지 (선택사항) */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '8px', 
+            fontWeight: 'bold',
+            color: '#495057'
+          }}>
+            메시지 (선택사항)
+          </label>
+          <textarea
+            value={formData.message || ''}
+            onChange={(e) => handleInputChange('message', e.target.value)}
+            placeholder="전하고 싶은 말씀이 있다면 적어주세요"
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: '1px solid #ced4da',
+              borderRadius: '6px',
+              fontSize: '16px',
+              boxSizing: 'border-box',
+              resize: 'vertical'
+            }}
+            disabled={isSubmitting}
+          />
+        </div>
 
         {/* 제출 버튼 */}
         <button
@@ -325,15 +412,15 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
           disabled={isSubmitting}
           style={{
             width: '100%',
+            padding: '15px',
             backgroundColor: isSubmitting ? '#6c757d' : '#007bff',
             color: 'white',
             border: 'none',
-            padding: '14px 20px',
             borderRadius: '6px',
             fontSize: '16px',
             fontWeight: 'bold',
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s'
+            opacity: isSubmitting ? 0.7 : 1
           }}
         >
           {isSubmitting ? '제출 중...' : '응답 제출하기'}

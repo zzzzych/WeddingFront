@@ -371,10 +371,9 @@ export interface RsvpListResponse {
  * RSVP 제출 요청 타입 (일반 사용자가 응답 제출할 때)
  */
 export interface RsvpRequest {
-  responderName: string;          // 응답자 이름
   isAttending: boolean;           // 참석 여부
-  adultCount: number;             // 성인 참석 인원 수
-  childrenCount: number;          // 자녀 참석 인원 수
+  totalCount: number;             // 총 참석 인원 수 (기존 adultCount + childrenCount 통합)
+  attendeeNames: string[];        // 참석자 이름 배열 (참석 선택 시 필수, 첫 번째가 대표 응답자)
   phoneNumber?: string;           // 전화번호 (선택사항)
   message?: string;               // 메시지 (선택사항)
   groupId?: string;               // 그룹 ID (서버에서 자동 설정 가능)
