@@ -1054,10 +1054,10 @@ const InvitationPage: React.FC = () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              padding: "40px",
-              marginBottom: "60px",
-              border: `1px solid ${AppleColors.border}`,
-              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              // padding: "40px",
+              // marginBottom: "60px",
+              // border: `1px solid ${AppleColors.border}`,
+              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 1.5s",
@@ -1068,14 +1068,12 @@ const InvitationPage: React.FC = () => {
                 fontSize: "28px",
                 fontWeight: "600",
                 color: AppleColors.text,
-                margin: "0 0 32px 0",
+                // margin: "0 0 32px 0",
                 textAlign: "center",
                 fontFamily: systemFont,
               }}
-            >
-              💳 마음 전할 곳
-            </h2>
-            <div style={{ fontSize: "16px", lineHeight: "1.8", color: AppleColors.text, fontFamily: systemFont }}>
+            >마음 전할 곳</h2>
+            <div style={{ fontSize: "4.1026vw", lineHeight: "1.8", color: AppleColors.text, fontFamily: systemFont }}>
               {invitationData.weddingInfo.accountInfo.map((account, index) => (
                 <div key={index} style={{ marginBottom: "8px", textAlign: "center" }}>
                   {account}
