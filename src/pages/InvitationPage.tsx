@@ -1023,16 +1023,14 @@ const InvitationPage: React.FC = () => {
           >
             <h2
               style={{
-                fontSize: "28px",
+                fontSize: "7.1795vw",
                 fontWeight: "600",
                 color: AppleColors.text,
                 margin: "0 0 32px 0",
                 textAlign: "center",
                 fontFamily: systemFont,
               }}
-            >
-              📋 본식 순서
-            </h2>
+            >본식 순서</h2>
             <div
               style={{
                 fontSize: "16px",
@@ -1055,6 +1053,7 @@ const InvitationPage: React.FC = () => {
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
               // padding: "40px",
+              paddingTop: "120px",
               // marginBottom: "60px",
               // border: `1px solid ${AppleColors.border}`,
               // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
@@ -1065,7 +1064,7 @@ const InvitationPage: React.FC = () => {
           >
             <h2
               style={{
-                fontSize: "28px",
+                fontSize: "7.1795vw",
                 fontWeight: "600",
                 color: AppleColors.text,
                 // margin: "0 0 32px 0",
