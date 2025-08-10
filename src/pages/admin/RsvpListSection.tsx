@@ -268,66 +268,72 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
                 참석 여부
               </label>
               {/* // 참석 여부 선택 드롭다운 수정 */}
-<select
-  value={editingData.isAttending ? "참석" : "불참"} // 명시적 비교로 변경
-  onChange={(e) => {
-    const isAttending = e.target.value === "참석";
-    console.log("🎯 참석 여부 변경 요청:", isAttending); // 디버깅용
-    console.log("🎯 현재 editingData.isAttending:", editingData.isAttending); // 추가 디버깅
+              <select
+                value={editingData.isAttending ? "참석" : "불참"} // 명시적 비교로 변경
+                onChange={(e) => {
+                  const isAttending = e.target.value === "참석";
+                  console.log("🎯 참석 여부 변경 요청:", isAttending); // 디버깅용
+                  console.log(
+                    "🎯 현재 editingData.isAttending:",
+                    editingData.isAttending
+                  ); // 추가 디버깅
 
-    if (onUpdateEditingRsvpData) {
-      // 🔧 수정: 한 번에 모든 상태를 업데이트하도록 변경
-      if (!isAttending) {
-        // 불참 선택 시 - 모든 필드를 하나의 객체로 한번에 업데이트
-        console.log("🚫 불참 선택 - 모든 필드 한번에 초기화"); // 디버깅용
-        
-        // 불참 상태의 완전한 데이터 객체 생성
-        const notAttendingData = {
-          ...editingData,
-          isAttending: false,
-          totalCount: 0,
-          attendeeNames: []
-        };
-        
-        // 한 번의 호출로 모든 상태 업데이트
-        onUpdateEditingRsvpData("_bulk_update", notAttendingData);
-        
-      } else {
-        // 참석 선택 시
-        console.log("✅ 참석 선택 - 기본값 설정"); // 디버깅용
-        
-        // 현재 totalCount가 0이거나 없으면 1로 설정
-        const currentCount = editingData.totalCount || 0;
-        const newTotalCount = currentCount === 0 ? 1 : currentCount;
-        const newAttendeeNames = currentCount === 0 ? [""] : editingData.attendeeNames || [""];
-        
-        // 참석 상태의 완전한 데이터 객체 생성
-        const attendingData = {
-          ...editingData,
-          isAttending: true,
-          totalCount: newTotalCount,
-          attendeeNames: newAttendeeNames
-        };
-        
-        // 한 번의 호출로 모든 상태 업데이트
-        onUpdateEditingRsvpData("_bulk_update", attendingData);
-      }
-    } else {
-      console.error("❌ onUpdateEditingRsvpData 함수가 없음"); // 디버깅용
-    }
-  }}
-  style={{
-    padding: "8px 12px",
-    border: `1px solid ${AppleColors.border}`,
-    borderRadius: "8px",
-    fontSize: "16px",
-    backgroundColor: AppleColors.inputBackground,
-    minWidth: "100px",
-  }}
->
-  <option value="참석">참석</option>
-  <option value="불참">불참</option>
-</select>
+                  if (onUpdateEditingRsvpData) {
+                    // 🔧 수정: 한 번에 모든 상태를 업데이트하도록 변경
+                    if (!isAttending) {
+                      // 불참 선택 시 - 모든 필드를 하나의 객체로 한번에 업데이트
+                      console.log("🚫 불참 선택 - 모든 필드 한번에 초기화"); // 디버깅용
+
+                      // 불참 상태의 완전한 데이터 객체 생성
+                      const notAttendingData = {
+                        ...editingData,
+                        isAttending: false,
+                        totalCount: 0,
+                        attendeeNames: [],
+                      };
+
+                      // 한 번의 호출로 모든 상태 업데이트
+                      onUpdateEditingRsvpData("_bulk_update", notAttendingData);
+                    } else {
+                      // 참석 선택 시
+                      console.log("✅ 참석 선택 - 기본값 설정"); // 디버깅용
+
+                      // 현재 totalCount가 0이거나 없으면 1로 설정
+                      const currentCount = editingData.totalCount || 0;
+                      const newTotalCount =
+                        currentCount === 0 ? 1 : currentCount;
+                      const newAttendeeNames =
+                        currentCount === 0
+                          ? [""]
+                          : editingData.attendeeNames || [""];
+
+                      // 참석 상태의 완전한 데이터 객체 생성
+                      const attendingData = {
+                        ...editingData,
+                        isAttending: true,
+                        totalCount: newTotalCount,
+                        attendeeNames: newAttendeeNames,
+                      };
+
+                      // 한 번의 호출로 모든 상태 업데이트
+                      onUpdateEditingRsvpData("_bulk_update", attendingData);
+                    }
+                  } else {
+                    console.error("❌ onUpdateEditingRsvpData 함수가 없음"); // 디버깅용
+                  }
+                }}
+                style={{
+                  padding: "8px 12px",
+                  border: `1px solid ${AppleColors.border}`,
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  backgroundColor: AppleColors.inputBackground,
+                  minWidth: "100px",
+                }}
+              >
+                <option value="참석">참석</option>
+                <option value="불참">불참</option>
+              </select>
             </div>
           </div>
 
@@ -429,16 +435,33 @@ const RsvpCard: React.FC<RsvpCardProps> = ({
                         disabled={!editingData.isAttending} // 불참시 비활성화
                         value={editingData.attendeeNames?.[index] || ""}
                         onChange={(e) => {
+                          console.log(
+                            `🔄 참석자 ${index} 이름 변경:`,
+                            e.target.value
+                          ); // 디버깅용
+
                           if (!editingData.isAttending) return; // 불참시 변경 방지
 
                           if (onUpdateEditingRsvpData) {
+                            // 새로운 배열을 생성하여 특정 인덱스만 변경
                             const newNames = [
                               ...(editingData.attendeeNames || []),
                             ];
+                            // 배열 길이가 부족한 경우 빈 문자열로 채우기
+                            while (newNames.length <= index) {
+                              newNames.push("");
+                            }
                             newNames[index] = e.target.value;
+
+                            console.log("🔄 업데이트될 이름 배열:", newNames); // 디버깅용
                             onUpdateEditingRsvpData("attendeeNames", newNames);
 
+                            // 첫 번째 이름(대표자)이 변경된 경우 responderName도 함께 업데이트
                             if (index === 0) {
+                              console.log(
+                                "🔄 대표자 이름도 함께 업데이트:",
+                                e.target.value
+                              ); // 디버깅용
                               onUpdateEditingRsvpData(
                                 "responderName",
                                 e.target.value
