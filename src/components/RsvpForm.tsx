@@ -572,6 +572,7 @@ const RsvpForm: React.FC<RsvpFormProps> = ({
                 borderRadius: "8px",
                 outline: "none",
                 transition: "border-color 0.2s",
+                boxSizing:"border-box"
               }}
               disabled={isSubmitting}
             />
