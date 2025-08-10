@@ -49,12 +49,13 @@ export const useAdminDashboard = () => {
   const [editingRsvpId, setEditingRsvpId] = useState<string | null>(null);
   // RSVP 편집 관련 상태
   const [editingRsvpData, setEditingRsvpData] = useState<{
-    responderName: string;
-    isAttending: boolean;
-    totalCount: number;
-    phoneNumber?: string;
-    message?: string;
-  } | null>(null);
+  responderName: string;
+  isAttending: boolean;
+  totalCount: number;
+  attendeeNames: string[];  // 이 줄 추가!
+  phoneNumber?: string;
+  message?: string;
+} | null>(null);
 
   // ==================== 🔄 데이터 로딩 함수들 ====================
 
