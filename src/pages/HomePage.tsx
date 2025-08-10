@@ -22,6 +22,19 @@ const AppleColors = {
   },
 };
 
+// 반응형 이미지 스타일 정의
+const getWeddingImageStyle = (isMobile: boolean) => ({
+  width: isMobile ? "100%" : "40%", // 모바일: 100%, PC: 40%
+  height: "auto", // 비율 유지
+  display: "block", // 블록 요소로 설정
+  margin: "0 auto", // 중앙 정렬
+});
+
+// 반응형 폰트 사이즈 함수 (PC: px, 모바일: vw)
+const getResponsiveFontSize = (pcPx: number, mobileVw: number, isMobile: boolean) => {
+  return isMobile ? `${mobileVw}vw` : `${pcPx}px`;
+};
+
 interface WeddingInfo {
   groomName: string;
   brideName: string;
@@ -317,7 +330,11 @@ const HomePage: React.FC = () => {
         >
           <h1 style={{margin:"40px 0"}}>
             {/* {weddingInfo.groomName} ♥ {weddingInfo.brideName} */}
-            <img src="/images/wedding.png" width="100%"/>
+            <img 
+              src="/images/wedding.png" 
+              style={getWeddingImageStyle(isMobile)} // 반응형 스타일 적용
+              alt="웨딩 이미지" // 접근성을 위한 alt 텍스트 추가
+            />
           </h1>
 
           <div

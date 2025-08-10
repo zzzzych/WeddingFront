@@ -23,6 +23,19 @@ const AppleColors = {
   },
 };
 
+// 반응형 이미지 스타일 정의
+const getWeddingImageStyle = (isMobile: boolean) => ({
+  width: isMobile ? "100%" : "40%", // 모바일: 100%, PC: 40%
+  height: "auto", // 비율 유지
+  display: "block", // 블록 요소로 설정
+  margin: "0 auto", // 중앙 정렬
+});
+
+// 반응형 폰트 사이즈 함수 (PC: px, 모바일: vw)
+const getResponsiveFontSize = (pcPx: number, mobileVw: number, isMobile: boolean) => {
+  return isMobile ? `${mobileVw}vw` : `${pcPx}px`;
+};
+
 // 시스템 폰트 정의 (HomePage.tsx와 동일)
 const systemFont = "SeoulNamsanM";
 
@@ -386,8 +399,6 @@ const InvitationPage: React.FC = () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             padding: "40px",
-            // border: `1px solid ${AppleColors.border}`,
-            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             maxWidth: "400px",
             width: "100%",
           }}
@@ -466,7 +477,6 @@ const InvitationPage: React.FC = () => {
             maxWidth: "90%",
             textAlign: "center",
             zIndex: 1000,
-            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.15)",
             fontFamily: systemFont,
             fontWeight: "500",
           }}
@@ -478,12 +488,9 @@ const InvitationPage: React.FC = () => {
       {/* 헤더 섹션 (HomePage와 동일한 그라데이션 스타일) */}
       <div
         style={{
-          // background: `linear-gradient(135deg, ${AppleColors.gradient.start} 0%, ${AppleColors.gradient.middle} 50%, ${AppleColors.gradient.end} 100%)`,
           background: `#ffffff`,
-          // color: "white",
           color: "#222",
           textAlign: "center",
-          // padding: "80px 20px 20px",
           position: "relative",
           overflow: "hidden",
           height: "100vh",
@@ -523,16 +530,17 @@ const InvitationPage: React.FC = () => {
               margin: "40px 0",
             }}
           >
-            {/* {"🤵🏻"} ❤️{" "}
-            {"👰🏻‍♀️"} */}
-            <img src="/images/wedding.png" width="100%" />
+            <img 
+              src="/images/wedding.png" 
+              style={getWeddingImageStyle(isMobile)} // 반응형 스타일 적용
+              alt="웨딩 이미지" // 접근성을 위한 alt 텍스트 추가
+            />
           </h1>
 
           <div
             style={{
               fontSize: "20px",
               fontWeight: "300",
-              // marginTop: "16px",
               opacity: 0.9,
               fontFamily: systemFont,
             }}
@@ -543,20 +551,6 @@ const InvitationPage: React.FC = () => {
             </div>
             <div style={{ lineHeight: 2 }}>Wedding Invitation</div>
           </div>
-
-          {/* 결혼식 일자 표시 - 🆕 서버 데이터 기반으로 동적 생성 (개선된 버전) */}
-          {/* <div
-            style={{
-              fontSize: "18px",
-              fontWeight: "400",
-              // marginTop: "20px",
-              opacity: 0.95,
-              fontFamily: systemFont,
-              letterSpacing: "0.5px",
-            }}
-          >
-            {formatWeddingDateTime(invitationData.weddingInfo.weddingDate)}
-          </div> */}
         </div>
       </div>
       {/* 메인 컨텐츠 섹션들 - 기능 설정에 따라 조건부 렌더링 */}
@@ -573,9 +567,6 @@ const InvitationPage: React.FC = () => {
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
             padding: "40px 0 120px",
-            // marginBottom: "60px",
-            // border: `1px solid ${AppleColors.border}`,
-            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             textAlign: "center",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
@@ -584,7 +575,7 @@ const InvitationPage: React.FC = () => {
         >
           <div
             style={{
-              fontSize: "4.6154vw",
+              fontSize: getResponsiveFontSize(18, 4.6154, isMobile),
               lineHeight: "1.8",
               color: AppleColors.text,
               fontFamily: systemFont,
@@ -612,10 +603,6 @@ const InvitationPage: React.FC = () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            // padding: "40px",
-            // marginBottom: "60px",
-            // border: `1px solid ${AppleColors.border}`,
-            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
             transition: "all 1s ease 0.6s",
@@ -631,11 +618,9 @@ const InvitationPage: React.FC = () => {
                   style={{
                     position: "relative",
                     width: "100%",
-                    // height: "350px",
                     height: "auto",
                     borderRadius: "16px",
                     overflow: "hidden",
-                    // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                     backgroundColor: "#f8f9fa",
                   }}
                 >
@@ -792,16 +777,8 @@ const InvitationPage: React.FC = () => {
                             borderRadius: "12px",
                             overflow: "hidden",
                             cursor: "pointer",
-                            // border:
-                            //   index === mobileCurrentIndex
-                            //     ? `3px solid ${AppleColors.primary}`
-                            //     : "3px solid transparent",
                             transition: "all 0.3s ease",
                             flexShrink: 0,
-                            // boxShadow:
-                            //   index === mobileCurrentIndex
-                            //     ? "0 4px 12px rgba(0, 123, 255, 0.3)"
-                            //     : "none",
                           }}
                         >
                           <img
@@ -839,19 +816,14 @@ const InvitationPage: React.FC = () => {
                       borderRadius: "16px",
                       overflow: "hidden",
                       cursor: "pointer",
-                      // boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
                       transition: "transform 0.3s ease, box-shadow 0.3s ease",
                       backgroundColor: "#f8f9fa",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-8px)";
-                      // e.currentTarget.style.boxShadow =
-                      //   "0 12px 32px rgba(0, 0, 0, 0.15)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "translateY(0)";
-                      // e.currentTarget.style.boxShadow =
-                      //   "0 4px 16px rgba(0, 0, 0, 0.1)";
                     }}
                   >
                     <img
@@ -925,7 +897,7 @@ const InvitationPage: React.FC = () => {
           }}
         >
 
-        <div style={{padding:"0 0 120px", fontSize: "5.128vw",
+        <div style={{padding:"0 0 120px", fontSize:getResponsiveFontSize(20, 5.128, isMobile),
               fontWeight: "700",
               fontFamily: systemFont,
               letterSpacing: "0.5px",}}>
@@ -934,9 +906,8 @@ const InvitationPage: React.FC = () => {
         </div>
           <div
             style={{
-              fontSize: "5.128vw",
+              fontSize: getResponsiveFontSize(20, 5.128, isMobile),
               fontWeight: "700",
-              // marginTop: "20px",
               opacity: 0.95,
               fontFamily: systemFont,
               letterSpacing: "0.5px",
@@ -947,9 +918,8 @@ const InvitationPage: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: "5.128vw",
+              fontSize: getResponsiveFontSize(20, 5.128, isMobile),
               fontWeight: "700",
-              // marginTop: "20px",
               opacity: 0.95,
               fontFamily: systemFont,
               letterSpacing: "0.5px",
@@ -961,9 +931,8 @@ const InvitationPage: React.FC = () => {
 
           <div
             style={{
-              fontSize: "4.359vw",
+              fontSize:getResponsiveFontSize(17, 4.359, isMobile),
               fontWeight: "700",
-              // marginTop: "20px",
               opacity: 0.95,
               fontFamily: systemFont,
               letterSpacing: "0.5px",
@@ -978,11 +947,8 @@ const InvitationPage: React.FC = () => {
           style={{
             backgroundColor: AppleColors.cardBackground,
             borderRadius: "20px",
-            // padding: "40px",
             paddingTop: "120px",
             marginBottom: "60px",
-            // border: `1px solid ${AppleColors.border}`,
-            // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? "translateY(0)" : "translateY(50px)",
             transition: "all 1s ease 0.9s",
@@ -999,10 +965,7 @@ const InvitationPage: React.FC = () => {
             style={{
               backgroundColor: AppleColors.cardBackground,
               borderRadius: "20px",
-              // padding: "40px",
               marginBottom: "60px",
-              // border: `1px solid ${AppleColors.border}`,
-              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? "translateY(0)" : "translateY(50px)",
               transition: "all 1s ease 1.2s",
@@ -1019,46 +982,6 @@ const InvitationPage: React.FC = () => {
           </div>
         )}
 
-        {/* 본식 순서 (showCeremonyProgram이 true인 그룹만) */}
-        {/* {invitationData.showCeremonyProgram && (
-          <div
-            style={{
-              backgroundColor: AppleColors.cardBackground,
-              borderRadius: "20px",
-              // padding: "40px",
-              marginBottom: "60px",
-              // border: `1px solid ${AppleColors.border}`,
-              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
-              opacity: isLoaded ? 1 : 0,
-              transform: isLoaded ? "translateY(0)" : "translateY(50px)",
-              transition: "all 1s ease 1.5s",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "7.1795vw",
-                fontWeight: "600",
-                color: AppleColors.text,
-                margin: "0 0 32px 0",
-                textAlign: "center",
-                fontFamily: systemFont,
-              }}
-            >본식 순서</h2>
-            <div
-              style={{
-                fontSize: "16px",
-                lineHeight: "1.8",
-                color: AppleColors.text,
-                fontFamily: systemFont,
-                whiteSpace: "pre-line",
-                textAlign: "center",
-              }}
-            >
-              {invitationData.weddingInfo.ceremonyProgram}
-            </div>
-          </div>
-        )} */}
-
         {/* 공유 버튼 - showShareButton이 true일 때만 표시 */}
         {invitationData.showShareButton && (
           <div style={{display:"flex", justifyContent:"center", width:"100%"}}>
@@ -1071,11 +994,6 @@ const InvitationPage: React.FC = () => {
             />
           </div>
         )}
-
-        {/* 예식 순서 - showCeremonyProgram이 true일 때만 표시 */}
-        {/* {invitationData.showCeremonyProgram && (
-          <CeremonyProgram program={invitationData.weddingInfo.ceremonyProgram} />
-        )} */}
       </div>
 
       {/* 🆕 이미지 모달 (HomePage.tsx와 동일) */}
@@ -1200,7 +1118,6 @@ const InvitationPage: React.FC = () => {
                 maxHeight: "100%",
                 objectFit: "contain",
                 borderRadius: "12px",
-                // boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
               }}
             />
 
@@ -1250,10 +1167,6 @@ const InvitationPage: React.FC = () => {
                       borderRadius: "8px",
                       overflow: "hidden",
                       cursor: "pointer",
-                      // border:
-                      //   index === currentImageIndex
-                      //     ? "3px solid white"
-                      //     : "3px solid transparent",
                       transition: "border 0.2s ease",
                       flexShrink: 0,
                     }}
