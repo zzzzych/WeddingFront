@@ -577,15 +577,6 @@ const InvitationPage: React.FC = () => {
             transition: "all 1s ease 0.3s",
           }}
         >
-          {/* <h2
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: AppleColors.text,
-              margin: "0 0 24px 0",
-              fontFamily: systemFont,
-            }}
-          >소중한 분들께</h2> */}
           <div
             style={{
               fontSize: "4.6154vw",
@@ -625,19 +616,6 @@ const InvitationPage: React.FC = () => {
             transition: "all 1s ease 0.6s",
           }}
         >
-          {/* <h2
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: AppleColors.text,
-              margin: "0 0 32px 0",
-              textAlign: "center",
-              fontFamily: systemFont,
-            }}
-          >
-            📸 우리의 이야기
-          </h2> */}
-
           {/* 조건부 렌더링: 모바일이면 슬라이드, 데스크톱이면 그리드 */}
           {photos.length > 0 ? (
             isMobile ? (
@@ -997,20 +975,6 @@ const InvitationPage: React.FC = () => {
             transition: "all 1s ease 0.9s",
           }}
         >
-          {/* <h2
-            style={{
-              fontSize: "28px",
-              fontWeight: "600",
-              color: AppleColors.text,
-              margin: "0 0 32px 0",
-              textAlign: "center",
-              fontFamily: systemFont,
-            }}
-          >
-            🗺️ 오시는 길
-          </h2> */}
-          {/* <VenueInfo invitationData={invitationData} /> */}
-        
           {/* 🔍 오시는 길 정보 - showVenueInfo가 true일 때만 표시 */}
               {invitationData?.showVenueInfo && (
                 <VenueInfo invitationData={invitationData} />
@@ -1031,25 +995,6 @@ const InvitationPage: React.FC = () => {
               transition: "all 1s ease 1.2s",
             }}
           >
-            {/* <h2
-              style={{
-                fontSize: "28px",
-                fontWeight: "600",
-                color: AppleColors.text,
-                margin: "0 0 32px 0",
-                textAlign: "center",
-                fontFamily: systemFont,
-              }}
-            >
-              💒 참석 여부
-            </h2> */}
-            {/* <RsvpForm
-              uniqueCode={uniqueCode!}
-              onSubmitSuccess={handleRsvpSuccess}
-              onSubmitError={handleRsvpError}
-            /> */}
-
-
       {/* 📝 참석 응답 폼 - showRsvpForm이 true일 때만 표시 */}
       {invitationData?.showRsvpForm && (
         <RsvpForm
@@ -1104,9 +1049,41 @@ const InvitationPage: React.FC = () => {
         )}
 
         {/* 계좌 정보 - showAccountInfo가 true일 때만 표시 */}
-        {/* {invitationData.showAccountInfo && (
-          <AccountInfo accountInfo={invitationData.weddingInfo.accountInfo} />
-        )} */}
+        {invitationData?.showAccountInfo && (
+          <div
+            style={{
+              backgroundColor: AppleColors.cardBackground,
+              borderRadius: "20px",
+              padding: "40px",
+              marginBottom: "60px",
+              border: `1px solid ${AppleColors.border}`,
+              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
+              opacity: isLoaded ? 1 : 0,
+              transform: isLoaded ? "translateY(0)" : "translateY(50px)",
+              transition: "all 1s ease 1.5s",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "28px",
+                fontWeight: "600",
+                color: AppleColors.text,
+                margin: "0 0 32px 0",
+                textAlign: "center",
+                fontFamily: systemFont,
+              }}
+            >
+              💳 마음 전할 곳
+            </h2>
+            <div style={{ fontSize: "16px", lineHeight: "1.8", color: AppleColors.text, fontFamily: systemFont }}>
+              {invitationData.weddingInfo.accountInfo.map((account, index) => (
+                <div key={index} style={{ marginBottom: "8px", textAlign: "center" }}>
+                  {account}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 공유 버튼 - showShareButton이 true일 때만 표시 */}
         {invitationData.showShareButton && (
@@ -1122,124 +1099,6 @@ const InvitationPage: React.FC = () => {
         {/* 예식 순서 - showCeremonyProgram이 true일 때만 표시 */}
         {/* {invitationData.showCeremonyProgram && (
           <CeremonyProgram program={invitationData.weddingInfo.ceremonyProgram} />
-        )} */}
-        
-        {/* 계좌 정보 (showAccountInfo가 true인 그룹만) */}
-        {/* {invitationData?.showAccountInfo && (
-          <div
-            style={{
-              backgroundColor: AppleColors.cardBackground,
-              borderRadius: "20px",
-              // padding: "40px",
-              marginBottom: "60px",
-              // border: `1px solid ${AppleColors.border}`,
-              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
-              opacity: isLoaded ? 1 : 0,
-              transform: isLoaded ? "translateY(0)" : "translateY(50px)",
-              transition: "all 1s ease 1.8s",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "28px",
-                fontWeight: "600",
-                color: AppleColors.text,
-                margin: "0 0 32px 0",
-                textAlign: "center",
-                fontFamily: systemFont,
-              }}
-            >
-              💳 마음 전하실 곳
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gap: "16px",
-              }}
-            >
-              {invitationData.weddingInfo.accountInfo.map((account, index) => (
-                <div
-                  key={index}
-                  style={{
-                    backgroundColor: AppleColors.background,
-                    padding: "20px",
-                    borderRadius: "12px",
-                    // border: `1px solid ${AppleColors.border}`,
-                    fontSize: "16px",
-                    fontFamily: systemFont,
-                    textAlign: "center",
-                    color: AppleColors.text,
-                  }}
-                >
-                  {account}
-                </div>
-              ))}
-            </div>
-          </div>
-        )} */}
-
-        {/* 📤 공유 버튼 - showShareButton이 true일 때만 표시 */}
-        {/* {invitationData?.showShareButton && (
-          <ShareButton
-            uniqueCode={uniqueCode!}
-            groomName={invitationData.weddingInfo.groomName}
-            brideName={invitationData.weddingInfo.brideName}
-            weddingDate={invitationData.weddingInfo.weddingDate}
-            venueName={invitationData.weddingInfo.venueName}
-          />
-        )} */}
-
-
-        {/* 공유 버튼 (showShareButton이 true인 그룹만) */}
-        {/* {invitationData.showShareButton && uniqueCode && (
-          <div
-            style={{
-              backgroundColor: AppleColors.cardBackground,
-              borderRadius: "20px",
-              // padding: "40px",
-              marginBottom: "60px",
-              // border: `1px solid ${AppleColors.border}`,
-              // boxShadow: "0 8px 30px rgba(0, 0, 0, 0.08)",
-              textAlign: "center",
-              opacity: isLoaded ? 1 : 0,
-              transform: isLoaded ? "translateY(0)" : "translateY(50px)",
-              transition: "all 1s ease 2.1s",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "28px",
-                fontWeight: "600",
-                color: AppleColors.text,
-                margin: "0 0 16px 0",
-                fontFamily: systemFont,
-              }}
-            >
-              📤 청첩장 공유하기
-            </h2>
-            <p
-              style={{
-                fontSize: "16px",
-                color: AppleColors.secondaryText,
-                marginBottom: "32px",
-                lineHeight: "1.5",
-                fontFamily: systemFont,
-              }}
-            >
-              소중한 분들에게 우리의 행복한 소식을 전해주세요
-            </p>
-
-            <ShareButton
-              uniqueCode={uniqueCode}
-              groomName={invitationData.weddingInfo.groomName}
-              brideName={invitationData.weddingInfo.brideName}
-              weddingDate={invitationData.weddingInfo.weddingDate}
-              venueName={
-                invitationData.weddingInfo.venueName ||
-                "포포인츠 바이쉐라톤 조선 서울역 19층"
-              }
-            />
-          </div>
         )} */}
       </div>
 
