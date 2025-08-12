@@ -584,8 +584,8 @@ const InvitationPage: React.FC = () => {
               margin: "0 auto",
             }}
           >
-            {/* {invitationData.groupInfo.greetingMessage} */}
-            소중한 주말 저녁, <br />
+            {invitationData.groupInfo.greetingMessage}
+            {/* 소중한 주말 저녁, <br />
             저희의 결혼을 축복하기 위해 <br />
             귀한 발걸음을 해주셔서 진심으로 감사드립니다. <br />
             <br />
@@ -594,7 +594,7 @@ const InvitationPage: React.FC = () => {
             더없는 기쁨이겠습니다. <br />
             <br />
             저희의 새로운 시작을 <br />
-            따뜻한 마음으로 지켜봐 주세요.
+            따뜻한 마음으로 지켜봐 주세요. */}
           </div>
         </div>
 

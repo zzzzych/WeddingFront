@@ -91,7 +91,16 @@ const HomePage: React.FC = () => {
       setWeddingInfo({
         groomName: "지환",
         brideName: "윤진", 
-        greetingMessage: `두 손 잡고 걷다보니 즐거움만 가득\n더 큰 즐거움의 시작에 함께 해주세요.\n\n지환, 윤진 결혼합니다.`,
+        greetingMessage: `소중한 분들께,
+다가오는 10월 25일 
+저희가 결혼식을 올리게 되었습니다.
+
+가족들과 약소하게 진행되어 축하해주시는 
+한분 한분 모시지 못해 송구스러운 마음입니다.
+
+멀리서 나마 저희의 결혼을 축복해주시는 분들의 
+마음을 잊지 않고 열심히 행복하게 살겠습니다
+감사합니다`,
       });
 
       // 실제 이미지 파일들 적용 (wedding-1.jpeg ~ wedding-8.jpeg)
