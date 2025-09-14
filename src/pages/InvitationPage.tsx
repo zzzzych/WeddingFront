@@ -186,8 +186,7 @@ const InvitationPage: React.FC = () => {
             greetingMessage:
               serverData.weddingInfo?.greetingMessage || "두 손 잡고 걷다보니 즐거움만 가득 \n 더 큰 즐거움의 시작에 함께 해주세요. \n 지환, 윤진 결혼합니다.",
             ceremonyProgram: serverData.weddingInfo?.ceremonyProgram || "예식 순서",
-            accountInfo: ["농협 121065-56-105215 (고인옥 / 신랑母)"], // 기본값
-
+            accountInfo: ["농협 121065-56-105215 (고인옥 / 신랑母)","신한 110-541-186076 (이지환 / 신랑)","국민 437202-04-122351 (이윤진 / 신부)"], // 기본값
             // 상세 장소 정보들 추가
             venueName: serverData.weddingInfo?.venueName,
             venueAddress: serverData.weddingInfo?.venueAddress,
