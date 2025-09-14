@@ -54,6 +54,7 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
       }
     }
   };
+  //데이터 확인
    console.log("invitationData", invitationData)
    console.log("weddingInfo", weddingInfo);
   // showVenueInfo와 showAccountInfo가 모두 false면 컴포넌트를 렌더링하지 않음
