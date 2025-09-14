@@ -575,16 +575,27 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
                 💝 마음 전할 곳
               </h4>
               {/* 관리자에서 입력한 계좌 정보들을 배열로 표시 */}
-              {weddingInfo.accountInfo.map((account, index) => (
-                <div key={index} style={{
-                  fontSize: '14px',
-                  color: '#2c3e50',
-                  textAlign: 'center',
-                  marginBottom: '10px',
-                  padding: '8px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '6px',
-                }}>
+              {weddingInfo.accountInfo
+              .filter((_, index) => {
+                if (invitationData.groupInfo.groupName === "윤진 회사 공유용") {
+                  return index !== 0; // 0번 빼고 나머지
+                } else {
+                  return index === 0; // 0번만
+                }
+              })
+              .map((account, index) => (
+                <div
+                  key={index}
+                  style={{
+                    fontSize: "14px",
+                    color: "#2c3e50",
+                    textAlign: "center",
+                    marginBottom: "10px",
+                    padding: "8px",
+                    backgroundColor: "#ffffff",
+                    borderRadius: "6px",
+                  }}
+                >
                   {account}
                 </div>
               ))}
