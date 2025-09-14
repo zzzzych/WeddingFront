@@ -7,6 +7,7 @@ interface VenueInfoProps {
   invitationData: InvitationResponse;  // 청첩장 데이터
 }
 
+
 // 반응형 폰트 사이즈 함수 (PC: px, 모바일: vw)
 const getResponsiveFontSize = (pcPx: number, mobileVw: number, isMobile: boolean) => {
   return isMobile ? `${mobileVw}vw` : `${pcPx}px`;
@@ -53,7 +54,8 @@ const VenueInfo: React.FC<VenueInfoProps> = ({ invitationData }) => {
       }
     }
   };
-
+   console.log("invitationData", invitationData)
+   console.log("weddingInfo", weddingInfo);
   // showVenueInfo와 showAccountInfo가 모두 false면 컴포넌트를 렌더링하지 않음
   if (!invitationData.showVenueInfo && !invitationData.showAccountInfo) {
     return null;
